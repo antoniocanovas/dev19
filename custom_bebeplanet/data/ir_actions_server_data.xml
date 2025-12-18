@@ -5,75 +5,72 @@
         <field name="model_id" ref="stock.model_stock_picking"/>
         <field name="state">code</field>
         <field name="code">
-# Server action code. `records` is a pre-filled recordset.
-# This code is a refined version of the provided logic.
+# Server action code - v3 (Handles MTO vs Stockable)
 location_stock = env['stock.location'].search([('complete_name', '=', 'WH/Stock')], limit=1)
-if not location_stock:
-    # Exit silently if the main stock location is not found.
-    return
 
-for picking in records:
-    # Ensure we only process outgoing pickings that are not yet done, cancelled, or already chained.
-    if picking.picking_type_code != 'outgoing' or picking.state in ('done', 'cancel') or (picking.move_lines and picking.move_lines[0].procure_method == 'make_to_order'):
-        continue
+if location_stock:
+    for picking in records:
+        # Basic validation: only process outgoing pickings that are not done/cancelled.
+        if picking.picking_type_code != 'outgoing' or picking.state in ('done', 'cancel'):
+            continue
 
-    # 1. Get salesperson from Sale Order or POS Order
-    salesperson = picking.sale_id.user_id or (picking.pos_order_id and picking.pos_order_id.user_id)
-    if not salesperson or not salesperson.partner_id.ref:
-        continue
+        # 1. Find salesperson and their location
+        salesperson = picking.sale_id.user_id or (picking.pos_order_id and picking.pos_order_id.user_id)
+        if not salesperson or not salesperson.partner_id.ref:
+            continue
+        commercial_ref = salesperson.partner_id.ref
+        location_comercial = env['stock.location'].search([('name', '=', commercial_ref)], limit=1)
+        if not location_comercial:
+            continue
 
-    # 2. Find commercial's location by their reference in partner
-    commercial_ref = salesperson.partner_id.ref
-    location_comercial = env['stock.location'].search([('name', '=', commercial_ref)], limit=1)
-    if not location_comercial:
-        continue
+        # 2. *** KEY IMPROVEMENT: Protection against re-running ***
+        # If the picking's source location is already the commercial's location, we are done.
+        if picking.location_id.id == location_comercial.id:
+            continue
 
-    # 3. Find the internal picking type for the warehouse
-    picking_type_internal = env['stock.picking.type'].search([
-        ('code', '=', 'internal'),
-        ('warehouse_id', '=', picking.picking_type_id.warehouse_id.id)
-    ], limit=1)
-    if not picking_type_internal:
-        continue
+        # 3. Differentiate logic for MTO vs Stockable products
+        # We assume all moves in the picking are of the same type for simplicity.
+        is_mto = picking.move_ids and picking.move_ids[0].procure_method == 'make_to_order'
 
-    # 4. Unreserve stock from the original picking
-    picking.do_unreserve()
+        if is_mto:
+            # --- MTO LOGIC ---
+            # For MTO products, we just change the source location of the outgoing picking.
+            # Odoo's procurement system will then know to make the stock available there.
+            picking.write({'location_id': location_comercial.id})
+            picking.move_ids.write({'location_id': location_comercial.id})
+            picking.message_post(body="Source location changed to salesperson's location for MTO fulfillment.")
+        else:
+            # --- STOCKABLE PRODUCT LOGIC ---
+            # This is the original logic: create an internal transfer and chain it.
+            picking_type_internal = env['stock.picking.type'].search([('code', '=', 'internal'), ('warehouse_id', '=', picking.picking_type_id.warehouse_id.id)], limit=1)
+            if not picking_type_internal:
+                continue
 
-    # 5. Prepare move lines for the new internal transfer, linking them to the original moves
-    internal_move_lines = []
-    for move in picking.move_lines:
-        internal_move_lines.append((0, 0, {
-            'product_id': move.product_id.id,
-            'product_uom_qty': move.product_uom_qty,
-            'product_uom': move.product_uom.id,
-            'location_id': location_stock.id,
-            'location_dest_id': location_comercial.id,
-            'move_dest_ids': [(4, move.id)]  # Link to the original move
-        }))
+            picking.do_unreserve()
 
-    if not internal_move_lines:
-        continue
+            internal_move_lines = []
+            for move in picking.move_ids:
+                internal_move_lines.append((0, 0, {
+                    'product_id': move.product_id.id, 'product_uom_qty': move.product_uom_qty,
+                    'product_uom': move.product_uom.id, 'location_id': location_stock.id,
+                    'location_dest_id': location_comercial.id, 'move_dest_ids': [(4, move.id)]
+                }))
+            if not internal_move_lines:
+                continue
 
-    # 6. Create the internal transfer (Stock -> Commercial's Location)
-    internal_picking = env['stock.picking'].create({
-        'picking_type_id': picking_type_internal.id,
-        'location_id': location_stock.id,
-        'location_dest_id': location_comercial.id,
-        'origin': picking.name,
-        'partner_id': picking.partner_id.id,
-        'move_lines': internal_move_lines,
-    })
-    internal_picking.action_confirm()
+            internal_picking = env['stock.picking'].create({
+                'picking_type_id': picking_type_internal.id, 'location_id': location_stock.id,
+                'location_dest_id': location_comercial.id, 'origin': picking.name,
+                'partner_id': picking.partner_id.id, 'move_ids': internal_move_lines,
+            })
+            internal_picking.action_confirm()
 
-    # 7. Update original picking to wait for the internal transfer
-    picking.move_lines.write({
-        'location_id': location_comercial.id,
-        'procure_method': 'make_to_order',
-    })
+            picking.write({'location_id': location_comercial.id})
+            # Here, we set procure_method to chain the picking, which is fine because it's not an MTO product.
+            picking.move_ids.write({'location_id': location_comercial.id, 'procure_method': 'make_to_order'})
 
-    # 8. Post a message on both pickings for traceability
-    internal_picking.message_post(body=f"Created to supply outgoing picking &lt;a href='#' data-oe-model='stock.picking' data-oe-id='{picking.id}'&gt;{picking.name}&lt;/a&gt;.")
-    picking.message_post(body=f"This picking is waiting for internal transfer &lt;a href='#' data-oe-model='stock.picking' data-oe-id='{internal_picking.id}'&gt;{internal_picking.name}&lt;/a&gt; from salesperson's stock.")
+            internal_picking.message_post(body=f"Created to supply outgoing picking &lt;a href='#' data-oe-model='stock.picking' data-oe-id='{picking.id}'&gt;{picking.name}&lt;/a&gt;.")
+            picking.message_post(body=f"This picking is waiting for internal transfer &lt;a href='#' data-oe-model='stock.picking' data-oe-id='{internal_picking.id}'&gt;{internal_picking.name}&lt;/a&gt;.")
         </field>
     </record>
 </odoo>

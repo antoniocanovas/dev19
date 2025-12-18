@@ -7,7 +7,7 @@
             <field name="trigger">on_creation</field>
             <field name="filter_domain">[('picking_type_code', '=', 'outgoing')]</field>
             <!-- This links the rule to the server action containing the code -->
-            <field name="action_server_id" ref="custom_bebeplanet.action_server_split_outgoing_picking"/>
+            <field name="server_action_id" ref="custom_bebeplanet.action_server_split_outgoing_picking"/>
         </record>
     </data>
 </odoo>
