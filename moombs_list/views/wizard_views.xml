@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- =============================================================== -->
+    <!-- List Info Popup Wizard (LST-002)                                -->
+    <!-- =============================================================== -->
+
+    <record id="baby_list_info_wizard_form" model="ir.ui.view">
+        <field name="name">baby.list.info.wizard.form</field>
+        <field name="model">baby.list.info.wizard</field>
+        <field name="arch" type="xml">
+            <form string="List Information">
+                <sheet>
+                    <!-- Basic Info -->
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="list_type"/>
+                        </group>
+                        <group>
+                            <field name="expected_date"/>
+                            <field name="days_remaining" invisible="is_overdue"/>
+                            <field name="is_overdue" invisible="1"/>
+                            <div invisible="not is_overdue" class="alert alert-warning">
+                                <strong>Overdue!</strong> The expected date has passed.
+                            </div>
+                        </group>
+                    </group>
+
+                    <!-- Beneficiary 1 -->
+                    <group string="Beneficiary 1">
+                        <field name="partner_id"/>
+                        <field name="partner_phone"/>
+                    </group>
+
+                    <!-- Beneficiary 2 (only if present) -->
+                    <group string="Beneficiary 2" invisible="not partner2_id">
+                        <field name="partner2_id"/>
+                        <field name="partner2_phone"/>
+                    </group>
+
+                    <!-- Progress Bar (for birth type) -->
+                    <group string="Progress" invisible="weeks_total == 0">
+                        <field name="weeks_progress"/>
+                        <field name="weeks_total"/>
+                    </group>
+                </sheet>
+
+                <!-- Footer with Close button -->
+                <footer>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- =============================================================== -->
+    <!-- Complete List Wizard (LST-007)                                  -->
+    <!-- =============================================================== -->
+
+    <record id="baby_list_complete_wizard_form" model="ir.ui.view">
+        <field name="name">baby.list.complete.wizard.form</field>
+        <field name="model">baby.list.complete.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Complete List">
+                <sheet>
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading">Warning: Pending Items</h4>
+                        <p>
+                            This list has <strong><field name="pending_count" nolabel="1"/></strong>
+                            items that are still being processed (ordered or reserved).
+                        </p>
+                        <p>
+                            Total pending amount: <strong><field name="pending_amount" nolabel="1" widget="monetary"/></strong>
+                        </p>
+                        <hr/>
+                        <p class="mb-0">
+                            Are you sure you want to complete this list?
+                            Pending items will remain in their current state.
+                        </p>
+                    </div>
+
+                    <field name="list_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                </sheet>
+
+                <footer>
+                    <button name="action_confirm"
+                            string="Yes, Complete List"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cancel"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- =============================================================== -->
+    <!-- Cancel Item Wizard (LST-080)                                    -->
+    <!-- =============================================================== -->
+
+    <record id="baby_list_cancel_wizard_form" model="ir.ui.view">
+        <field name="name">baby.list.cancel.wizard.form</field>
+        <field name="model">baby.list.cancel.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Cancel Item">
+                <sheet>
+                    <group>
+                        <field name="item_id" invisible="1"/>
+                        <field name="product_name" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="cancel_reason" required="1"/>
+                        <field name="cancel_reason_detail"
+                               invisible="cancel_reason != 'other'"
+                               required="cancel_reason == 'other'"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_confirm"
+                            string="Confirm Cancel"
+                            type="object"
+                            class="btn-danger"/>
+                    <button string="Back"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- =============================================================== -->
+    <!-- Wallet Transactions Wizard (LST-100)                            -->
+    <!-- =============================================================== -->
+
+    <record id="baby_list_wallet_wizard_form" model="ir.ui.view">
+        <field name="name">baby.list.wallet.wizard.form</field>
+        <field name="model">baby.list.wallet.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Wallet Transactions">
+                <sheet>
+                    <!-- Hidden fields -->
+                    <field name="list_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="wallet_id" invisible="1"/>
+
+                    <!-- Balance Summary -->
+                    <group string="Wallet Balance">
+                        <group>
+                            <field name="wallet_balance" widget="monetary"/>
+                            <field name="wallet_committed" widget="monetary"/>
+                        </group>
+                        <group>
+                            <field name="wallet_available" widget="monetary"
+                                   class="text-success fw-bold"/>
+                        </group>
+                    </group>
+
+                    <!-- Transaction History -->
+                    <notebook>
+                        <page string="Transaction History" name="transactions">
+                            <!-- Selection field for printing -->
+                            <group>
+                                <field name="transaction_id" 
+                                       domain="[('id', 'in', transaction_ids)]"
+                                       options="{'no_create': True, 'no_open': True}"
+                                       placeholder="Select a transaction to print receipt..."/>
+                            </group>
+                            
+                            <!-- Transaction list -->
+                            <field name="transaction_ids" nolabel="1" readonly="1">
+                                <list string="Transactions" create="0" delete="0">
+                                    <field name="date_order" string="Date"/>
+                                    <field name="name" string="Order"/>
+                                    <field name="amount_total" string="Amount" widget="monetary"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="paid_by_partner_id" string="Paid By"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <footer>
+                    <button name="action_print_receipt"
+                            string="Print Receipt"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not transaction_id"
+                            icon="fa-print"/>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

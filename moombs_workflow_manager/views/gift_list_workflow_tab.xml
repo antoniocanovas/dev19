@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Add "Workflow Changes" tab to baby.list form view -->
+    <record id="view_baby_list_form_workflow_tab" model="ir.ui.view">
+        <field name="name">baby.list.form.workflow.tab</field>
+        <field name="model">baby.list</field>
+        <field name="inherit_id" ref="moombs_list.baby_list_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Hide Transactions tab and add History tab -->
+            <xpath expr="//page[@name='transactions']" position="replace">
+                <page string="History" name="workflow_changes">
+                    <div class="alert alert-info" role="alert" style="margin-bottom: 10px;">
+                        <strong>Workflow Actions:</strong> Shows all state changes and actions for documents related to this gift list, ordered by item sequence.
+                    </div>
+                    <!-- Show workflow actions grouped by item, ordered by sequence -->
+                    <field name="workflow_action_ids" 
+                           nolabel="1"
+                           context="{'default_baby_list_id': id}">
+                        <list string="Workflow Actions (Ordered by Item Sequence)" 
+                              default_order="item_line_number desc,item_action_sequence asc,date_logged asc"
+                              decoration-muted="action_type in ['cancellation','api_payment_failed']"
+                              decoration-success="action_type in ['delivery_delivered','api_shipment_delivered','payment_received']"
+                              decoration-info="action_source == 'api'"
+                              decoration-warning="action_source == 'system'">
+                            <field name="item_line_number" string="Item No"/>
+                            <field name="item_action_sequence" string="Sequence"/>
+                            <field name="date_logged" string="Date"/>
+                            <field name="user_id" string="User"/>
+                            <field name="document_type" string="Document"/>
+                            <field name="document_ref" string="Reference"/>
+                            <field name="state_from" string="From"/>
+                            <field name="state_to" string="To"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

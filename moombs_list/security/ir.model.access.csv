@@ -1,0 +1,20 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_baby_list_user,baby.list user,model_baby_list,group_gift_list_user,1,0,0,0
+access_baby_list_advisor,baby.list advisor,model_baby_list,group_gift_list_advisor,1,1,1,0
+access_baby_list_manager,baby.list manager,model_baby_list,group_gift_list_manager,1,1,1,1
+access_baby_list_item_user,baby.list.item user,model_baby_list_item,group_gift_list_user,1,0,0,0
+access_baby_list_item_advisor,baby.list.item advisor,model_baby_list_item,group_gift_list_advisor,1,1,1,0
+access_baby_list_item_manager,baby.list.item manager,model_baby_list_item,group_gift_list_manager,1,1,1,1
+access_baby_list_family_user,baby.list.family user,model_baby_list_family,group_gift_list_user,1,0,0,0
+access_baby_list_family_advisor,baby.list.family advisor,model_baby_list_family,group_gift_list_advisor,1,1,1,0
+access_baby_list_family_manager,baby.list.family manager,model_baby_list_family,group_gift_list_manager,1,1,1,1
+access_baby_list_info_wizard_user,baby.list.info.wizard user,model_baby_list_info_wizard,group_gift_list_user,1,1,1,1
+access_baby_list_info_wizard_advisor,baby.list.info.wizard advisor,model_baby_list_info_wizard,group_gift_list_advisor,1,1,1,1
+access_baby_list_info_wizard_manager,baby.list.info.wizard manager,model_baby_list_info_wizard,group_gift_list_manager,1,1,1,1
+access_baby_list_complete_wizard_advisor,baby.list.complete.wizard advisor,model_baby_list_complete_wizard,group_gift_list_advisor,1,1,1,1
+access_baby_list_complete_wizard_manager,baby.list.complete.wizard manager,model_baby_list_complete_wizard,group_gift_list_manager,1,1,1,1
+access_baby_list_cancel_wizard_advisor,baby.list.cancel.wizard advisor,model_baby_list_cancel_wizard,group_gift_list_advisor,1,1,1,1
+access_baby_list_cancel_wizard_manager,baby.list.cancel.wizard manager,model_baby_list_cancel_wizard,group_gift_list_manager,1,1,1,1
+access_baby_list_wallet_wizard_user,baby.list.wallet.wizard user,model_baby_list_wallet_wizard,group_gift_list_user,1,1,1,1
+access_baby_list_wallet_wizard_advisor,baby.list.wallet.wizard advisor,model_baby_list_wallet_wizard,group_gift_list_advisor,1,1,1,1
+access_baby_list_wallet_wizard_manager,baby.list.wallet.wizard manager,model_baby_list_wallet_wizard,group_gift_list_manager,1,1,1,1

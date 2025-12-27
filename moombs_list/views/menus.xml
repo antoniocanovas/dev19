@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================== -->
+    <!-- MAIN MENU STRUCTURE -->
+    <!-- ========================================== -->
+
+    <!-- Root Menu: Gift Lists (under Sales) -->
+    <menuitem
+        id="menu_moombs_list_root"
+        name="Gift Lists"
+        parent="sale.sale_menu_root"
+        sequence="50"/>
+
+    <!-- Submenu: Gift Lists -->
+    <menuitem
+        id="menu_baby_list"
+        name="Gift Lists"
+        parent="menu_moombs_list_root"
+        action="baby_list_action"
+        sequence="10"/>
+
+</odoo>

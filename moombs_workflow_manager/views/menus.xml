@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Main Menu -->
+    <menuitem id="menu_workflow_root" 
+              name="Workflow Manager" 
+              sequence="100"
+              web_icon="moombs_workflow_manager,static/description/icon.png"/>
+    
+    <!-- Action Log -->
+    <menuitem id="menu_workflow_actions" 
+              name="Action Log" 
+              parent="menu_workflow_root"
+              action="action_document_workflow_action"
+              sequence="10"/>
+    
+    <!-- Analytics -->
+    <menuitem id="menu_workflow_analytics" 
+              name="Analytics &amp; KPIs" 
+              parent="menu_workflow_root"
+              action="action_workflow_analytics_dashboard"
+              sequence="20"/>
+    
+    <!-- Configuration -->
+    <menuitem id="menu_workflow_config" 
+              name="Configuration" 
+              parent="menu_workflow_root"
+              action="action_workflow_config"
+              sequence="30"/>
+    
+    <!-- Archive Management -->
+    <menuitem id="menu_workflow_archive" 
+              name="Archive Management" 
+              parent="menu_workflow_root"
+              action="action_archive_wizard"
+              sequence="40"/>
+</odoo>
+

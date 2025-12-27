@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_document_workflow_action_user,document.workflow.action.user,model_document_workflow_action,base.group_user,1,0,0,0
+access_document_workflow_action_manager,document.workflow.action.manager,model_document_workflow_action,base.group_system,1,1,1,1
+access_document_workflow_action_api,document.workflow.action.api,model_document_workflow_action,base.group_system,1,1,0,0
+access_workflow_analytics_user,workflow.analytics.user,model_workflow_analytics,base.group_user,1,0,0,0
+access_workflow_analytics_manager,workflow.analytics.manager,model_workflow_analytics,base.group_system,1,1,1,1
+access_workflow_config_user,workflow.config.user,model_workflow_config,base.group_user,1,0,0,0
+access_workflow_config_manager,workflow.config.manager,model_workflow_config,base.group_system,1,1,1,1
+access_workflow_archive_user,workflow.archive.user,model_workflow_archive,base.group_user,1,0,0,0
+access_workflow_archive_manager,workflow.archive.manager,model_workflow_archive,base.group_system,1,1,1,1
+

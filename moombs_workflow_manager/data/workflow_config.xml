@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Default Workflow Configuration -->
+        <record id="config_sale_order" model="workflow.config">
+            <field name="document_type">sale_order</field>
+            <field name="logging_enabled" eval="True"/>
+            <field name="retention_months">12</field>
+            <field name="log_state_changes" eval="True"/>
+            <field name="log_creation" eval="True"/>
+            <field name="log_api_events" eval="True"/>
+        </record>
+        
+        <record id="config_purchase_order" model="workflow.config">
+            <field name="document_type">purchase_order</field>
+            <field name="logging_enabled" eval="True"/>
+            <field name="retention_months">12</field>
+            <field name="log_state_changes" eval="True"/>
+            <field name="log_creation" eval="True"/>
+            <field name="log_api_events" eval="True"/>
+        </record>
+        
+        <record id="config_picking" model="workflow.config">
+            <field name="document_type">picking</field>
+            <field name="logging_enabled" eval="True"/>
+            <field name="retention_months">12</field>
+            <field name="log_state_changes" eval="True"/>
+            <field name="log_creation" eval="True"/>
+            <field name="log_api_events" eval="True"/>
+        </record>
+        
+        <record id="config_pos_order" model="workflow.config">
+            <field name="document_type">pos_order</field>
+            <field name="logging_enabled" eval="True"/>
+            <field name="retention_months">12</field>
+            <field name="log_state_changes" eval="True"/>
+            <field name="log_creation" eval="True"/>
+            <field name="log_api_events" eval="True"/>
+        </record>
+        
+        <record id="config_baby_list_item" model="workflow.config">
+            <field name="document_type">baby_list_item</field>
+            <field name="logging_enabled" eval="True"/>
+            <field name="retention_months">12</field>
+            <field name="log_state_changes" eval="True"/>
+            <field name="log_creation" eval="True"/>
+            <field name="log_api_events" eval="True"/>
+        </record>
+    </data>
+</odoo>

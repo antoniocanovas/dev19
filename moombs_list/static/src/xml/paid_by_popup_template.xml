@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="moombs_list.PaidByPopup">
+        <div class="paid-by-popup" t-on-keydown="onKeydown">
+            <div>
+                <!-- Header -->
+                <header class="popup-header">
+                    <h3 class="popup-title">Who is paying for this top-up?</h3>
+                </header>
+
+                <!-- Body -->
+                <main class="popup-body">
+
+                    <!-- Beneficiary info -->
+                    <div class="beneficiary-info">
+                        <span class="label">Wallet owner: </span>
+                        <span class="beneficiary-name" t-esc="props.beneficiary.name"/>
+                        <span t-if="props.beneficiary.vat" class="beneficiary-vat">
+                            (<t t-esc="props.beneficiary.vat"/>)
+                        </span>
+                    </div>
+
+                    <!-- Note field -->
+                    <div class="note-container">
+                        <textarea
+                            t-ref="noteInput"
+                            class="note-input"
+                            placeholder="Add a note (optional)"
+                            t-att-value="state.note"
+                            t-on-input="onNoteInput"
+                        />
+                    </div>
+
+                    <!-- Search input -->
+                    <div class="search-container">
+                        <input
+                            type="text"
+                            t-ref="searchInput"
+                            class="search-input"
+                            placeholder="Search by name, phone, email, or VAT..."
+                            t-att-value="state.searchTerm"
+                            t-on-input="onSearchInput"
+                        />
+                    </div>
+
+                    <!-- Partner list -->
+                    <div class="partner-list">
+                        <t t-foreach="displayedPartners" t-as="partner" t-key="partner.id">
+                            <div
+                                class="partner-row"
+                                t-att-class="{ 'bg-primary': isSelected(partner) }"
+                                t-on-click="() => this.selectPartner(partner)"
+                            >
+                                <div class="partner-name" t-esc="partner.name"/>
+                                <div class="partner-details">
+                                    <span t-if="partner.vat" class="partner-vat" t-esc="partner.vat"/>
+                                    <span t-if="partner.phone" class="partner-phone" t-esc="partner.phone"/>
+                                </div>
+                            </div>
+                        </t>
+
+                        <t t-if="noResults">
+                            <div class="no-results">
+                                No customers found. Try a different search.
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- Selected partner card -->
+                    <t t-if="state.selectedPartner">
+                        <div class="selected-partner-card">
+                            <div class="card-header">✓ Selected payer:</div>
+                            <div class="card-name" t-esc="state.selectedPartner.name"/>
+                            <div t-if="state.selectedPartner.vat" class="card-vat">
+                                NIF/CIF: <t t-esc="state.selectedPartner.vat"/>
+                            </div>
+                            <div t-if="state.selectedPartner.street" class="card-address">
+                                <t t-esc="state.selectedPartner.street"/>
+                            </div>
+                        </div>
+                    </t>
+
+                </main>
+
+                <!-- Footer -->
+                <footer class="popup-footer">
+                    <button
+                        class="btn btn-secondary"
+                        t-on-click="skipSelection"
+                    >
+                        Same as wallet owner
+                    </button>
+                    <button
+                        class="btn btn-primary"
+                        t-att-disabled="!state.selectedPartner"
+                        t-on-click="confirm"
+                    >
+                        Confirm
+                    </button>
+                </footer>
+            </div>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ========================================== -->
+    <!-- FORM VIEW: baby.list -->
+    <!-- ========================================== -->
+    <record id="baby_list_form_view" model="ir.ui.view">
+        <field name="name">baby.list.form</field>
+        <field name="model">baby.list</field>
+        <field name="arch" type="xml">
+            <form string="Gift List">
+
+                <!-- HEADER: Action Buttons and Status Bar -->
+                <header>
+                    <button name="action_activate"
+                            string="Activate"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'inactive'"/>
+                    <button name="action_deactivate"
+                            string="Deactivate"
+                            type="object"
+                            invisible="state != 'active'"/>
+                    <button name="action_complete"
+                            string="Complete"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state in ['completed', 'inactive']"/>
+
+                    <!-- Status Bar -->
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="draft,active,inactive,completed"/>
+                </header>
+
+                <sheet>
+                    <!-- SMART BUTTONS BOX -->
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Wallet Button -->
+                        <button name="action_view_wallet"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-credit-card">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value">
+                                    <field name="wallet_balance" widget="monetary"/>
+                                </span>
+                                <span class="o_stat_text">Wallet</span>
+                            </div>
+                        </button>
+
+                        <!-- Family Button -->
+                        <button name="action_view_family"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-users">
+                            <field name="family_count" widget="statinfo" string="Family"/>
+                        </button>
+
+                        <!-- Deliveries Button -->
+                        <button name="action_view_deliveries"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-truck"
+                                invisible="delivery_count == 0">
+                            <field name="delivery_count" widget="statinfo" string="Delivered"/>
+                        </button>
+                    </div>
+
+                    <!-- TITLE -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1" class="oe_inline"/>
+                            <span class="mx-2">-</span>
+                            <field name="partner_id" readonly="1" class="oe_inline"/>
+                        </h1>
+                    </div>
+
+                    <!-- NOTEBOOK WITH TABS -->
+                    <notebook>
+                        <!-- WISHLIST PAGE: Configuration and Summary -->
+                        <page string="Wishlist" name="wishlist">
+                            <!-- MAIN FIELDS IN GROUPS -->
+                            <group>
+                                <group string="Beneficiaries">
+                                    <field name="partner_id"
+                                           options="{'no_create': False, 'no_open': True}"
+                                           readonly="state in ['completed']"/>
+                                    <field name="partner2_id"
+                                           options="{'no_create': True, 'no_open': True}"
+                                           readonly="state in ['completed']"/>
+                                    <field name="expected_date"
+                                           readonly="state in ['completed']"/>
+                                    <field name="list_type"
+                                           readonly="state in ['completed']"/>
+                                </group>
+                                <group string="Management">
+                                    <field name="advisor_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="store_id"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="wallet_id"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="company_id"
+                                           groups="base.group_multi_company"
+                                           options="{'no_create': True}"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                            </group>
+
+                            <!-- PROGRESS BAR (for birth type only) - HIDDEN IN WISHLIST TAB -->
+                            <group string="Pregnancy Progress" invisible="1">
+                                <field name="weeks_progress"/>
+                                <field name="weeks_total"/>
+                                <field name="days_remaining"/>
+                                <field name="is_overdue" invisible="1"/>
+                            </group>
+
+                            <!-- WALLET SUMMARY - HIDDEN IN WISHLIST TAB -->
+                            <group string="Wallet Summary" invisible="1">
+                                <group>
+                                    <field name="wallet_balance" widget="monetary"/>
+                                    <field name="wallet_committed" widget="monetary"/>
+                                    <field name="wallet_available" widget="monetary"/>
+                                </group>
+                                <group>
+                                    <field name="amount_total" widget="monetary"/>
+                                    <field name="amount_ordered" widget="monetary"/>
+                                    <field name="amount_paid" widget="monetary"/>
+                                    <field name="amount_delivered" widget="monetary"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- ITEMS PAGE: Gift items with payment tracking -->
+                        <page string="Products" name="items">
+                            <field name="item_ids">
+                                <list string="Items" editable="bottom"
+                                      decoration-muted="state == 'cancelled'"
+                                      decoration-success="state == 'delivered'"
+                                      decoration-warning="state in ['po_draft', 'po_sent']"
+                                      decoration-info="state in ['ordered', 'reserved', 'pending']">
+                                    <!-- Product image 32px (LST-011) -->
+                                    <field name="product_image" widget="image" options="{'size': [32, 32]}" readonly="1"/>
+                                    <!-- Product with link (editable for new records, readonly for existing per BR-008) -->
+                                    <field name="product_id" readonly="id"/>
+                                    <!-- Product code -->
+                                    <field name="product_code" optional="hide" readonly="1"/>
+                                    <!-- Price fields (readonly per BR-008) -->
+                                    <field name="price_unit" widget="monetary" readonly="id"/>
+                                    <field name="discount" readonly="id" optional="hide"/>
+                                    <field name="price_final" widget="monetary" sum="Total" readonly="1"/>
+
+                                    <!-- State (Epic 5: computed from documents) -->
+                                    <field name="state" widget="badge"
+                                           decoration-muted="state == 'cancelled'"
+                                           decoration-info="state in ['wished', 'ordered']"
+                                           decoration-warning="state in ['po_draft', 'po_sent', 'received']"
+                                           decoration-primary="state in ['reserved', 'pending']"
+                                           decoration-success="state in ['paid', 'out_created', 'delivered']"/>
+
+                                    <!-- ═════ DOCUMENT LINK COLUMNS (Epic 5) ═════ -->
+                                    <field name="sale_order_id" string="SO" optional="hide"/>
+                                    <field name="purchase_order_id" string="PO" optional="hide"/>
+                                    <field name="picking_pending_id" string="INT" optional="hide"/>
+                                    <field name="pos_downpayment_id" string="25%" optional="show"/>
+                                    <field name="pos_order_id" string="100%" optional="show"/>
+                                    <field name="picking_out_id" string="OUT" optional="hide"/>
+                                    <field name="picking_in_id" string="Receipt" optional="hide"/>
+
+                                    <!-- Paid By -->
+                                    <field name="paid_by_id" string="Paid By" optional="show"/>
+
+                                    <!-- Cancel Info -->
+                                    <field name="date_cancelled" string="CAN-C" optional="hide"/>
+                                    <field name="cancel_reason" optional="hide"/>
+
+                                    <!-- Action buttons -->
+                                    <button name="action_view_product" type="object"
+                                            icon="fa-external-link" title="View Product"/>
+                                    <button name="action_view_sale_order" type="object"
+                                            icon="fa-file-text-o" title="View SO"
+                                            invisible="not sale_order_id"/>
+                                    <button name="action_view_purchase_order" type="object"
+                                            icon="fa-shopping-cart" title="View PO"
+                                            invisible="not purchase_order_id"/>
+                                    <button name="action_create_delivery" type="object"
+                                            icon="fa-truck" title="Create Delivery"
+                                            invisible="state != 'paid'"/>
+                                    <button name="action_cancel" type="object"
+                                            icon="fa-ban" title="Cancel"
+                                            invisible="state in ['paid', 'out_created', 'delivered', 'cancelled']"/>
+
+                                    <!-- Currency (hidden) -->
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- TRANSACTIONS PAGE: All item details with full visibility -->
+                        <page string="Transactions" name="transactions">
+                            <field name="item_ids">
+                                <list string="Transactions" editable="bottom"
+                                      decoration-muted="state == 'cancelled'"
+                                      decoration-success="state == 'delivered'"
+                                      decoration-warning="state in ['po_draft', 'po_sent']"
+                                      decoration-info="state in ['ordered', 'reserved', 'pending']">
+                                    <!-- Product image 32px (LST-011) -->
+                                    <field name="product_image" widget="image" options="{'size': [32, 32]}" readonly="1"/>
+                                    <!-- Product with link (editable for new records, readonly for existing per BR-008) -->
+                                    <field name="product_id" readonly="id"/>
+                                    <!-- Product code -->
+                                    <field name="product_code" readonly="1"/>
+                                    <!-- Price fields (readonly per BR-008) -->
+                                    <field name="price_unit" widget="monetary" readonly="id"/>
+                                    <field name="discount" readonly="id"/>
+                                    <field name="price_final" widget="monetary" sum="Total" readonly="1"/>
+
+                                    <!-- State (Epic 5: computed from documents) -->
+                                    <field name="state" widget="badge"
+                                           decoration-muted="state == 'cancelled'"
+                                           decoration-info="state in ['wished', 'ordered']"
+                                           decoration-warning="state in ['po_draft', 'po_sent', 'received']"
+                                           decoration-primary="state in ['reserved', 'pending']"
+                                           decoration-success="state in ['paid', 'out_created', 'delivered']"/>
+
+                                    <!-- ═════ DOCUMENT LINK COLUMNS (Epic 5) ═════ -->
+                                    <field name="sale_order_id" string="SO"/>
+                                    <field name="purchase_order_id" string="PO"/>
+                                    <field name="picking_pending_id" string="INT"/>
+                                    <field name="pos_downpayment_id" string="25%"/>
+                                    <field name="pos_order_id" string="100%"/>
+                                    <field name="picking_out_id" string="OUT"/>
+                                    <field name="picking_in_id" string="Receipt"/>
+
+                                    <!-- Paid By -->
+                                    <field name="paid_by_id" string="Paid By"/>
+
+                                    <!-- Cancel Info -->
+                                    <field name="date_cancelled" string="CAN-C"/>
+                                    <field name="cancel_reason"/>
+
+                                    <!-- Action buttons -->
+                                    <button name="action_view_product" type="object"
+                                            icon="fa-external-link" title="View Product"/>
+                                    <button name="action_view_sale_order" type="object"
+                                            icon="fa-file-text-o" title="View SO"
+                                            invisible="not sale_order_id"/>
+                                    <button name="action_view_purchase_order" type="object"
+                                            icon="fa-shopping-cart" title="View PO"
+                                            invisible="not purchase_order_id"/>
+                                    <button name="action_create_delivery" type="object"
+                                            icon="fa-truck" title="Create Delivery"
+                                            invisible="state != 'paid'"/>
+                                    <button name="action_cancel" type="object"
+                                            icon="fa-ban" title="Cancel"
+                                            invisible="state in ['paid', 'out_created', 'delivered', 'cancelled']"/>
+
+                                    <!-- Currency (hidden) -->
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+
+                </sheet>
+
+                <!-- CHATTER (messages/activity) -->
+                <chatter/>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- LIST VIEW: baby.list -->
+    <!-- ========================================== -->
+    <record id="baby_list_tree_view" model="ir.ui.view">
+        <field name="name">baby.list.tree</field>
+        <field name="model">baby.list</field>
+        <field name="arch" type="xml">
+            <list string="Gift Lists"
+                  decoration-muted="state == 'inactive'"
+                  decoration-success="state == 'active'"
+                  decoration-info="state == 'completed'">
+                <field name="name"/>
+                <field name="partner_id" string="Beneficiary 1"/>
+                <field name="partner2_id" string="Beneficiary 2"/>
+                <field name="list_type"/>
+                <field name="expected_date"/>
+                <field name="advisor_id" optional="hide"/>
+                <field name="item_count"/>
+                <field name="wallet_balance" widget="monetary" optional="show"/>
+                <field name="amount_total" widget="monetary" sum="Total"/>
+                <field name="amount_ordered" widget="monetary" sum="Ordered" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-info="state == 'inactive'"
+                       decoration-success="state == 'active'"
+                       decoration-warning="state == 'completed'"/>
+                <field name="currency_id" invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- SEARCH VIEW: baby.list -->
+    <!-- ========================================== -->
+    <record id="baby_list_search_view" model="ir.ui.view">
+        <field name="name">baby.list.search</field>
+        <field name="model">baby.list</field>
+        <field name="arch" type="xml">
+            <search string="Search Gift Lists">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="advisor_id"/>
+                <filter name="filter_active" string="Active" domain="[('state', '=', 'active')]"/>
+                <filter name="filter_inactive" string="Inactive" domain="[('state', '=', 'inactive')]"/>
+                <filter name="filter_completed" string="Completed" domain="[('state', '=', 'completed')]"/>
+                <filter name="filter_birth" string="Birth" domain="[('list_type', '=', 'birth')]"/>
+                <filter name="filter_wedding" string="Wedding" domain="[('list_type', '=', 'wedding')]"/>
+                <filter name="filter_other" string="Other" domain="[('list_type', '=', 'other')]"/>
+                <filter name="filter_my_lists" string="My Lists" domain="[('advisor_id', '=', uid)]"/>
+                <filter name="filter_overdue" string="Overdue" domain="[('is_overdue', '=', True)]"/>
+                <group>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_type" string="Type" context="{'group_by': 'list_type'}"/>
+                    <filter name="group_advisor" string="Advisor" context="{'group_by': 'advisor_id'}"/>
+                    <filter name="group_month" string="Expected Month" context="{'group_by': 'expected_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- INFO POPUP VIEW (LST-002) -->
+    <!-- ========================================== -->
+    <record id="baby_list_info_popup_view" model="ir.ui.view">
+        <field name="name">baby.list.info.popup</field>
+        <field name="model">baby.list</field>
+        <field name="arch" type="xml">
+            <form string="List Information">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group string="Beneficiaries">
+                            <field name="partner_id" readonly="1"/>
+                            <field name="partner2_id" readonly="1"/>
+                            <field name="expected_date" readonly="1"/>
+                            <field name="list_type" readonly="1"/>
+                        </group>
+                        <group string="Status">
+                            <field name="state" readonly="1"/>
+                            <field name="item_count" readonly="1"/>
+                            <field name="wallet_balance" widget="monetary" readonly="1"/>
+                            <field name="amount_total" widget="monetary" readonly="1"/>
+                        </group>
+                    </group>
+                    <group invisible="list_type != 'birth'">
+                        <group string="Pregnancy Progress">
+                            <field name="weeks_progress" readonly="1"/>
+                            <field name="days_remaining" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================================== -->
+    <!-- ACTION: baby.list -->
+    <!-- ========================================== -->
+    <record id="baby_list_action" model="ir.actions.act_window">
+        <field name="name">Gift Lists</field>
+        <field name="res_model">baby.list</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="baby_list_search_view"/>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first gift list
+            </p>
+            <p>
+                Click the <b>New</b> button to create a gift list for a beneficiary.
+                The system will automatically create an eWallet for contributions.
+            </p>
+        </field>
+    </record>
+
+</odoo>

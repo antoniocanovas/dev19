@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Archive Wizard Form -->
+    <record id="view_archive_wizard_form" model="ir.ui.view">
+        <field name="name">workflow.archive.wizard.form</field>
+        <field name="model">workflow.archive.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="document_type"/>
+                            <field name="retention_months"/>
+                        </group>
+                        <group>
+                            <field name="archive_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="action_archive" string="Archive Actions" type="object" 
+                                class="btn-primary" invisible="archive_count == 0"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Archive Wizard Action -->
+    <record id="action_archive_wizard" model="ir.actions.act_window">
+        <field name="name">Archive Workflow Actions</field>
+        <field name="res_model">workflow.archive.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

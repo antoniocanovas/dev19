@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Template override removed - using JavaScript DOM manipulation instead -->
+    <!-- The button label is updated dynamically via payment_screen_extension.js -->
+</templates>
+

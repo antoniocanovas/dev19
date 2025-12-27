@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_quotation_tree_moombs" model="ir.ui.view">
+        <field name="name">sale.order.tree.moombs</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_quotation_tree"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="name" position="replace"/>
+            <!-- Add our custom fields after partner_id -->
+            <field name="partner_id" position="after">
+                <field name="moombs_product_image" widget="image" options="{'size': [90, 90]}" optional="show" string="Image"/>
+                <field name="moombs_product_summary" optional="show" string="Summary"/>
+                <field name="name" optional="show" string="SO Nº"/>
+                <field name="amount_undiscounted" string="Amount" widget="monetary" optional="show"/>
+                <field name="amount_discount" string="Discounts" widget="monetary" optional="show"/>
+            </field>
+            
+            <!-- Hide unused columns -->
+            <field name="create_date" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </field>
+            <field name="user_id" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </field>
+            <field name="activity_ids" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </field>
+            <field name="company_id" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </field>
+            <field name="amount_untaxed" position="attributes">
+                <attribute name="optional">hide</attribute>
+            </field>
+        </field>
+    </record>
+
+</odoo>

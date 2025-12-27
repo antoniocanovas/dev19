@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- TODO: Uncomment when moombs_list module is installed -->
+    <!-- Customer Portal: Gift List Item Timeline -->
+    <!-- Note: This view will only work if moombs_list module is installed -->
+    <!-- The view will fail gracefully if moombs_list is not installed -->
+    <!--
+    <record id="portal_view_baby_list_item_timeline" model="ir.ui.view">
+        <field name="name">portal.baby.list.item.timeline</field>
+        <field name="model">baby.list.item</field>
+        <field name="inherit_id" ref="moombs_list.view_baby_list_item_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Action Timeline" groups="base.group_portal">
+                    <field name="action_timeline_ids" widget="timeline" readonly="1">
+                        <list>
+                            <field name="date_logged"/>
+                            <field name="action_type"/>
+                            <field name="note"/>
+                            <field name="document_ref"/>
+                            <field name="action_source"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+    -->
+</odoo>
