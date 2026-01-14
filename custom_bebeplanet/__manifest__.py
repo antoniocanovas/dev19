@@ -12,7 +12,8 @@
         'purchase',
     ],
     'data': [
-        'data/ir_actions_server_data.xml',
+        # Se quita porque Khalil ha simplificado o lo hará en su desarrollo
+        #'data/ir_actions_server_data.xml',
         'views/stock_picking_view.xml',
     ],
     'installable': True,
