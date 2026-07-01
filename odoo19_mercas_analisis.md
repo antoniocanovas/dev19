@@ -98,7 +98,7 @@ La combinación óptima son **botones visibles que muestran su tecla de función
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│  [F1 Ventas]  [F2 Compras]  [F3 Facturas]  [F4 Pagos]  [F5 Nuevo] │
+│  [ Ventas]  [F2 Compras]  [F3 Facturas]  [F4 Pagos]  [F5 Nuevo] │
 ├──────────────────────────────────────────────────────────────────┤
 │                                                                  │
 │   Vista lista estándar del modo activo                           │

@@ -6,18 +6,4 @@
         <field name="tag">mercas_unified_screen</field>
     </record>
 
-    <menuitem
-        id="menu_mercas_root"
-        name="Mercas"
-        sequence="1"
-    />
-
-    <menuitem
-        id="menu_mercas_gestion"
-        name="Gestión"
-        parent="menu_mercas_root"
-        action="action_mercas_unified_screen"
-        sequence="1"
-    />
-
 </odoo>

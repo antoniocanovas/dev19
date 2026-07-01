@@ -2,31 +2,24 @@
 <templates xml:space="preserve">
 
     <t t-name="mercas_keys.MercasTopBar">
-        <div class="o_mercas_topbar_systray d-flex align-items-center gap-1 px-2">
-
-            <t t-foreach="modes" t-as="mode" t-key="mode.fkey">
-                <button
-                    class="btn btn-sm btn-outline-secondary o_mercas_nav_btn"
-                    t-on-click="() => this.openMode(mode)"
-                    t-att-title="mode.fkey + ' · ' + mode.label"
-                >
-                    <span class="o_mercas_nav_fkey"><t t-esc="mode.fkey"/></span>
-                    <span class="o_mercas_nav_label"><t t-esc="mode.label"/></span>
-                </button>
-            </t>
-
-            <div class="o_mercas_separator"/>
-
-            <button
-                class="btn btn-sm btn-outline-success o_mercas_nav_btn"
-                t-on-click="() => this.addLine()"
-                title="Ins · Nueva línea de producto"
-            >
-                <span class="o_mercas_nav_fkey">Ins</span>
-                <span class="o_mercas_nav_label">Nueva línea</span>
+        <Dropdown>
+            <button class="o_mercas_topbar_icon btn" title="Mercas">
+                <i class="fa fa-keyboard-o fa-lg"/>
             </button>
-
-        </div>
+            <t t-set-slot="content">
+                <t t-foreach="modes" t-as="mode" t-key="mode.fkey">
+                    <DropdownItem onSelected="() => this.openMode(mode)">
+                        <span class="o_mercas_item_fkey"><t t-esc="mode.fkey"/></span>
+                        <span class="o_mercas_item_label"><t t-esc="mode.label"/></span>
+                    </DropdownItem>
+                </t>
+                <div role="separator" class="dropdown-divider"/>
+                <DropdownItem onSelected="() => this.addLine()">
+                    <span class="o_mercas_item_fkey">Ins</span>
+                    <span class="o_mercas_item_label">Nueva línea</span>
+                </DropdownItem>
+            </t>
+        </Dropdown>
     </t>
 
     <t t-name="mercas_keys.MercasUnifiedScreen">
