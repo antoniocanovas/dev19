@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_sale_order_form_mercas" model="ir.ui.view">
+        <field name="name">sale.order.form.mercas</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Botón Sold & Sent junto a Confirmar -->
+            <button name="action_confirm" position="after">
+                <button name="button_sold_and_sent"
+                        string="Sold &amp; Sent"
+                        type="object"
+                        class="btn-primary"
+                        data-hotkey="s"
+                        invisible="state not in ('draft', 'sent')"/>
+            </button>
+
+            <!-- Botón Devolución cajas (visible en pedidos confirmados) -->
+            <button name="button_sold_and_sent" position="after">
+                <button name="action_open_box_return"
+                        string="Devolución cajas"
+                        type="object"
+                        class="btn-secondary"
+                        data-hotkey="d"
+                        invisible="state not in ('sale', 'done')"/>
+            </button>
+
+            <!-- Columnas Cajas y Caja en líneas de pedido -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_qty']"
+                   position="after">
+                <field name="box_qty"
+                       invisible="display_type != False or box_sale_line_id != False"
+                       optional="show"/>
+                <field name="box_product_id"
+                       invisible="display_type != False or box_sale_line_id != False"
+                       optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

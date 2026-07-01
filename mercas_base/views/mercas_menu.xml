@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <menuitem
+        id="menu_mercas_root"
+        name="Mercas"
+        sequence="1"
+        web_icon="mercas_base,static/description/icon.svg"
+    />
+
+    <menuitem
+        id="menu_mercas_ventas"
+        name="Ventas"
+        parent="menu_mercas_root"
+        action="sale.action_quotations_with_onboarding"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_mercas_compras"
+        name="Compras"
+        parent="menu_mercas_root"
+        action="purchase.purchase_rfq"
+        sequence="20"
+    />
+
+    <menuitem
+        id="menu_mercas_productos"
+        name="Productos"
+        parent="menu_mercas_root"
+        action="product.product_template_action_all"
+        sequence="30"
+    />
+
+    <menuitem
+        id="menu_mercas_contactos"
+        name="Contactos"
+        parent="menu_mercas_root"
+        action="contacts.action_contacts"
+        sequence="40"
+    />
+
+    <menuitem
+        id="menu_mercas_fclientes"
+        name="FClientes"
+        parent="menu_mercas_root"
+        action="account.action_move_out_invoice_type"
+        sequence="50"
+    />
+
+    <menuitem
+        id="menu_mercas_fproveedores"
+        name="FProveedores"
+        parent="menu_mercas_root"
+        action="account.action_move_in_invoice_type"
+        sequence="60"
+    />
+
+    <menuitem
+        id="menu_mercas_lotes"
+        name="Lotes"
+        parent="menu_mercas_root"
+        action="mercas_base.action_mercas_lotes"
+        sequence="75"
+    />
+
+    <record id="action_mercas_box_returns" model="ir.actions.server">
+        <field name="name">Cajas</field>
+        <field name="model_id" ref="purchase.model_purchase_order"/>
+        <field name="state">code</field>
+        <field name="code">action = env["purchase.order"].action_mercas_box_returns_menu()</field>
+    </record>
+
+    <menuitem
+        id="menu_mercas_cajas"
+        name="Cajas"
+        parent="menu_mercas_root"
+        action="action_mercas_box_returns"
+        sequence="70"
+    />
+
+</odoo>
