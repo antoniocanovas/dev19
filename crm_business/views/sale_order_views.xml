@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_sales_order_filter_crm_business" model="ir.ui.view">
+        <field name="name">sale.order.list.select.crm.business</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <field name="team_id" position="after">
+                <field name="crm_business_id"/>
+                <field name="presale_user_id"/>
+                <field name="controller_user_id"/>
+                <field name="hr_department_id"/>
+            </field>
+            <filter name="salesperson" position="after">
+                <filter string="Business Area" name="group_by_crm_business" context="{'group_by': 'crm_business_id'}"/>
+                <filter string="Preventa" name="group_by_presale_user" context="{'group_by': 'presale_user_id'}"/>
+                <filter string="Validador" name="group_by_controller_user" context="{'group_by': 'controller_user_id'}"/>
+                <filter string="Department" name="group_by_hr_department" context="{'group_by': 'hr_department_id'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="sale_order_view_form_crm_business" model="ir.ui.view">
+        <field name="name">sale.order.form.crm.business</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="crm_business_id" readonly="opportunity_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

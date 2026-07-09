@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_crm_business_user,crm.business.user,model_crm_business,base.group_user,1,0,0,0
+access_crm_business_manager,crm.business.manager,model_crm_business,sales_team.group_sale_manager,1,1,1,1

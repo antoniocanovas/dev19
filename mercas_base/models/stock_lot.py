@@ -109,6 +109,26 @@ class StockLot(models.Model):
         digits=(16, 2),
     )
 
+    @api.depends("name", "product_qty", "quant_ids.reserved_quantity")
+    @api.depends_context("lot_display_with_qty")
+    def _compute_display_name(self):
+        if not self.env.context.get("lot_display_with_qty"):
+            return super()._compute_display_name()
+        for lot in self:
+            on_hand = lot.product_qty
+            available = on_hand - sum(lot.quant_ids.mapped("reserved_quantity"))
+            lot.display_name = "%s (%s/%s)" % (
+                lot.name,
+                self._format_qty(on_hand),
+                self._format_qty(available),
+            )
+
+    @api.model
+    def _format_qty(self, qty):
+        if qty == int(qty):
+            return str(int(qty))
+        return "%.2f" % qty
+
     @api.depends("product_qty")
     def _compute_completed(self):
         for lot in self:

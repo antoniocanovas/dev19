@@ -1,0 +1,26 @@
+{
+    "name": "CRM Business",
+    "version": "19.0.1.0.0",
+    "summary": "Business lines for CRM: stage restrictions, responsibles and quotation reporting",
+    "author": "Antonio Cánovas",
+    "license": "LGPL-3",
+    "category": "Sales/CRM",
+    "depends": [
+        "crm",
+        "sale_crm",
+        "hr",
+        "purchase",
+        "sale_margin",
+    ],
+    "data": [
+        "security/ir.model.access.csv",
+        "security/crm_business_security.xml",
+        "views/crm_business_views.xml",
+        "views/crm_lead_views.xml",
+        "views/crm_stage_views.xml",
+        "views/sale_order_views.xml",
+    ],
+    "installable": True,
+    "application": False,
+    "auto_install": False,
+}

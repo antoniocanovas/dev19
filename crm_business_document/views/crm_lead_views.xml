@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_lead_view_form_document" model="ir.ui.view">
+        <field name="name">crm.lead.form.crm.business.document</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm_business.crm_lead_view_form_crm_business"/>
+        <field name="arch" type="xml">
+            <field name="controller_user_id" position="after">
+                <field name="business_document_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

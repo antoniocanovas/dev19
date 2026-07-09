@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_business_view_list" model="ir.ui.view">
+        <field name="name">crm.business.list</field>
+        <field name="model">crm.business</field>
+        <field name="arch" type="xml">
+            <list string="Business Areas">
+                <field name="name"/>
+                <field name="hr_department_id"/>
+                <field name="presale_user_id" widget="many2one_avatar_user"/>
+                <field name="controller_user_id" widget="many2one_avatar_user"/>
+                <field name="annual_target" widget="monetary"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="crm_business_view_form" model="ir.ui.view">
+        <field name="name">crm.business.form</field>
+        <field name="model">crm.business</field>
+        <field name="arch" type="xml">
+            <form string="Business Area">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Pyme Sistemas"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="hr_department_id"/>
+                            <field name="manager_user_id"/>
+                            <field name="presale_user_id"/>
+                            <field name="controller_user_id"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="annual_target" widget="monetary"/>
+                            <field name="crm_business_stage_ids" widget="many2many_tags"/>
+                            <field name="business_procedure" widget="url"/>
+                        </group>
+                    </group>
+                    <label for="note"/>
+                    <field name="note" widget="html"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="crm_business_view_kanban" model="ir.ui.view">
+        <field name="name">crm.business.kanban</field>
+        <field name="model">crm.business</field>
+        <field name="arch" type="xml">
+            <kanban class="o_crm_business_kanban" sample="1">
+                <templates>
+                    <t t-name="card" class="flex-column justify-content-between">
+                        <div class="ms-2 me-3">
+                            <field name="name" class="fw-bold fs-2"/>
+                            <div class="text-muted">
+                                <field name="hr_department_id"/>
+                            </div>
+                        </div>
+                        <div class="ms-2 me-3 mt-2">
+                            <field name="currency_id" invisible="1"/>
+                            <span class="text-muted">Objetivo anual: </span>
+                            <field name="annual_target" widget="monetary"/>
+                        </div>
+                        <div class="ms-2 me-3 mt-2" invisible="not crm_business_stage_ids">
+                            <field name="crm_business_stage_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        </div>
+                        <div class="crm_business_kanban_bottom d-flex align-items-center mt-5">
+                            <div class="d-flex align-items-center me-3" invisible="not presale_user_id">
+                                <field name="presale_user_id" widget="many2one_avatar_user"/>
+                                <span class="text-muted ms-1">Preventa</span>
+                            </div>
+                            <div class="d-flex align-items-center ms-auto" invisible="not controller_user_id">
+                                <field name="controller_user_id" widget="many2one_avatar_user"/>
+                                <span class="text-muted ms-1">Validador</span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="crm_business_view_search" model="ir.ui.view">
+        <field name="name">crm.business.search</field>
+        <field name="model">crm.business</field>
+        <field name="arch" type="xml">
+            <search string="Business Areas">
+                <field name="name" string="Business Area"/>
+                <field name="hr_department_id"/>
+                <field name="manager_user_id"/>
+                <field name="presale_user_id"/>
+                <field name="controller_user_id"/>
+                <filter string="My Business Areas" name="my_business_areas" domain="[('presale_user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="No Preventa" name="no_presale_user" domain="[('presale_user_id', '=', False)]"/>
+                <filter string="No Validador" name="no_controller_user" domain="[('controller_user_id', '=', False)]"/>
+                <group>
+                    <filter string="Department" name="group_by_hr_department" context="{'group_by': 'hr_department_id'}"/>
+                    <filter string="Manager" name="group_by_manager_user" context="{'group_by': 'manager_user_id'}"/>
+                    <filter string="Preventa" name="group_by_presale_user" context="{'group_by': 'presale_user_id'}"/>
+                    <filter string="Validador" name="group_by_controller_user" context="{'group_by': 'controller_user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="crm_business_action" model="ir.actions.act_window">
+        <field name="name">Business Areas</field>
+        <field name="res_model">crm.business</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="crm_business_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Define a new business area
+            </p><p>
+                Las áreas de negocio agrupan oportunidades por departamento, con sus propias
+                etapas, responsables y objetivo anual.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="crm_business_menu"
+        name="Business Areas"
+        parent="crm.crm_menu_sales"
+        action="crm_business_action"
+        sequence="5"/>
+
+</odoo>

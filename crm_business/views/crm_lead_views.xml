@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Kanban quick create -->
+    <record id="quick_create_opportunity_form_crm_business" model="ir.ui.view">
+        <field name="name">crm.lead.form.quick_create.crm.business</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[hasclass('crm_quick_create_opportunity_form_group')]" position="inside">
+                <div class="d-flex align-items-center" colspan="2">
+                    <i class="fa fa-sitemap" title="Business Area"/>
+                    <field name="crm_business_id" nolabel="1" placeholder="Business Area"
+                        class="o_field_highlight w-100 mb-0" options="{'no_create': True}"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Opportunities pipeline list -->
+    <record id="crm_case_tree_view_oppor_crm_business" model="ir.ui.view">
+        <field name="name">crm.lead.list.opportunity.crm.business</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="crm_business_id" optional="show"/>
+                <field name="presale_user_id" optional="show" widget="many2one_avatar_user"/>
+                <field name="manager_user_id" optional="hide" widget="many2one_avatar_user"/>
+                <field name="controller_user_id" optional="hide" widget="many2one_avatar_user"/>
+                <field name="hr_department_id" optional="hide"/>
+                <field name="crm_business_stage_ids" optional="hide" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Leads list -->
+    <record id="crm_case_tree_view_leads_crm_business" model="ir.ui.view">
+        <field name="name">crm.lead.list.lead.crm.business</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_leads"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="crm_business_id" optional="show"/>
+                <field name="presale_user_id" optional="show" widget="many2one_avatar_user"/>
+                <field name="manager_user_id" optional="hide" widget="many2one_avatar_user"/>
+                <field name="controller_user_id" optional="hide" widget="many2one_avatar_user"/>
+                <field name="hr_department_id" optional="hide"/>
+                <field name="crm_business_stage_ids" optional="hide" widget="many2many_tags"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Opportunities pipeline kanban board -->
+    <record id="crm_case_kanban_view_leads_crm_business" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.lead.crm.business</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="crm_business_id" class="text-muted d-block text-truncate" invisible="not crm_business_id"/>
+            </field>
+            <field name="user_id" position="after">
+                <field name="presale_user_id" widget="many2one_avatar_user" class="ms-2" invisible="not presale_user_id"/>
+                <field name="controller_user_id" widget="many2one_avatar_user" class="ms-2" invisible="not controller_user_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Lead/Opportunity form -->
+    <record id="crm_lead_view_form_crm_business" model="ir.ui.view">
+        <field name="name">crm.lead.form.crm.business</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <!-- Restrict the statusbar to the stages allowed for the opportunity's business line -->
+            <field name="stage_id" position="before">
+                <field name="crm_business_allowed_stage_ids" invisible="1"/>
+            </field>
+            <field name="stage_id" position="attributes">
+                <attribute name="domain">['&amp;', '|', ('team_ids', 'in', team_id), ('team_ids', '=', False), ('id', 'in', crm_business_allowed_stage_ids)]</attribute>
+            </field>
+
+            <!-- All business line fields, in two columns, above the notes memo -->
+            <field name="description" position="before">
+                <group name="crm_business_notes">
+                    <group>
+                        <field name="crm_business_id"/>
+                        <field name="hr_department_id"/>
+                        <field name="manager_user_id"/>
+                    </group>
+                    <group>
+                        <field name="presale_user_id"/>
+                        <field name="controller_user_id"/>
+                        <field name="business_procedure" widget="url"/>
+                    </group>
+                </group>
+            </field>
+        </field>
+    </record>
+
+    <!-- Search: filter/group by business line and department -->
+    <record id="view_crm_case_opportunities_filter_crm_business" model="ir.ui.view">
+        <field name="name">crm.lead.search.opportunity.crm.business</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_opportunities_filter"/>
+        <field name="arch" type="xml">
+            <field name="team_id" position="after">
+                <field name="crm_business_id"/>
+                <field name="hr_department_id"/>
+            </field>
+            <filter name="saleschannel" position="after">
+                <filter string="Business Area" name="group_by_crm_business" context="{'group_by': 'crm_business_id'}"/>
+                <filter string="Department" name="group_by_hr_department" context="{'group_by': 'hr_department_id'}"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>
