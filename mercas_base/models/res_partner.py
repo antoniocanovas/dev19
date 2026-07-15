@@ -5,7 +5,7 @@ class ResPartner(models.Model):
     _inherit = "res.partner"
 
     mercas_margin = fields.Float(
-        string="Mercas margin percent",
+        string="Mercas margin (%)",
         digits=(10, 2),
         help="Partner mercas margin used when not null.",
     )
@@ -30,3 +30,24 @@ class ResPartner(models.Model):
             "usage": "customer",
         })
         partner.with_company(company).property_stock_customer = new_loc
+
+    def mercas_ensure_supplier_location(self, company):
+        """Ensure the commercial partner has a sub-location under the mercas supplier parent.
+
+        Creates one if missing and sets property_stock_supplier on the partner.
+        Safe to call repeatedly; no-op when the location already exists.
+        """
+        self.ensure_one()
+        parent_loc = company.mercas_supplier_location_id
+        if not parent_loc:
+            return
+        partner = self.commercial_partner_id
+        current = partner.with_company(company).property_stock_supplier
+        if current and current.location_id == parent_loc:
+            return
+        new_loc = self.env["stock.location"].create({
+            "name": partner.name,
+            "location_id": parent_loc.id,
+            "usage": "supplier",
+        })
+        partner.with_company(company).property_stock_supplier = new_loc

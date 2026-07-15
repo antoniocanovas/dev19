@@ -27,8 +27,8 @@
                         invisible="state not in ('sale', 'done')"/>
             </button>
 
-            <!-- Columnas Cajas y Caja en líneas de pedido -->
-            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_qty']"
+            <!-- Columnas Cajas y Caja en líneas de pedido (vista lista) -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_id']"
                    position="after">
                 <field name="box_qty"
                        invisible="display_type != False or box_sale_line_id != False"
@@ -38,13 +38,25 @@
                        optional="show"/>
             </xpath>
 
-            <!-- Mostrar stock/disponible junto al nombre del lote en el desplegable -->
+            <!-- Cajas y Caja en el formulario de línea (vista form/kanban móvil) -->
+            <xpath expr="//field[@name='order_line']/form//field[@name='product_uom_id']"
+                   position="after">
+                <field name="box_qty"
+                       invisible="display_type != False or box_sale_line_id != False"/>
+                <field name="box_product_id"
+                       invisible="display_type != False or box_sale_line_id != False"/>
+            </xpath>
+
+            <!-- Mostrar stock/disponible junto al nombre del lote en el desplegable,
+                 y ocultar lotes ya facturados a proveedor (liquidados) -->
             <xpath expr="//field[@name='order_line']/list/field[@name='lot_id']"
                    position="attributes">
+                <attribute name="domain">[('product_id', '=', product_id), ('supplier_invoice_id', '=', False)]</attribute>
                 <attribute name="context">{'default_product_id': product_id, 'lot_display_with_qty': 1}</attribute>
             </xpath>
             <xpath expr="//field[@name='order_line']/form//field[@name='lot_id']"
                    position="attributes">
+                <attribute name="domain">[('product_id', '=', product_id), ('supplier_invoice_id', '=', False)]</attribute>
                 <attribute name="context">{'default_product_id': product_id, 'lot_display_with_qty': 1}</attribute>
             </xpath>
 

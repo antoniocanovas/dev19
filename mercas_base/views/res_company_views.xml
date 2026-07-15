@@ -11,6 +11,7 @@
                     <group>
                         <group string="Almacén">
                             <field name="mercas_customer_location_id"/>
+                            <field name="mercas_supplier_location_id"/>
                         </group>
                         <group string="Compras">
                             <field name="purchase_lot_autocomplete" widget="toggle"/>

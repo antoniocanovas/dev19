@@ -41,19 +41,38 @@
     />
 
     <menuitem
-        id="menu_mercas_fclientes"
-        name="FClientes"
+        id="menu_mercas_facturas"
+        name="Facturas"
         parent="menu_mercas_root"
-        action="account.action_move_out_invoice_type"
         sequence="50"
     />
 
     <menuitem
-        id="menu_mercas_fproveedores"
-        name="FProveedores"
-        parent="menu_mercas_root"
+        id="menu_mercas_facturas_invoices"
+        parent="menu_mercas_facturas"
+        action="account.action_move_out_invoice_type"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_mercas_facturas_credit_notes"
+        parent="menu_mercas_facturas"
+        action="account.action_move_out_refund_type"
+        sequence="20"
+    />
+
+    <menuitem
+        id="menu_mercas_facturas_bills"
+        parent="menu_mercas_facturas"
         action="account.action_move_in_invoice_type"
-        sequence="60"
+        sequence="30"
+    />
+
+    <menuitem
+        id="menu_mercas_facturas_refunds"
+        parent="menu_mercas_facturas"
+        action="account.action_move_in_refund_type"
+        sequence="40"
     />
 
     <menuitem
@@ -64,19 +83,49 @@
         sequence="75"
     />
 
+    <menuitem
+        id="menu_mercas_flotes"
+        name="Liquidaciones"
+        parent="menu_mercas_root"
+        action="mercas_base.action_stock_lot_invoice_wizard"
+        sequence="65"
+    />
+
     <record id="action_mercas_box_returns" model="ir.actions.server">
-        <field name="name">Cajas</field>
+        <field name="name">Devoluciones clientes</field>
         <field name="model_id" ref="purchase.model_purchase_order"/>
         <field name="state">code</field>
         <field name="code">action = env["purchase.order"].action_mercas_box_returns_menu()</field>
+    </record>
+
+    <record id="action_mercas_box_deliveries" model="ir.actions.act_window">
+        <field name="name">Entregas a proveedores</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[("mercas_is_box_delivery", "=", True)]</field>
     </record>
 
     <menuitem
         id="menu_mercas_cajas"
         name="Cajas"
         parent="menu_mercas_root"
-        action="action_mercas_box_returns"
         sequence="70"
+    />
+
+    <menuitem
+        id="menu_mercas_cajas_devoluciones"
+        name="Devoluciones clientes"
+        parent="menu_mercas_cajas"
+        action="action_mercas_box_returns"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_mercas_cajas_entregas"
+        name="Entregas a proveedores"
+        parent="menu_mercas_cajas"
+        action="action_mercas_box_deliveries"
+        sequence="20"
     />
 
 </odoo>

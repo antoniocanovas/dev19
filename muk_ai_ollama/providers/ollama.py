@@ -11,7 +11,7 @@ class OllamaProvider(ProviderBase):
 
     name = 'ollama'
     label = 'Ollama'
-    default_model = 'llama3.2'
+    default_model = 'qwen3:14b'
     default_url = 'http://localhost:11434/v1'
 
     # ----------------------------------------------------------

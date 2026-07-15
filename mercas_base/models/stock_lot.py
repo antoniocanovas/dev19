@@ -1,5 +1,6 @@
 from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools import format_date
 
 
 class StockLot(models.Model):
@@ -109,7 +110,7 @@ class StockLot(models.Model):
         digits=(16, 2),
     )
 
-    @api.depends("name", "product_qty", "quant_ids.reserved_quantity")
+    @api.depends("name", "product_qty", "quant_ids.reserved_quantity", "partner_id", "create_date")
     @api.depends_context("lot_display_with_qty")
     def _compute_display_name(self):
         if not self.env.context.get("lot_display_with_qty"):
@@ -117,11 +118,16 @@ class StockLot(models.Model):
         for lot in self:
             on_hand = lot.product_qty
             available = on_hand - sum(lot.quant_ids.mapped("reserved_quantity"))
-            lot.display_name = "%s (%s/%s)" % (
+            parts = ["%s (%s/%s)" % (
                 lot.name,
                 self._format_qty(on_hand),
                 self._format_qty(available),
-            )
+            )]
+            if lot.partner_id:
+                parts.append(lot.partner_id.name)
+            if lot.create_date:
+                parts.append(format_date(self.env, lot.create_date))
+            lot.display_name = " - ".join(parts)
 
     @api.model
     def _format_qty(self, qty):

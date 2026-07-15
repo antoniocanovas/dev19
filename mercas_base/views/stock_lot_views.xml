@@ -143,6 +143,13 @@
             </xpath>
             <xpath expr="//list/field[last()]" position="after">
                 <field name="completed" optional="show"/>
+                <field name="sale_kg" optional="show" sum="Kg vendidos"/>
+                <field name="purchase_kg" optional="show" sum="Kg comprados"/>
+                <field name="scrap_kg" optional="show" sum="Kg desechados"/>
+                <field name="sale_amount" optional="show" sum="Importe vendido"/>
+                <field name="supplier_amount" optional="hide"/>
+                <field name="supplier_price_kg" optional="hide"/>
+                <field name="supplier_invoice_id" optional="hide"/>
             </xpath>
         </field>
     </record>
@@ -157,6 +164,11 @@
             </xpath>
             <xpath expr="//search" position="inside">
                 <separator/>
+                <filter
+                    string="No facturados"
+                    name="not_invoiced"
+                    domain="[('supplier_invoice_id', '=', False)]"
+                />
                 <filter
                     string="Completados no facturados"
                     name="completed_not_invoiced"
@@ -182,7 +194,7 @@
         <field name="name">Lotes</field>
         <field name="res_model">stock.lot</field>
         <field name="view_mode">list,form</field>
-        <field name="context">{"search_default_completed_not_invoiced": 1}</field>
+        <field name="context">{"search_default_not_invoiced": 1}</field>
     </record>
 
     <record id="action_lot_create_supplier_invoices" model="ir.actions.server">

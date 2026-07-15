@@ -61,6 +61,17 @@
         <field name="currency">USD</field>
     </record>
 
+    <record id="model_qwen3_14b" model="muk_ai.model">
+        <field name="name">Qwen 3 14B</field>
+        <field name="sequence">55</field>
+        <field name="provider_id" ref="provider_ollama"/>
+        <field name="technical_name">qwen3:14b</field>
+        <field name="context_window">40960</field>
+        <field name="input_rate">0.0</field>
+        <field name="output_rate">0.0</field>
+        <field name="currency">USD</field>
+    </record>
+
     <!-- Phi -->
 
     <record id="model_phi4" model="muk_ai.model">
@@ -81,6 +92,17 @@
         <field name="sequence">70</field>
         <field name="provider_id" ref="provider_ollama"/>
         <field name="technical_name">gemma3</field>
+        <field name="context_window">131072</field>
+        <field name="input_rate">0.0</field>
+        <field name="output_rate">0.0</field>
+        <field name="currency">USD</field>
+    </record>
+
+    <record id="model_gemma4" model="muk_ai.model">
+        <field name="name">Gemma 4</field>
+        <field name="sequence">75</field>
+        <field name="provider_id" ref="provider_ollama"/>
+        <field name="technical_name">gemma4:latest</field>
         <field name="context_window">131072</field>
         <field name="input_rate">0.0</field>
         <field name="output_rate">0.0</field>
@@ -114,7 +136,7 @@
     </record>
 
     <record id="provider_ollama" model="muk_ai.provider">
-        <field name="default_model_id" ref="model_llama3_2"/>
+        <field name="default_model_id" ref="model_qwen3_14b"/>
     </record>
 
 </odoo>

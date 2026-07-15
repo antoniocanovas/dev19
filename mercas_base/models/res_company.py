@@ -15,6 +15,17 @@ class ResCompany(models.Model):
             "por cliente al confirmar la venta, si no existe previamente."
         ),
     )
+    mercas_supplier_location_id = fields.Many2one(
+        comodel_name="stock.location",
+        string="Almacén proveedores",
+        default=lambda self: self.env.ref(
+            "stock.stock_location_suppliers", raise_if_not_found=False
+        ),
+        help=(
+            "Ubicación padre sobre la que se creará automáticamente una ubicación "
+            "por proveedor al confirmar la compra, si no existe previamente."
+        ),
+    )
     purchase_lot_autocomplete = fields.Boolean(
         string="Purchase lot auto",
         default=True,

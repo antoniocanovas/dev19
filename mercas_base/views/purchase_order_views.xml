@@ -17,6 +17,16 @@
                         invisible="state not in ('draft', 'sent')"/>
             </button>
 
+            <!-- Botón Entrega cajas (visible en pedidos confirmados) -->
+            <button name="button_purchase_and_receive" position="after">
+                <button name="action_open_box_delivery"
+                        string="Entrega cajas"
+                        type="object"
+                        class="btn-secondary"
+                        data-hotkey="e"
+                        invisible="state != 'purchase'"/>
+            </button>
+
             <!-- Campos auxiliares para dominio y visibilidad de columnas -->
             <xpath expr="//field[@name='order_line']" position="before">
                 <field name="mercas_is_box_return" invisible="1"/>

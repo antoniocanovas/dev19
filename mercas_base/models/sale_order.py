@@ -1,18 +1,86 @@
-from odoo import _, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
 class SaleOrder(models.Model):
     _inherit = "sale.order"
 
-    def action_confirm(self):
+    box_delivery_purchase_id = fields.Many2one(
+        comodel_name="purchase.order",
+        string="Compra origen (entrega cajas)",
+        copy=False,
+        readonly=True,
+    )
+    mercas_is_box_delivery = fields.Boolean(
+        compute="_compute_mercas_is_box_delivery",
+        string="Es entrega de cajas a proveedor",
+    )
+
+    @api.depends("box_delivery_purchase_id")
+    def _compute_mercas_is_box_delivery(self):
         for order in self:
+            order.mercas_is_box_delivery = bool(order.box_delivery_purchase_id)
+
+    def action_confirm(self):
+        regular_orders = self.filtered(lambda o: not o.mercas_is_box_delivery)
+        for order in regular_orders:
             order._mercas_ensure_customer_location()
             order._mercas_prepare_box_lines()
-        return super().action_confirm()
+
+        result = super().action_confirm()
+
+        box_delivery_orders = self.filtered(lambda o: o.mercas_is_box_delivery)
+        if not box_delivery_orders:
+            return result
+
+        actions = [order._mercas_box_delivery_confirm_flow() for order in box_delivery_orders]
+        invoice_actions = [a for a in actions if isinstance(a, dict)]
+        return invoice_actions[-1] if invoice_actions else result
 
     def _mercas_ensure_customer_location(self):
         self.partner_id.mercas_ensure_customer_location(self.company_id)
+
+    def _mercas_box_delivery_confirm_flow(self):
+        """Deliver boxes to the supplier's location, create and post the customer invoice."""
+        self.ensure_one()
+
+        # Ensure the partner has a sub-location under the mercas supplier parent
+        self.partner_id.mercas_ensure_supplier_location(self.company_id)
+
+        partner = self.partner_id.commercial_partner_id
+        supplier_loc = partner.with_company(self.company_id).property_stock_supplier
+
+        pending = self.picking_ids.filtered(lambda p: p.state not in ("done", "cancel"))
+        for picking in pending:
+            active_moves = picking.move_ids.filtered(
+                lambda m: m.state not in ("done", "cancel")
+            )
+            # Set done qty to trigger move_line creation
+            for move in active_moves:
+                move.quantity = move.product_uom_qty
+            # Redirect destination from virtual customer to the supplier's physical location
+            if supplier_loc:
+                picking.move_line_ids.write({"location_dest_id": supplier_loc.id})
+            picking.with_context(
+                skip_immediate=True,
+                skip_backorder=True,
+            ).button_validate()
+
+        # Create and immediately post the customer invoice
+        invoices = self._create_invoices()
+        invoice = invoices[:1]
+        if not invoice:
+            return True
+        invoice.invoice_date = fields.Date.context_today(self)
+        invoice.action_post()
+
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "account.move",
+            "res_id": invoice.id,
+            "view_mode": "form",
+            "target": "current",
+        }
 
     def _mercas_prepare_box_lines(self):
         """Add PRODUCTOS/Envases sections and one box line per product line with box_qty > 0."""

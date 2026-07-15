@@ -6,7 +6,9 @@ class SaleOrderLine(models.Model):
 
     box_qty = fields.Integer(
         string="Cajas",
-        default=0,
+        compute="_compute_box_qty",
+        store=True,
+        readonly=False,
     )
     box_sale_line_id = fields.Many2one(
         comodel_name="sale.order.line",
@@ -23,6 +25,14 @@ class SaleOrderLine(models.Model):
         readonly=False,
     )
 
+    @api.depends("product_id", "product_uom_id", "product_uom_qty")
+    def _compute_box_qty(self):
+        for line in self:
+            if line.product_uom_id and line.product_uom_id in line.product_id.uom_ids:
+                line.box_qty = line.product_uom_qty
+            else:
+                line.box_qty = line.box_qty
+
     @api.depends("product_id")
     def _compute_box_product_id(self):
         for line in self:
@@ -36,6 +46,29 @@ class SaleOrderLine(models.Model):
         if self.lot_id:
             vals["lot_id"] = self.lot_id.id
         return vals
+
+    def get_available_lots_for_line(self):
+        result = super().get_available_lots_for_line()
+        if not result or not result.get("available"):
+            return result
+
+        invoiced_lot_ids = set(
+            self.env["stock.lot"]
+            .search(
+                [
+                    ("id", "in", [item["id"] for item in result["available"]]),
+                    ("supplier_invoice_id", "!=", False),
+                ]
+            )
+            .ids
+        )
+        if invoiced_lot_ids:
+            result["available"] = [
+                item
+                for item in result["available"]
+                if item["id"] not in invoiced_lot_ids
+            ]
+        return result
 
     def write(self, vals):
         result = super().write(vals)

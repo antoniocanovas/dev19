@@ -22,6 +22,22 @@ class PurchaseOrder(models.Model):
             "context": {"default_order_type": box_type.id},
         }
 
+    def action_open_box_delivery(self):
+        """Open a new sale order to deliver boxes back to this purchase's supplier."""
+        self.ensure_one()
+        new_so = self.env["sale.order"].create({
+            "partner_id": self.partner_id.id,
+            "origin": self.name,
+            "box_delivery_purchase_id": self.id,
+        })
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "sale.order",
+            "res_id": new_so.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
     mercas_is_box_return = fields.Boolean(
         compute="_compute_mercas_box_fields",
         string="Es devolución de envases",
@@ -50,6 +66,14 @@ class PurchaseOrder(models.Model):
             if order.company_id.purchase_lot_autocomplete:
                 order._mercas_autocreate_lots()
 
+        # Regular purchases (not box-return): ensure supplier location and
+        # auto-create box lines before confirming, same treatment as sales,
+        # so the box product is included in the receipt generated on confirm.
+        regular_orders = self.filtered(lambda o: not o.mercas_is_box_return)
+        for order in regular_orders:
+            order.partner_id.mercas_ensure_supplier_location(order.company_id)
+            order._mercas_prepare_box_lines()
+
         result = super().button_confirm()
 
         # Sync partner to all lots on confirmed lines that still lack it
@@ -67,6 +91,73 @@ class PurchaseOrder(models.Model):
         actions = [order._mercas_box_confirm_flow() for order in box_orders]
         invoice_actions = [a for a in actions if isinstance(a, dict)]
         return invoice_actions[-1] if invoice_actions else result
+
+    def _mercas_prepare_box_lines(self):
+        """Add PRODUCTOS/Envases sections and one box line per product line with
+        box_qty > 0, using the box product's purchase price (same logic as sales)."""
+        PurchaseLine = self.env["purchase.order.line"]
+
+        product_lines = self.order_line.filtered(
+            lambda l: not l.display_type and not l.box_purchase_line_id
+        )
+        box_lines_needed = product_lines.filtered(
+            lambda l: l.box_qty > 0 and l.box_product_id
+        )
+        if not box_lines_needed:
+            return
+
+        # --- PRODUCTOS section before first product line ---
+        has_productos = self.order_line.filtered(
+            lambda l: l.display_type == "line_section" and l.name == "PRODUCTOS"
+        )
+        if not has_productos and product_lines:
+            min_seq = min(product_lines.mapped("sequence"))
+            PurchaseLine.create({
+                "order_id": self.id,
+                "display_type": "line_section",
+                "name": "PRODUCTOS",
+                "sequence": min_seq - 1,
+                "product_qty": 0,
+            })
+
+        # --- Envases section after all non-box lines ---
+        has_envases = self.order_line.filtered(
+            lambda l: l.display_type == "line_section" and l.name == "Envases"
+        )
+        non_box_lines = self.order_line.filtered(lambda l: not l.box_purchase_line_id)
+        max_seq = max(non_box_lines.mapped("sequence")) if non_box_lines else 10
+
+        if not has_envases:
+            envases_seq = max_seq + 10
+            PurchaseLine.create({
+                "order_id": self.id,
+                "display_type": "line_section",
+                "name": "Envases",
+                "sequence": envases_seq,
+                "product_qty": 0,
+            })
+        else:
+            envases_seq = has_envases[0].sequence
+
+        # --- Create / update box lines ---
+        existing_by_parent = {
+            bl.box_purchase_line_id.id: bl
+            for bl in self.order_line.filtered(lambda l: l.box_purchase_line_id)
+        }
+        for i, line in enumerate(box_lines_needed):
+            if line.id in existing_by_parent:
+                existing_by_parent[line.id].write({
+                    "product_id": line.box_product_id.id,
+                    "product_qty": line.box_qty,
+                })
+            else:
+                PurchaseLine.create({
+                    "order_id": self.id,
+                    "product_id": line.box_product_id.id,
+                    "product_qty": line.box_qty,
+                    "box_purchase_line_id": line.id,
+                    "sequence": envases_seq + (i + 1) * 10,
+                })
 
     def _mercas_autocreate_lots(self):
         """Auto-assign new lots to tracked lines that have no lot set."""
@@ -149,6 +240,13 @@ class PurchaseOrderLine(models.Model):
     _inherit = "purchase.order.line"
 
     box_qty = fields.Integer(string="Cajas", default=0)
+    box_purchase_line_id = fields.Many2one(
+        comodel_name="purchase.order.line",
+        string="Línea de producto",
+        ondelete="cascade",
+        copy=False,
+        index=True,
+    )
     box_product_id = fields.Many2one(
         comodel_name="product.product",
         string="Caja",
@@ -169,7 +267,10 @@ class PurchaseOrderLine(models.Model):
     @api.depends("product_id")
     def _compute_box_product_id(self):
         for line in self:
-            line.box_product_id = line.product_id.product_tmpl_id.box_product_id
+            if line.display_type or line.box_purchase_line_id:
+                line.box_product_id = False
+            else:
+                line.box_product_id = line.product_id.product_tmpl_id.box_product_id
 
     def _prepare_account_move_line(self, move=False):
         vals = super()._prepare_account_move_line(move)
@@ -190,6 +291,23 @@ class PurchaseOrderLine(models.Model):
                 if "origin_state_id" in vals:
                     update["origin_state_id"] = line.origin_state_id.id or False
                 line.lot_id.write(update)
+        if "box_qty" in vals or "box_product_id" in vals or "product_id" in vals:
+            for line in self.filtered(lambda l: not l.display_type and not l.box_purchase_line_id):
+                box_lines = self.env["purchase.order.line"].search(
+                    [("box_purchase_line_id", "=", line.id)]
+                )
+                if not box_lines:
+                    continue
+                if "box_qty" in vals and line.box_qty == 0:
+                    box_lines.unlink()
+                    continue
+                update = {}
+                if "box_qty" in vals:
+                    update["product_qty"] = line.box_qty
+                if ("box_product_id" in vals or "product_id" in vals) and line.box_product_id:
+                    update["product_id"] = line.box_product_id.id
+                if update:
+                    box_lines.write(update)
         return result
 
     @api.constrains("product_id", "order_id")
