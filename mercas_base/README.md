@@ -35,6 +35,20 @@ El botón **Comprar y Recibir** en el pedido de compra:
 3. Genera la factura de proveedor, le asigna la fecha de hoy y la valida.
 4. Abre directamente la factura generada.
 
+La factura no se genera automáticamente para pedidos de devolución de envases (ver más abajo), donde ya se crea y valida dentro del propio flujo de confirmación.
+
+### Compras — Cajas por línea de pedido
+
+Igual que en ventas, cada línea de pedido de compra (que no sea de devolución de envases) tiene los campos **Cajas** (`box_qty`) y **Caja** (`box_product_id`, inicializado desde la plantilla del producto). Al confirmar el pedido:
+
+- Se inserta la sección **PRODUCTOS** antes de las líneas de producto y la sección **Envases** al final.
+- Por cada línea con `box_qty > 0` se crea una línea de caja vinculada (`box_purchase_line_id`) con el producto de `box_product_id`, de forma que el envase se incluye en el albarán de entrada generado al confirmar.
+- Cambios posteriores en `box_qty`, `box_product_id` o el producto de la línea actualizan o eliminan la línea de caja correspondiente.
+
+### Compras — Ubicación por proveedor
+
+Al confirmar un pedido de compra (que no sea de devolución de envases) se verifica si el proveedor tiene una sub-ubicación propia bajo el **Almacén proveedores** configurado en la empresa. Si no existe, se crea automáticamente con el nombre del partner y se asigna como `property_stock_supplier` del proveedor (campo dependiente de empresa).
+
 ### Compras — Auto-creación de lotes
 
 Cuando la opción **Purchase lot auto** está activa en la empresa, al confirmar cualquier pedido de compra se crea automáticamente un lote nuevo (usando la secuencia del producto) para cada línea trazada que no tenga lote asignado. El proveedor del pedido se asigna automáticamente al lote. Requiere el módulo OCA `purchase_lot`.
@@ -55,6 +69,18 @@ El botón **Devolución cajas** en el pedido de venta abre un nuevo pedido de co
 4. Se abre la factura para revisión.
 
 Los productos de un pedido de devolución de envases quedan restringidos a las **Categorías de cajas** configuradas en la empresa.
+
+El menú **Mercas > Cajas > Devoluciones clientes** abre directamente la lista de pedidos de compra de este tipo (`action_mercas_box_returns_menu`; requiere tener configurado el **Tipo de compra envases**).
+
+### Compras — Entrega de cajas a proveedor
+
+El botón **Entrega cajas** en el pedido de compra confirmado abre un nuevo pedido de venta pre-relleno para el mismo proveedor, marcado internamente como entrega de cajas (`mercas_is_box_delivery`, vinculado al pedido de compra origen vía `box_delivery_purchase_id`). Al confirmar ese pedido de venta:
+
+1. Se verifica/crea la ubicación de stock propia del proveedor (igual que en compras).
+2. Se entregan las cajas a la ubicación física del proveedor (en vez de a la ubicación virtual de clientes).
+3. Se genera y valida automáticamente la factura de cliente correspondiente al proveedor.
+
+El menú **Mercas > Cajas > Entregas a proveedores** lista todos los pedidos de venta marcados como entrega de cajas.
 
 ### Contabilidad — Compensación de facturas
 
@@ -126,12 +152,22 @@ Un smart button en el formulario del lote abre la factura de liquidación cuando
 - Agrupación por **Proveedor**.
 - Búsqueda por **Proveedor** como primera opción en la barra de búsqueda.
 
+### Contactos — Resumen de cajas
+
+Cuando un contacto ya tiene ubicación de stock propia como cliente y/o como proveedor (ver *Ventas — Ubicación por cliente* y *Compras — Ubicación por proveedor*), su ficha muestra un smart button **Cajas** con la cantidad total de envases presentes en esas ubicaciones. Solo se tienen en cuenta:
+
+- Las ubicaciones dedicadas del contacto (`property_stock_customer` / `property_stock_supplier`); si alguna de ellas todavía es la ubicación genérica configurada en la empresa (es decir, el contacto nunca ha comprado o vendido nada), se ignora.
+- Los productos cuya categoría esté entre las **Categorías de cajas** configuradas en la empresa.
+
+El botón permanece oculto si no hay cajas que mostrar (contacto sin ubicación dedicada, sin categorías de cajas configuradas, o sin existencias). Al pulsarlo se abre un listado de `stock.quant` agrupado por producto y ubicación.
+
 ## Parametrización (Empresa > pestaña Mercas)
 
 ### Almacén
 | Campo | Descripción |
 |---|---|
 | **Almacén clientes** | Ubicación padre bajo la que se crean las sub-ubicaciones por cliente. Por defecto: `stock.stock_location_customers`. |
+| **Almacén proveedores** | Ubicación padre bajo la que se crean las sub-ubicaciones por proveedor. Por defecto: `stock.stock_location_suppliers`. |
 
 ### Compras
 | Campo | Descripción |
@@ -153,6 +189,24 @@ Un smart button en el formulario del lote abre la factura de liquidación cuando
 | **Diario de compensación** | Diario de tipo "Operaciones varias" para los asientos de compensación. |
 | **Margen Mercas (%)** | Margen general aplicado a los lotes cuando el partner no tiene margen propio. |
 | **Confirmar factura proveedor automáticamente** | Si está activo, las facturas de liquidación de lotes se confirman al generarse. |
+
+## Menú Mercas
+
+El módulo crea un menú raíz **Mercas** con accesos directos a las pantallas estándar más usadas y a las específicas del módulo:
+
+| Menú | Contenido |
+|---|---|
+| **Ventas** / **Compras** | Pedidos de venta / de compra (acciones estándar de Odoo). |
+| **Productos** | Plantillas de producto (acción estándar). |
+| **Contactos** | Contactos (acción estándar). |
+| **Facturas** | Facturas de cliente, abonos de cliente, facturas de proveedor y abonos de proveedor. |
+| **Cajas** | **Devoluciones clientes** (pedidos de compra de devolución de envases) y **Entregas a proveedores** (pedidos de venta de entrega de cajas). |
+| **Lotes** | Lista de lotes de stock, filtrada por defecto a los no facturados. |
+| **Liquidaciones** | Asistente de facturación de lotes a proveedor. |
+
+## Instalación
+
+El `post_init_hook` activa automáticamente, como si un usuario marcase las casillas en *Inventario > Configuración > Ajustes*, las opciones: ubicaciones de almacenamiento, números de serie y lote, variantes de producto, unidades de medida y embalajes, y firma en las órdenes de entrega. No requiere configuración manual adicional tras instalar el módulo.
 
 ## Dependencias
 
