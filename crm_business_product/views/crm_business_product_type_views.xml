@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_business_product_type_view_list" model="ir.ui.view">
+        <field name="name">crm.business.product.type.list</field>
+        <field name="model">crm.business.product.type</field>
+        <field name="arch" type="xml">
+            <list string="Tipos de producto" editable="bottom">
+                <field name="name"/>
+                <field name="attribute_ids" widget="many2many_tags"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="crm_business_product_type_view_form" model="ir.ui.view">
+        <field name="name">crm.business.product.type.form</field>
+        <field name="model">crm.business.product.type</field>
+        <field name="arch" type="xml">
+            <form string="Tipo de producto">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <field name="attribute_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="crm_business_product_type_action" model="ir.actions.act_window">
+        <field name="name">Tipos de producto</field>
+        <field name="res_model">crm.business.product.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="crm_business_product_type_menu"
+        name="Tipos de producto"
+        parent="crm.crm_menu_config"
+        action="crm_business_product_type_action"
+        groups="sales_team.group_sale_manager"
+        sequence="16"/>
+
+</odoo>

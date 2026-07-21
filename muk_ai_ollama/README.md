@@ -60,10 +60,16 @@ The technical name must match exactly what you have pulled in Ollama
 
 ## Capabilities
 
-Talks to Ollama's **OpenAI-compatible Chat Completions** endpoint
-(`POST /v1/chat/completions`) with live token streaming, function/tool
-calling against the `muk_mcp` registry, and image input for
-vision-capable models (e.g. `llama3.2-vision`, `gemma3`).
+Talks to Ollama's **native chat** endpoint (`POST /api/chat`) with live
+token streaming, function/tool calling against the `muk_mcp` registry,
+and image input for vision-capable models (e.g. `llama3.2-vision`,
+`gemma3`). The native endpoint is used instead of the OpenAI-compatible
+`/v1/chat/completions` one because only it accepts a per-request
+`options.num_ctx` — needed to apply each model's configured **Context**
+value instead of silently running at Ollama's server-wide default
+(commonly 4096 tokens, easily exceeded once the system prompt, tool
+schemas and a tool result are in play — the model then loses the
+instructions and starts asking generic questions instead of answering).
 
 Built-in connectors (web search, code interpreter, image generation) are
 not available — they are cloud-side features of OpenAI/Mistral that have
@@ -76,7 +82,7 @@ Not every Ollama model supports tool calling. Models known to work well:
 
 1. Open *Settings → MuK AI*.
 2. Set **Ollama Base URL** if Ollama is not on `http://localhost:11434`
-   (e.g. `http://192.168.1.10:11434/v1`).
+   (e.g. `http://192.168.1.10:11434`).
 3. Click **Manage AI Providers**, select **Ollama**, choose a default
    model and click **Test Connection**.
 4. Back in Settings, set **Default Provider** to *Ollama* and start

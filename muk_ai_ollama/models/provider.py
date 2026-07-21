@@ -18,10 +18,17 @@ class AIProviderOllama(models.Model):
             .sudo()
             .get_param('muk_ai_ollama.base_url', OllamaProvider.default_url)
         )
+        context_windows = {
+            model.technical_name: model.context_window
+            for model in self.sudo().model_ids
+            if model.technical_name and model.context_window
+        }
         return OllamaProvider(
+            env=self.env,
             api_key=self.sudo().api_key or '',
             request_timeout=self.request_timeout,
             idle_timeout=self.idle_timeout,
             max_tokens=self.max_tokens,
             base_url=base_url,
+            context_windows=context_windows,
         )

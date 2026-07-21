@@ -7,6 +7,7 @@ class CrmBusiness(models.Model):
     _order = "name"
 
     name = fields.Char(required=True)
+    active = fields.Boolean(default=True)
     hr_department_id = fields.Many2one("hr.department", string="Departamento")
     manager_user_id = fields.Many2one(
         "res.users",

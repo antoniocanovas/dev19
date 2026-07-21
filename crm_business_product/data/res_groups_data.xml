@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Same effect as ticking Settings > Sales/Inventory > "Variants":
+         product.group_product_variant is implied by base.group_user. -->
+    <record id="base.group_user" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('product.group_product_variant'))]"/>
+    </record>
+
+</odoo>

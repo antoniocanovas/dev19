@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_crm_lead_survey_line,crm.lead.survey.line,model_crm_lead_survey_line,sales_team.group_sale_salesman,1,1,1,0
+access_survey_survey_crm_business_survey,survey.survey.crm.business.survey,survey.model_survey_survey,base.group_user,1,0,0,0
+access_survey_user_input_crm_business_survey,survey.user_input.crm.business.survey,survey.model_survey_user_input,sales_team.group_sale_salesman,1,0,0,0

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Header button: create a product on the fly via the wizard -->
+    <record id="crm_lead_view_form_crm_business_product_button" model="ir.ui.view">
+        <field name="name">crm.lead.form.crm.business.product.button</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <field name="stage_id" position="before">
+                <button name="action_open_crm_business_product_wizard" string="Nuevo producto"
+                    type="object" class="btn-danger" data-hotkey="p"
+                    invisible="type == 'lead' or not active or product_template_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Product selector, next to the business area field -->
+    <record id="crm_lead_view_form_crm_business_product" model="ir.ui.view">
+        <field name="name">crm.lead.form.crm.business.product</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm_business.crm_lead_view_form_crm_business"/>
+        <field name="arch" type="xml">
+            <field name="crm_business_id" position="after">
+                <field name="product_template_id" domain="[('sale_ok', '=', True)]"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Kanban: show the product below the business area, when set -->
+    <record id="crm_case_kanban_view_leads_crm_business_product" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.lead.crm.business.product</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm_business.crm_case_kanban_view_leads_crm_business"/>
+        <field name="arch" type="xml">
+            <field name="crm_business_id" position="after">
+                <field name="product_template_id" class="text-muted d-block text-truncate"
+                    invisible="not product_template_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

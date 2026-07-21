@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_business_product_wizard_view_form" model="ir.ui.view">
+        <field name="name">crm.business.product.wizard.form</field>
+        <field name="model">crm.business.product.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Nuevo producto">
+                <field name="lead_id" invisible="1"/>
+                <group>
+                    <field name="type_id"/>
+                    <field name="name"/>
+                    <field name="detail_type" widget="radio"/>
+                    <field name="categ_id"/>
+                </group>
+                <field name="attribute_line_ids" invisible="not attribute_line_ids" force_save="1">
+                    <list editable="bottom" create="false" delete="false">
+                        <field name="attribute_id" readonly="1" force_save="1"/>
+                        <field name="value_ids" widget="many2many_tags"
+                            options="{'no_create_edit': True}"
+                            context="{'default_attribute_id': attribute_id}"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_create_product" string="Crear" type="object"
+                        class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary" data-hotkey="z"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Pending surveys, below the procedure -->
+    <record id="crm_lead_view_form_crm_business_survey" model="ir.ui.view">
+        <field name="name">crm.lead.form.crm.business.survey</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm_business.crm_lead_view_form_crm_business"/>
+        <field name="arch" type="xml">
+            <group name="crm_business_notes" position="after">
+                <field name="survey_line_ids" nolabel="1" invisible="not survey_line_ids">
+                    <list create="false" delete="false">
+                        <field name="survey_id"/>
+                        <field name="user_input_id" column_invisible="1"/>
+                        <button name="action_open_user_input" type="object" string="Ver / editar"
+                            class="btn-link" invisible="not user_input_id"/>
+                        <button name="action_start_survey" type="object" string="Cumplimentar"
+                            class="btn-link" invisible="user_input_id"/>
+                    </list>
+                </field>
+            </group>
+        </field>
+    </record>
+
+    <!-- Survey answers summary tab -->
+    <record id="crm_lead_view_form_crm_business_survey_answers" model="ir.ui.view">
+        <field name="name">crm.lead.form.crm.business.survey.answers</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page name="crm_business_survey_answers" string="Respuestas de encuestas"
+                    invisible="not survey_answers_html">
+                    <field name="survey_answers_html" nolabel="1" readonly="1"/>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>

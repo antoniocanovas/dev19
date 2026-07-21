@@ -1,18 +1,32 @@
 from __future__ import annotations
 
+import contextlib
 import json
 from collections.abc import Callable
+
+import requests
 
 from odoo.addons.muk_ai.providers.base import ProviderBase
 
 
 class OllamaProvider(ProviderBase):
-    """Ollama adapter using the OpenAI-compatible Chat Completions endpoint."""
+    """Ollama adapter using the native /api/chat endpoint.
+
+    The OpenAI-compatible /v1/chat/completions endpoint does not honor a
+    per-request context-size override, so it silently runs every model at
+    Ollama's server-wide default (commonly 4096 tokens). Once the system
+    prompt, tool schemas, and a single tool result are in the conversation
+    that budget is gone, Ollama truncates the oldest part of the prompt —
+    the instructions and the user's question — and the model degrades into
+    generic small talk. The native endpoint accepts `options.num_ctx`, so
+    this adapter uses it to apply each model's configured context window.
+    """
 
     name = 'ollama'
     label = 'Ollama'
     default_model = 'qwen3:14b'
-    default_url = 'http://localhost:11434/v1'
+    default_url = 'http://localhost:11434'
+    default_context_window = 8192
 
     # ----------------------------------------------------------
     # Setup
@@ -20,18 +34,28 @@ class OllamaProvider(ProviderBase):
 
     def __init__(
         self,
+        env,
         api_key: str = '',
         request_timeout: int = 120,
         idle_timeout: int = 90,
         max_tokens: int = 4096,
         base_url: str | None = None,
+        context_windows: dict[str, int] | None = None,
     ) -> None:
-        super().__init__(api_key, request_timeout, idle_timeout, max_tokens)
-        self._base_url = base_url or self.default_url
+        super().__init__(env, api_key, request_timeout, idle_timeout, max_tokens)
+        base_url = base_url or self.default_url
+        # Back-compat: earlier versions of this addon pointed at the
+        # OpenAI-compatible /v1 base URL — strip it so saved system
+        # parameters keep working against the native API.
+        self._base_url = base_url[:-3] if base_url.endswith('/v1') else base_url
+        self._context_windows = context_windows or {}
 
     @property
     def api_url(self) -> str:
         return self._base_url
+
+    def _context_window_for(self, model: str) -> int:
+        return self._context_windows.get(model) or self.default_context_window
 
     @property
     def api_key(self) -> str:
@@ -62,28 +86,23 @@ class OllamaProvider(ProviderBase):
         extra: dict | None = None,
     ) -> dict:
         messages = self._inputs_to_messages(inputs)
-        body: dict = {
-            'model': self.model_for(model),
-            'messages': messages,
-        }
+        resolved_model = self.model_for(model)
+        options: dict = {'num_ctx': self._context_window_for(resolved_model)}
         if self.max_tokens:
-            body['max_tokens'] = self.max_tokens
+            options['num_predict'] = self.max_tokens
+        body: dict = {
+            'model': resolved_model,
+            'messages': messages,
+            'options': options,
+        }
         tools = self._tools_to_openai(tools_schema)
         if tools:
             body['tools'] = tools
-            body['tool_choice'] = 'auto'
         if text_schema:
-            body['response_format'] = {
-                'type': 'json_schema',
-                'json_schema': {
-                    'name': text_schema.get('name', 'response'),
-                    'schema': text_schema['schema'],
-                    'strict': True,
-                },
-            }
+            body['format'] = text_schema['schema']
         if callable(on_delta):
             return self._stream(body, on_delta)
-        return self._parse_response(self._post_json('/chat/completions', body))
+        return self._parse_response(self._post_json('/api/chat', {**body, 'stream': False}))
 
     # ----------------------------------------------------------
     # Input conversion  (muk_ai format → Chat Completions messages)
@@ -118,13 +137,21 @@ class OllamaProvider(ProviderBase):
 
             elif item_type == 'function_call':
                 # Group consecutive function_call items into one assistant message so
-                # the Chat Completions message sequence stays valid.
+                # the message sequence stays valid. Unlike the OpenAI-compatible
+                # endpoint, Ollama's native /api/chat rejects a JSON-encoded
+                # string here ("Value looks like object, but can't find closing
+                # '}' symbol") — it wants the arguments as an actual object.
                 tool_calls = []
                 while i < len(items) and items[i].get('type') == 'function_call':
                     fc = items[i]
-                    args = fc.get('arguments') or '{}'
-                    if not isinstance(args, str):
-                        args = json.dumps(args, default=str)
+                    args = fc.get('arguments')
+                    if isinstance(args, str):
+                        try:
+                            args = json.loads(args) if args else {}
+                        except ValueError:
+                            args = {}
+                    elif not isinstance(args, dict):
+                        args = {}
                     tool_calls.append(
                         {
                             'id': fc.get('call_id') or '',
@@ -236,12 +263,35 @@ class OllamaProvider(ProviderBase):
         return out
 
     # ----------------------------------------------------------
-    # Response parsing  (Chat Completions → muk_ai format)
+    # Response parsing  (native /api/chat → muk_ai format)
     # ----------------------------------------------------------
 
+    def _normalize_tool_call(self, tc: dict, fallback_index: int) -> tuple[dict, dict]:
+        """Return ``(tool_call, carry_input)`` for one native tool-call entry."""
+        fn = tc.get('function') or {}
+        raw_args = fn.get('arguments')
+        if isinstance(raw_args, str):
+            args, parse_error = self._parse_tool_arguments(raw_args)
+        else:
+            args, parse_error = (raw_args or {}), None
+        call_id = tc.get('id') or f'call_{fallback_index}'
+        name = fn.get('name') or ''
+        tool_call = {
+            'call_id': call_id,
+            'name': name,
+            'arguments': args,
+            '_parse_error': parse_error,
+        }
+        carry_input = {
+            'type': 'function_call',
+            'call_id': call_id,
+            'name': name,
+            'arguments': json.dumps(args, default=str),
+        }
+        return tool_call, carry_input
+
     def _parse_response(self, payload: dict) -> dict:
-        choice = (payload.get('choices') or [{}])[0]
-        message = choice.get('message') or {}
+        message = payload.get('message') or {}
         content = message.get('content') or ''
         tool_calls_raw = message.get('tool_calls') or []
 
@@ -249,30 +299,10 @@ class OllamaProvider(ProviderBase):
         carry_inputs = []
 
         if tool_calls_raw:
-            for tc in tool_calls_raw:
-                fn = tc.get('function') or {}
-                raw_args = fn.get('arguments') or '{}'
-                args, parse_error = self._parse_tool_arguments(raw_args)
-                call_id = tc.get('id') or ''
-                name = fn.get('name') or ''
-                tool_calls.append(
-                    {
-                        'call_id': call_id,
-                        'name': name,
-                        'arguments': args,
-                        '_parse_error': parse_error,
-                    }
-                )
-                carry_inputs.append(
-                    {
-                        'type': 'function_call',
-                        'call_id': call_id,
-                        'name': name,
-                        'arguments': raw_args
-                        if isinstance(raw_args, str)
-                        else json.dumps(args, default=str),
-                    }
-                )
+            for index, tc in enumerate(tool_calls_raw):
+                tool_call, carry_input = self._normalize_tool_call(tc, index)
+                tool_calls.append(tool_call)
+                carry_inputs.append(carry_input)
         elif content:
             carry_inputs.append(
                 {
@@ -281,14 +311,13 @@ class OllamaProvider(ProviderBase):
                 }
             )
 
-        usage = payload.get('usage') or {}
         return {
             'text': content.strip() if content else '',
             'tool_calls': tool_calls,
             'carry_inputs': carry_inputs,
             'usage': self._usage(
-                input_tokens=usage.get('prompt_tokens'),
-                output_tokens=usage.get('completion_tokens'),
+                input_tokens=payload.get('prompt_eval_count'),
+                output_tokens=payload.get('eval_count'),
             ),
         }
 
@@ -296,79 +325,98 @@ class OllamaProvider(ProviderBase):
     # Streaming
     # ----------------------------------------------------------
 
+    def _post_ndjson_stream(self, path: str, body: dict):
+        """POST a JSON body and yield newline-delimited JSON objects.
+
+        Ollama's native API streams one raw JSON object per line — unlike
+        the OpenAI-compatible endpoint, there is no ``data:`` SSE prefix
+        and no terminating ``[DONE]`` marker (the last object has
+        ``done: true`` instead).
+
+        :raise UserError: on HTTP, transport, or stream-idle errors.
+        """
+        read_timeout = self.idle_timeout
+        try:
+            response = requests.post(
+                f'{self.api_url}{path}',
+                headers=self.headers(),
+                json=body,
+                timeout=read_timeout,
+                stream=True,
+            )
+            response.raise_for_status()
+        except requests.HTTPError as error:
+            self._raise(getattr(error.response, 'text', '') or str(error))
+        except requests.RequestException as error:
+            self._raise(error)
+        line_iter = response.iter_lines(decode_unicode=True)
+        try:
+            while True:
+                try:
+                    raw_line = next(line_iter)
+                except StopIteration:
+                    break
+                except requests.exceptions.ReadTimeout:
+                    self._raise(f'Stream idle for {read_timeout}s — aborted')
+                except requests.RequestException as error:
+                    self._raise(error)
+                if not raw_line:
+                    continue
+                try:
+                    yield json.loads(raw_line)
+                except ValueError:
+                    continue
+        finally:
+            with contextlib.suppress(Exception):
+                response.close()
+
     def _stream(self, body: dict, on_delta: Callable) -> dict:
-        body = {**body, 'stream': True, 'stream_options': {'include_usage': True}}
+        body = {**body, 'stream': True}
         text_parts: list[str] = []
-        tool_calls_by_index: dict[int, dict] = {}
+        tool_calls_raw: list[dict] = []
         usage: dict = {}
 
-        for event in self._post_stream('/chat/completions', body):
-            choices = event.get('choices') or []
-            if not choices:
-                if event.get('usage'):
-                    usage = event['usage']
-                continue
+        for event in self._post_ndjson_stream('/api/chat', body):
+            message = event.get('message') or {}
 
-            choice = choices[0]
-            delta = choice.get('delta') or {}
-
-            if content := delta.get('content'):
+            if content := message.get('content'):
                 text_parts.append(content)
                 self._call_on_delta(on_delta, 'text', {'delta': content})
 
-            for tc_delta in delta.get('tool_calls') or []:
-                index = tc_delta.get('index', 0)
-                entry = tool_calls_by_index.setdefault(
-                    index, {'call_id': '', 'name': '', 'arguments': ''}
-                )
-                if call_id := tc_delta.get('id'):
-                    entry['call_id'] = call_id
-                fn = tc_delta.get('function') or {}
-                if name := fn.get('name'):
-                    if not entry['name']:
-                        entry['name'] = name
-                        self._call_on_delta(
-                            on_delta,
-                            'tool_start',
-                            {'call_id': entry['call_id'], 'name': name},
-                        )
-                if args_delta := fn.get('arguments'):
-                    entry['arguments'] += args_delta
-                    self._call_on_delta(
-                        on_delta,
-                        'tool_args',
-                        {'call_id': entry['call_id'], 'delta': args_delta},
-                    )
+            if tc_list := message.get('tool_calls'):
+                # The native engine emits each tool call fully formed
+                # (not incremental argument deltas), so keep the latest
+                # complete list rather than merging by index.
+                tool_calls_raw = tc_list
 
-            if event_usage := event.get('usage'):
-                usage = event_usage
+            if event.get('done'):
+                usage = {
+                    'prompt_eval_count': event.get('prompt_eval_count'),
+                    'eval_count': event.get('eval_count'),
+                }
 
         text = ''.join(text_parts).strip()
         tool_calls = []
         carry_inputs = []
 
-        if tool_calls_by_index:
-            for index in sorted(tool_calls_by_index):
-                entry = tool_calls_by_index[index]
-                args, parse_error = self._parse_tool_arguments(entry['arguments'])
-                call_id = entry['call_id']
-                name = entry['name']
-                tool_calls.append(
-                    {
-                        'call_id': call_id,
-                        'name': name,
-                        'arguments': args,
-                        '_parse_error': parse_error,
-                    }
+        if tool_calls_raw:
+            for index, tc in enumerate(tool_calls_raw):
+                tool_call, carry_input = self._normalize_tool_call(tc, index)
+                self._call_on_delta(
+                    on_delta,
+                    'tool_start',
+                    {'call_id': tool_call['call_id'], 'name': tool_call['name']},
                 )
-                carry_inputs.append(
+                self._call_on_delta(
+                    on_delta,
+                    'tool_args',
                     {
-                        'type': 'function_call',
-                        'call_id': call_id,
-                        'name': name,
-                        'arguments': json.dumps(args, default=str),
-                    }
+                        'call_id': tool_call['call_id'],
+                        'delta': carry_input['arguments'],
+                    },
                 )
+                tool_calls.append(tool_call)
+                carry_inputs.append(carry_input)
         elif text:
             carry_inputs.append(
                 {
@@ -382,7 +430,7 @@ class OllamaProvider(ProviderBase):
             'tool_calls': tool_calls,
             'carry_inputs': carry_inputs,
             'usage': self._usage(
-                input_tokens=usage.get('prompt_tokens'),
-                output_tokens=usage.get('completion_tokens'),
+                input_tokens=usage.get('prompt_eval_count'),
+                output_tokens=usage.get('eval_count'),
             ),
         }

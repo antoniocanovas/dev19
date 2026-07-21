@@ -98,6 +98,8 @@
                 <separator/>
                 <filter string="No Preventa" name="no_presale_user" domain="[('presale_user_id', '=', False)]"/>
                 <filter string="No Validador" name="no_controller_user" domain="[('controller_user_id', '=', False)]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
                 <group>
                     <filter string="Department" name="group_by_hr_department" context="{'group_by': 'hr_department_id'}"/>
                     <filter string="Manager" name="group_by_manager_user" context="{'group_by': 'manager_user_id'}"/>
