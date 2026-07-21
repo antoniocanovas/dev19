@@ -14,6 +14,7 @@
         "purchase_order_type",
         "purchase_lot",
         "sale_order_lot_selection",
+        "sale_order_type",
     ],
     "data": [
         "security/ir.model.access.csv",

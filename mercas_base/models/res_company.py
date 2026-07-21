@@ -36,6 +36,11 @@ class ResCompany(models.Model):
         string="Tipo de compra envases",
         help="Tipo de compra para devolución de envases",
     )
+    box_sale_type_id = fields.Many2one(
+        comodel_name="sale.order.type",
+        string="Tipo de venta envases",
+        help="Tipo de venta para devolución de envases",
+    )
     box_categ_ids = fields.Many2many(
         comodel_name="product.category",
         string="Categorías de cajas",

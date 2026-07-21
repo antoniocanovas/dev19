@@ -25,10 +25,14 @@ class PurchaseOrder(models.Model):
     def action_open_box_delivery(self):
         """Open a new sale order to deliver boxes back to this purchase's supplier."""
         self.ensure_one()
+        box_type = self.company_id.box_sale_type_id
+        if not box_type:
+            raise UserError(_("Configure el tipo de venta de envases en la empresa."))
         new_so = self.env["sale.order"].create({
             "partner_id": self.partner_id.id,
             "origin": self.name,
             "box_delivery_purchase_id": self.id,
+            "type_id": box_type.id,
         })
         return {
             "type": "ir.actions.act_window",
@@ -168,6 +172,8 @@ class PurchaseOrder(models.Model):
                     "product_id": line.product_id.id,
                     "company_id": self.company_id.id,
                     "partner_id": self.partner_id.id,
+                    "origin_country_id": line.origin_country_id.id,
+                    "origin_state_id": line.origin_state_id.id,
                 })
 
     def _mercas_box_confirm_flow(self):
@@ -283,6 +289,15 @@ class PurchaseOrderLine(models.Model):
         if "lot_id" in vals and vals.get("lot_id"):
             for line in self.filtered(lambda l: l.lot_id and not l.lot_id.partner_id):
                 line.lot_id.partner_id = line.order_id.partner_id
+            for line in self.filtered(
+                lambda l: l.lot_id and (l.origin_country_id or l.origin_state_id)
+            ):
+                update = {}
+                if line.origin_country_id:
+                    update["origin_country_id"] = line.origin_country_id.id
+                if line.origin_state_id:
+                    update["origin_state_id"] = line.origin_state_id.id
+                line.lot_id.write(update)
         if "origin_country_id" in vals or "origin_state_id" in vals:
             for line in self.filtered(lambda l: l.lot_id):
                 update = {}

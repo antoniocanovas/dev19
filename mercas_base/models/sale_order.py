@@ -190,6 +190,20 @@ class SaleOrder(models.Model):
         self.with_context(bypass_risk=True).action_confirm()
         self._mercas_auto_deliver()
 
+    @api.model
+    def action_mercas_box_deliveries_menu(self):
+        box_type = self.env.company.box_sale_type_id
+        if not box_type:
+            raise UserError(_("Configure el tipo de venta de envases en la empresa."))
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Entregas a proveedores"),
+            "res_model": "sale.order",
+            "view_mode": "list,form",
+            "domain": [("type_id", "=", box_type.id)],
+            "context": {"default_type_id": box_type.id},
+        }
+
     def action_open_box_return(self):
         """Open a new purchase order pre-filled for box return from this sale's customer."""
         self.ensure_one()
