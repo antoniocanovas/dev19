@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/dev19.iml" filepath="$PROJECT_DIR$/.idea/dev19.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/purchase_lot.iml" filepath="$PROJECT_DIR$/.idea/purchase_lot.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/spreadsheet_dashboard_oca.iml" filepath="$PROJECT_DIR$/.idea/spreadsheet_dashboard_oca.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/spreadsheet_dashboard_purchase_oca.iml" filepath="$PROJECT_DIR$/.idea/spreadsheet_dashboard_purchase_oca.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/spreadsheet_dashboard_purchase_stock_oca.iml" filepath="$PROJECT_DIR$/.idea/spreadsheet_dashboard_purchase_stock_oca.iml" />
