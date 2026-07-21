@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="spreadsheet_oca.SpreadsheetFileUploader" owl="1">
+        <div
+            t-att-class="props.record and props.record.data ? 'oe_kanban_color_' + props.record.data.color : ''"
+        >
+            <FileUploader
+                acceptedFileExtensions="props.acceptedFileExtensions"
+                fileUploadClass="'spreadsheet_file_uploader'"
+                multiUpload="true"
+                onUploaded.bind="onFileUploaded"
+                onUploadComplete.bind="onUploadComplete"
+            >
+                <t t-set-slot="toggler">
+                    <t
+                        t-if="props.togglerTemplate"
+                        t-call="{{ props.togglerTemplate }}"
+                    />
+                    <t t-else="" t-slot="toggler" />
+                </t>
+                <t t-slot="extra" />
+            </FileUploader>
+        </div>
+    </t>
+    <!-- Odoo 19.0: the "New" button moved out of web.ListView.Buttons into the
+         control-panel-create-button slot, leaving that template empty. This is
+         the view's buttonTemplate, rendered in the layout-buttons slot, so it
+         is defined standalone rather than inheriting an empty template. -->
+    <t t-name="spreadsheet_oca.ListView.Buttons">
+        <SpreadsheetFileUploader>
+            <t t-set-slot="toggler">
+                <button
+                    type="button"
+                    class="btn btn-secondary o_button_upload_spreadsheet"
+                >
+                    Upload
+                </button>
+            </t>
+        </SpreadsheetFileUploader>
+    </t>
+</templates>
