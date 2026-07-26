@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- Sector: única -->
+        <record id="crm_partner_attribute_sector" model="crm.partner.attribute">
+            <field name="name">Sector</field>
+            <field name="value_type">single</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_sector_calzado" model="crm.partner.attribute.value">
+            <field name="name">Calzado</field>
+            <field name="attribute_id" ref="crm_partner_attribute_sector"/>
+        </record>
+        <record id="crm_partner_attribute_value_sector_alimentacion_frescos" model="crm.partner.attribute.value">
+            <field name="name">Alimentación frescos</field>
+            <field name="attribute_id" ref="crm_partner_attribute_sector"/>
+        </record>
+
+        <!-- Actividad: única -->
+        <record id="crm_partner_attribute_activity" model="crm.partner.attribute">
+            <field name="name">Actividad</field>
+            <field name="value_type">single</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_activity_fabricacion" model="crm.partner.attribute.value">
+            <field name="name">Fabricación</field>
+            <field name="attribute_id" ref="crm_partner_attribute_activity"/>
+        </record>
+        <record id="crm_partner_attribute_value_activity_distribucion_mayorista" model="crm.partner.attribute.value">
+            <field name="name">Distribución mayorista</field>
+            <field name="attribute_id" ref="crm_partner_attribute_activity"/>
+        </record>
+
+        <!-- Interés: múltiple -->
+        <record id="crm_partner_attribute_interest" model="crm.partner.attribute">
+            <field name="name">Interés</field>
+            <field name="value_type">multi</field>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- Facturación: única, tramos ordenados -->
+        <record id="crm_partner_attribute_revenue" model="crm.partner.attribute">
+            <field name="name">Facturación</field>
+            <field name="value_type">single</field>
+            <field name="sequence">40</field>
+        </record>
+        <record id="crm_partner_attribute_value_revenue_0_500k" model="crm.partner.attribute.value">
+            <field name="name">0 - 500.000 €</field>
+            <field name="attribute_id" ref="crm_partner_attribute_revenue"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_revenue_500k_2m" model="crm.partner.attribute.value">
+            <field name="name">500.000 € - 2M €</field>
+            <field name="attribute_id" ref="crm_partner_attribute_revenue"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_revenue_2m_10m" model="crm.partner.attribute.value">
+            <field name="name">2M € - 10M €</field>
+            <field name="attribute_id" ref="crm_partner_attribute_revenue"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_revenue_10m_plus" model="crm.partner.attribute.value">
+            <field name="name">+10M €</field>
+            <field name="attribute_id" ref="crm_partner_attribute_revenue"/>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- Empleados: única, tramos ordenados -->
+        <record id="crm_partner_attribute_employees" model="crm.partner.attribute">
+            <field name="name">Empleados</field>
+            <field name="value_type">single</field>
+            <field name="sequence">50</field>
+        </record>
+        <record id="crm_partner_attribute_value_employees_1" model="crm.partner.attribute.value">
+            <field name="name">1 (autónomo)</field>
+            <field name="attribute_id" ref="crm_partner_attribute_employees"/>
+            <field name="sequence">5</field>
+        </record>
+        <record id="crm_partner_attribute_value_employees_1_10" model="crm.partner.attribute.value">
+            <field name="name">2 - 10</field>
+            <field name="attribute_id" ref="crm_partner_attribute_employees"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_employees_11_50" model="crm.partner.attribute.value">
+            <field name="name">11 - 50</field>
+            <field name="attribute_id" ref="crm_partner_attribute_employees"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_employees_51_250" model="crm.partner.attribute.value">
+            <field name="name">51 - 250</field>
+            <field name="attribute_id" ref="crm_partner_attribute_employees"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_employees_250_plus" model="crm.partner.attribute.value">
+            <field name="name">+250</field>
+            <field name="attribute_id" ref="crm_partner_attribute_employees"/>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- EBITDA / margen: única, tramos ordenados -->
+        <record id="crm_partner_attribute_ebitda" model="crm.partner.attribute">
+            <field name="name">EBITDA / margen</field>
+            <field name="value_type">single</field>
+            <field name="sequence">60</field>
+        </record>
+        <record id="crm_partner_attribute_value_ebitda_negative" model="crm.partner.attribute.value">
+            <field name="name">Negativo / en pérdidas</field>
+            <field name="attribute_id" ref="crm_partner_attribute_ebitda"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_ebitda_0_5" model="crm.partner.attribute.value">
+            <field name="name">0% - 5%</field>
+            <field name="attribute_id" ref="crm_partner_attribute_ebitda"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_ebitda_5_10" model="crm.partner.attribute.value">
+            <field name="name">5% - 10%</field>
+            <field name="attribute_id" ref="crm_partner_attribute_ebitda"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_ebitda_10_20" model="crm.partner.attribute.value">
+            <field name="name">10% - 20%</field>
+            <field name="attribute_id" ref="crm_partner_attribute_ebitda"/>
+            <field name="sequence">40</field>
+        </record>
+        <record id="crm_partner_attribute_value_ebitda_20_plus" model="crm.partner.attribute.value">
+            <field name="name">+20%</field>
+            <field name="attribute_id" ref="crm_partner_attribute_ebitda"/>
+            <field name="sequence">50</field>
+        </record>
+
+        <!-- Forma jurídica: única -->
+        <record id="crm_partner_attribute_legal_form" model="crm.partner.attribute">
+            <field name="name">Forma jurídica</field>
+            <field name="value_type">single</field>
+            <field name="sequence">70</field>
+        </record>
+        <record id="crm_partner_attribute_value_legal_form_self_employed" model="crm.partner.attribute.value">
+            <field name="name">Autónomo</field>
+            <field name="attribute_id" ref="crm_partner_attribute_legal_form"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_legal_form_sl" model="crm.partner.attribute.value">
+            <field name="name">Sociedad Limitada (SL)</field>
+            <field name="attribute_id" ref="crm_partner_attribute_legal_form"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_legal_form_sa" model="crm.partner.attribute.value">
+            <field name="name">Sociedad Anónima (SA)</field>
+            <field name="attribute_id" ref="crm_partner_attribute_legal_form"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_legal_form_cooperative" model="crm.partner.attribute.value">
+            <field name="name">Cooperativa</field>
+            <field name="attribute_id" ref="crm_partner_attribute_legal_form"/>
+            <field name="sequence">40</field>
+        </record>
+        <record id="crm_partner_attribute_value_legal_form_other" model="crm.partner.attribute.value">
+            <field name="name">Otra</field>
+            <field name="attribute_id" ref="crm_partner_attribute_legal_form"/>
+            <field name="sequence">50</field>
+        </record>
+
+        <!-- Año de constitución: única, periodos de calendario FIJOS (no
+             relativos a "hoy"), para que la clasificación de un cliente no
+             caduque con el paso del tiempo. -->
+        <record id="crm_partner_attribute_company_age" model="crm.partner.attribute">
+            <field name="name">Año de constitución</field>
+            <field name="value_type">single</field>
+            <field name="sequence">80</field>
+        </record>
+        <record id="crm_partner_attribute_value_company_age_before_2000" model="crm.partner.attribute.value">
+            <field name="name">Antes de 2000</field>
+            <field name="attribute_id" ref="crm_partner_attribute_company_age"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_company_age_2000_2010" model="crm.partner.attribute.value">
+            <field name="name">2000 - 2010</field>
+            <field name="attribute_id" ref="crm_partner_attribute_company_age"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_company_age_2011_2020" model="crm.partner.attribute.value">
+            <field name="name">2011 - 2020</field>
+            <field name="attribute_id" ref="crm_partner_attribute_company_age"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_company_age_2021_plus" model="crm.partner.attribute.value">
+            <field name="name">2021 en adelante</field>
+            <field name="attribute_id" ref="crm_partner_attribute_company_age"/>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- Grupo empresarial: única -->
+        <record id="crm_partner_attribute_business_group" model="crm.partner.attribute">
+            <field name="name">Grupo empresarial</field>
+            <field name="value_type">single</field>
+            <field name="sequence">90</field>
+        </record>
+        <record id="crm_partner_attribute_value_business_group_independent" model="crm.partner.attribute.value">
+            <field name="name">Independiente</field>
+            <field name="attribute_id" ref="crm_partner_attribute_business_group"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_business_group_subsidiary" model="crm.partner.attribute.value">
+            <field name="name">Filial de un grupo</field>
+            <field name="attribute_id" ref="crm_partner_attribute_business_group"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_business_group_parent" model="crm.partner.attribute.value">
+            <field name="name">Matriz de un grupo</field>
+            <field name="attribute_id" ref="crm_partner_attribute_business_group"/>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- Modelo de propiedad: única -->
+        <record id="crm_partner_attribute_ownership" model="crm.partner.attribute">
+            <field name="name">Modelo de propiedad</field>
+            <field name="value_type">single</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="crm_partner_attribute_value_ownership_family" model="crm.partner.attribute.value">
+            <field name="name">Familiar</field>
+            <field name="attribute_id" ref="crm_partner_attribute_ownership"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_ownership_fund" model="crm.partner.attribute.value">
+            <field name="name">Fondo de inversión</field>
+            <field name="attribute_id" ref="crm_partner_attribute_ownership"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_ownership_public_listed" model="crm.partner.attribute.value">
+            <field name="name">Cotizada en bolsa</field>
+            <field name="attribute_id" ref="crm_partner_attribute_ownership"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_ownership_public_admin" model="crm.partner.attribute.value">
+            <field name="name">Pública / Administración</field>
+            <field name="attribute_id" ref="crm_partner_attribute_ownership"/>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- Alcance geográfico: única (no duplica país/provincia, que ya están
+             en la propia ficha de contacto; esto es el mercado en el que opera) -->
+        <record id="crm_partner_attribute_geo_scope" model="crm.partner.attribute">
+            <field name="name">Alcance geográfico</field>
+            <field name="value_type">single</field>
+            <field name="sequence">110</field>
+        </record>
+        <record id="crm_partner_attribute_value_geo_scope_local" model="crm.partner.attribute.value">
+            <field name="name">Local / Regional</field>
+            <field name="attribute_id" ref="crm_partner_attribute_geo_scope"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_geo_scope_national" model="crm.partner.attribute.value">
+            <field name="name">Nacional</field>
+            <field name="attribute_id" ref="crm_partner_attribute_geo_scope"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_geo_scope_eu" model="crm.partner.attribute.value">
+            <field name="name">Internacional (UE)</field>
+            <field name="attribute_id" ref="crm_partner_attribute_geo_scope"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_geo_scope_global" model="crm.partner.attribute.value">
+            <field name="name">Internacional (global)</field>
+            <field name="attribute_id" ref="crm_partner_attribute_geo_scope"/>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- Departamentos: múltiple -->
+        <record id="crm_partner_attribute_department" model="crm.partner.attribute">
+            <field name="name">Departamentos</field>
+            <field name="value_type">multi</field>
+            <field name="sequence">120</field>
+        </record>
+        <record id="crm_partner_attribute_value_department_management" model="crm.partner.attribute.value">
+            <field name="name">Dirección / Gerencia</field>
+            <field name="attribute_id" ref="crm_partner_attribute_department"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_department_purchasing" model="crm.partner.attribute.value">
+            <field name="name">Compras</field>
+            <field name="attribute_id" ref="crm_partner_attribute_department"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_department_it" model="crm.partner.attribute.value">
+            <field name="name">IT / Sistemas</field>
+            <field name="attribute_id" ref="crm_partner_attribute_department"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_department_finance" model="crm.partner.attribute.value">
+            <field name="name">Financiero / Administración</field>
+            <field name="attribute_id" ref="crm_partner_attribute_department"/>
+            <field name="sequence">40</field>
+        </record>
+        <record id="crm_partner_attribute_value_department_hr" model="crm.partner.attribute.value">
+            <field name="name">RRHH</field>
+            <field name="attribute_id" ref="crm_partner_attribute_department"/>
+            <field name="sequence">50</field>
+        </record>
+        <record id="crm_partner_attribute_value_department_operations" model="crm.partner.attribute.value">
+            <field name="name">Operaciones / Producción</field>
+            <field name="attribute_id" ref="crm_partner_attribute_department"/>
+            <field name="sequence">60</field>
+        </record>
+        <record id="crm_partner_attribute_value_department_sales" model="crm.partner.attribute.value">
+            <field name="name">Comercial / Ventas</field>
+            <field name="attribute_id" ref="crm_partner_attribute_department"/>
+            <field name="sequence">70</field>
+        </record>
+
+        <!-- Ciclo de decisión de compra: única -->
+        <record id="crm_partner_attribute_buying_cycle" model="crm.partner.attribute">
+            <field name="name">Ciclo de decisión de compra</field>
+            <field name="value_type">single</field>
+            <field name="sequence">130</field>
+        </record>
+        <record id="crm_partner_attribute_value_buying_cycle_fast" model="crm.partner.attribute.value">
+            <field name="name">Rápido / decisión individual</field>
+            <field name="attribute_id" ref="crm_partner_attribute_buying_cycle"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_buying_cycle_medium" model="crm.partner.attribute.value">
+            <field name="name">Medio / pocos interlocutores</field>
+            <field name="attribute_id" ref="crm_partner_attribute_buying_cycle"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_buying_cycle_slow" model="crm.partner.attribute.value">
+            <field name="name">Lento / comité de compras</field>
+            <field name="attribute_id" ref="crm_partner_attribute_buying_cycle"/>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- Canal de venta del cliente: única -->
+        <record id="crm_partner_attribute_sales_channel" model="crm.partner.attribute">
+            <field name="name">Canal de venta del cliente</field>
+            <field name="value_type">single</field>
+            <field name="sequence">140</field>
+        </record>
+        <record id="crm_partner_attribute_value_sales_channel_b2b" model="crm.partner.attribute.value">
+            <field name="name">B2B</field>
+            <field name="attribute_id" ref="crm_partner_attribute_sales_channel"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_sales_channel_b2c" model="crm.partner.attribute.value">
+            <field name="name">B2C</field>
+            <field name="attribute_id" ref="crm_partner_attribute_sales_channel"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_sales_channel_b2b2c" model="crm.partner.attribute.value">
+            <field name="name">B2B2C</field>
+            <field name="attribute_id" ref="crm_partner_attribute_sales_channel"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_sales_channel_marketplace" model="crm.partner.attribute.value">
+            <field name="name">Marketplace</field>
+            <field name="attribute_id" ref="crm_partner_attribute_sales_channel"/>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- Estacionalidad del negocio: única -->
+        <record id="crm_partner_attribute_seasonality" model="crm.partner.attribute">
+            <field name="name">Estacionalidad del negocio</field>
+            <field name="value_type">single</field>
+            <field name="sequence">150</field>
+        </record>
+        <record id="crm_partner_attribute_value_seasonality_stable" model="crm.partner.attribute.value">
+            <field name="name">Estable todo el año</field>
+            <field name="attribute_id" ref="crm_partner_attribute_seasonality"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_seasonality_seasonal" model="crm.partner.attribute.value">
+            <field name="name">Estacional (picos concretos)</field>
+            <field name="attribute_id" ref="crm_partner_attribute_seasonality"/>
+            <field name="sequence">20</field>
+        </record>
+
+        <!-- Presupuesto estimado en tecnología/servicios: única, tramos ordenados -->
+        <record id="crm_partner_attribute_tech_budget" model="crm.partner.attribute">
+            <field name="name">Presupuesto en tecnología/servicios</field>
+            <field name="value_type">single</field>
+            <field name="sequence">160</field>
+        </record>
+        <record id="crm_partner_attribute_value_tech_budget_0_5k" model="crm.partner.attribute.value">
+            <field name="name">0 - 5.000 €</field>
+            <field name="attribute_id" ref="crm_partner_attribute_tech_budget"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_tech_budget_5_20k" model="crm.partner.attribute.value">
+            <field name="name">5.000 € - 20.000 €</field>
+            <field name="attribute_id" ref="crm_partner_attribute_tech_budget"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_tech_budget_20_100k" model="crm.partner.attribute.value">
+            <field name="name">20.000 € - 100.000 €</field>
+            <field name="attribute_id" ref="crm_partner_attribute_tech_budget"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_tech_budget_100k_plus" model="crm.partner.attribute.value">
+            <field name="name">+100.000 €</field>
+            <field name="attribute_id" ref="crm_partner_attribute_tech_budget"/>
+            <field name="sequence">40</field>
+        </record>
+
+        <!-- Nivel de digitalización/madurez: única -->
+        <record id="crm_partner_attribute_digital_maturity" model="crm.partner.attribute">
+            <field name="name">Nivel de digitalización</field>
+            <field name="value_type">single</field>
+            <field name="sequence">170</field>
+        </record>
+        <record id="crm_partner_attribute_value_digital_maturity_low" model="crm.partner.attribute.value">
+            <field name="name">Bajo</field>
+            <field name="attribute_id" ref="crm_partner_attribute_digital_maturity"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_digital_maturity_medium" model="crm.partner.attribute.value">
+            <field name="name">Medio</field>
+            <field name="attribute_id" ref="crm_partner_attribute_digital_maturity"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_digital_maturity_high" model="crm.partner.attribute.value">
+            <field name="name">Alto</field>
+            <field name="attribute_id" ref="crm_partner_attribute_digital_maturity"/>
+            <field name="sequence">30</field>
+        </record>
+
+        <!-- Normativas que le aplican: múltiple -->
+        <record id="crm_partner_attribute_regulation" model="crm.partner.attribute">
+            <field name="name">Normativas que le aplican</field>
+            <field name="value_type">multi</field>
+            <field name="sequence">180</field>
+        </record>
+        <record id="crm_partner_attribute_value_regulation_rgpd" model="crm.partner.attribute.value">
+            <field name="name">RGPD</field>
+            <field name="attribute_id" ref="crm_partner_attribute_regulation"/>
+            <field name="sequence">10</field>
+        </record>
+        <record id="crm_partner_attribute_value_regulation_nis2" model="crm.partner.attribute.value">
+            <field name="name">NIS2</field>
+            <field name="attribute_id" ref="crm_partner_attribute_regulation"/>
+            <field name="sequence">20</field>
+        </record>
+        <record id="crm_partner_attribute_value_regulation_iso27001" model="crm.partner.attribute.value">
+            <field name="name">ISO 27001</field>
+            <field name="attribute_id" ref="crm_partner_attribute_regulation"/>
+            <field name="sequence">30</field>
+        </record>
+        <record id="crm_partner_attribute_value_regulation_pci_dss" model="crm.partner.attribute.value">
+            <field name="name">PCI-DSS</field>
+            <field name="attribute_id" ref="crm_partner_attribute_regulation"/>
+            <field name="sequence">40</field>
+        </record>
+        <record id="crm_partner_attribute_value_regulation_sii" model="crm.partner.attribute.value">
+            <field name="name">SII (Suministro Inmediato de Información)</field>
+            <field name="attribute_id" ref="crm_partner_attribute_regulation"/>
+            <field name="sequence">50</field>
+        </record>
+
+    </data>
+</odoo>

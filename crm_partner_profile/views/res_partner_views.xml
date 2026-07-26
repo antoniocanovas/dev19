@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_crm_partner_profile" model="ir.ui.view">
+        <field name="name">res.partner.form.crm.partner.profile</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Perfil comercial" name="crm_partner_profile">
+                    <separator string="Clasificación"/>
+                    <field name="crm_profile_line_ids">
+                        <list editable="bottom">
+                            <field name="partner_used_attribute_ids" column_invisible="1"/>
+                            <field name="attribute_id"/>
+                            <field name="value_ids" widget="many2many_tags"
+                                context="{'default_attribute_id': attribute_id, 'show_attribute': False}"/>
+                        </list>
+                    </field>
+                    <separator string="Productos y servicios actuales"/>
+                    <field name="crm_current_product_ids">
+                        <list editable="bottom">
+                            <field name="partner_used_product_tmpl_ids" column_invisible="1"/>
+                            <field name="product_tmpl_id" context="{'default_crm_business': True}"/>
+                            <field name="state"
+                                decoration-success="state == '1_ok'"
+                                decoration-info="state == '2_to_evolve'"
+                                decoration-warning="state == '3_to_change'"
+                                decoration-muted="state == '4_stopped'"
+                                decoration-danger="state == '5_obsolete'"/>
+                            <field name="provider"
+                                decoration-success="provider == 'us'"
+                                decoration-muted="provider == 'internal'"
+                                decoration-info="provider == 'multiple'"
+                                decoration-warning="provider == 'competitor'"/>
+                            <field name="note"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+</odoo>

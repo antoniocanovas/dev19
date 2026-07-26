@@ -25,53 +25,18 @@
     />
 
     <menuitem
-        id="menu_mercas_productos"
-        name="Productos"
-        parent="menu_mercas_root"
-        action="product.product_template_action_all"
-        sequence="30"
-    />
-
-    <menuitem
         id="menu_mercas_contactos"
         name="Contactos"
         parent="menu_mercas_root"
         action="contacts.action_contacts"
-        sequence="40"
-    />
-
-    <menuitem
-        id="menu_mercas_facturas"
-        name="Facturas"
-        parent="menu_mercas_root"
-        sequence="50"
-    />
-
-    <menuitem
-        id="menu_mercas_facturas_invoices"
-        parent="menu_mercas_facturas"
-        action="account.action_move_out_invoice_type"
-        sequence="10"
-    />
-
-    <menuitem
-        id="menu_mercas_facturas_credit_notes"
-        parent="menu_mercas_facturas"
-        action="account.action_move_out_refund_type"
-        sequence="20"
-    />
-
-    <menuitem
-        id="menu_mercas_facturas_bills"
-        parent="menu_mercas_facturas"
-        action="account.action_move_in_invoice_type"
         sequence="30"
     />
 
     <menuitem
-        id="menu_mercas_facturas_refunds"
-        parent="menu_mercas_facturas"
-        action="account.action_move_in_refund_type"
+        id="menu_mercas_productos"
+        name="Productos"
+        parent="menu_mercas_root"
+        action="product.product_template_action_all"
         sequence="40"
     />
 
@@ -80,7 +45,46 @@
         name="Lotes"
         parent="menu_mercas_root"
         action="mercas_base.action_mercas_lotes"
-        sequence="75"
+        sequence="50"
+    />
+
+    <menuitem
+        id="menu_mercas_facturas"
+        name="Facturas"
+        parent="menu_mercas_root"
+        sequence="60"
+    />
+
+    <menuitem
+        id="menu_mercas_facturas_invoices"
+        name="Facturas de cliente"
+        parent="menu_mercas_facturas"
+        action="account.action_move_out_invoice_type"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_mercas_facturas_credit_notes"
+        name="Facturas rectificativas"
+        parent="menu_mercas_facturas"
+        action="account.action_move_out_refund_type"
+        sequence="20"
+    />
+
+    <menuitem
+        id="menu_mercas_facturas_bills"
+        name="Facturas de proveedor"
+        parent="menu_mercas_facturas"
+        action="account.action_move_in_invoice_type"
+        sequence="30"
+    />
+
+    <menuitem
+        id="menu_mercas_facturas_refunds"
+        name="Reembolsos"
+        parent="menu_mercas_facturas"
+        action="account.action_move_in_refund_type"
+        sequence="40"
     />
 
     <menuitem
@@ -88,44 +92,8 @@
         name="Liquidaciones"
         parent="menu_mercas_root"
         action="mercas_base.action_stock_lot_invoice_wizard"
-        sequence="65"
-    />
-
-    <record id="action_mercas_box_returns" model="ir.actions.server">
-        <field name="name">Devoluciones clientes</field>
-        <field name="model_id" ref="purchase.model_purchase_order"/>
-        <field name="state">code</field>
-        <field name="code">action = env["purchase.order"].action_mercas_box_returns_menu()</field>
-    </record>
-
-    <record id="action_mercas_box_deliveries_server" model="ir.actions.server">
-        <field name="name">Entregas a proveedores</field>
-        <field name="model_id" ref="sale.model_sale_order"/>
-        <field name="state">code</field>
-        <field name="code">action = env["sale.order"].action_mercas_box_deliveries_menu()</field>
-    </record>
-
-    <menuitem
-        id="menu_mercas_cajas"
-        name="Cajas"
-        parent="menu_mercas_root"
+        groups="account.group_account_manager"
         sequence="70"
-    />
-
-    <menuitem
-        id="menu_mercas_cajas_devoluciones"
-        name="Devoluciones clientes"
-        parent="menu_mercas_cajas"
-        action="action_mercas_box_returns"
-        sequence="10"
-    />
-
-    <menuitem
-        id="menu_mercas_cajas_entregas"
-        name="Entregas a proveedores"
-        parent="menu_mercas_cajas"
-        action="action_mercas_box_deliveries_server"
-        sequence="20"
     />
 
 </odoo>

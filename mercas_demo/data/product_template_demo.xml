@@ -12,6 +12,7 @@
         <field name="is_storable">True</field>
         <field name="tracking">none</field>
         <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="is_box">True</field>
     </record>
 
     <record id="product_caja2" model="product.product">
@@ -21,6 +22,7 @@
         <field name="is_storable">True</field>
         <field name="tracking">none</field>
         <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="is_box">True</field>
     </record>
 
     <!-- ============================================================= -->

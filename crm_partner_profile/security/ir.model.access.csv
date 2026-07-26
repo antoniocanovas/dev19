@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_crm_partner_attribute_user,crm.partner.attribute.user,model_crm_partner_attribute,base.group_user,1,0,0,0
+access_crm_partner_attribute_manager,crm.partner.attribute.manager,model_crm_partner_attribute,sales_team.group_sale_manager,1,1,1,1
+access_crm_partner_attribute_value_user,crm.partner.attribute.value.user,model_crm_partner_attribute_value,base.group_user,1,0,0,0
+access_crm_partner_attribute_value_manager,crm.partner.attribute.value.manager,model_crm_partner_attribute_value,sales_team.group_sale_manager,1,1,1,1
+access_crm_partner_profile_line_salesman,crm.partner.profile.line.salesman,model_crm_partner_profile_line,sales_team.group_sale_salesman,1,1,1,1
+access_crm_partner_current_product_salesman,crm.partner.current.product.salesman,model_crm_partner_current_product,sales_team.group_sale_salesman,1,1,1,1

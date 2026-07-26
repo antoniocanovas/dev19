@@ -27,37 +27,83 @@
                         invisible="state not in ('sale', 'done')"/>
             </button>
 
+            <!-- Botón Recibir y facturar (solo pedidos de entrega de envases al
+                 proveedor ya confirmados: acción explícita, no automática al confirmar) -->
+            <button name="action_open_box_return" position="after">
+                <button name="action_mercas_box_deliver_and_invoice"
+                        string="Recibir y facturar"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="not mercas_is_box_delivery or state not in ('sale', 'done')"/>
+            </button>
+
+            <!-- Botón Imprimir etiquetas (visible en pedidos confirmados) -->
+            <button name="action_mercas_box_deliver_and_invoice" position="after">
+                <button name="action_print_mercas_labels"
+                        string="Imprimir etiquetas"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state not in ('sale', 'done')"/>
+            </button>
+
             <!-- Columnas Cajas y Caja en líneas de pedido (vista lista) -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_id']"
                    position="after">
+                <field name="mercas_product_is_box" column_invisible="1"/>
                 <field name="box_qty"
-                       invisible="display_type != False or box_sale_line_id != False"
+                       invisible="display_type != False or box_sale_line_id != False or mercas_product_is_box"
                        optional="show"/>
                 <field name="box_product_id"
-                       invisible="display_type != False or box_sale_line_id != False"
+                       invisible="display_type != False or box_sale_line_id != False or mercas_product_is_box"
                        optional="show"/>
             </xpath>
 
             <!-- Cajas y Caja en el formulario de línea (vista form/kanban móvil) -->
             <xpath expr="//field[@name='order_line']/form//field[@name='product_uom_id']"
                    position="after">
+                <field name="mercas_product_is_box" invisible="1"/>
                 <field name="box_qty"
-                       invisible="display_type != False or box_sale_line_id != False"/>
+                       invisible="display_type != False or box_sale_line_id != False or mercas_product_is_box"/>
                 <field name="box_product_id"
-                       invisible="display_type != False or box_sale_line_id != False"/>
+                       invisible="display_type != False or box_sale_line_id != False or mercas_product_is_box"/>
             </xpath>
 
             <!-- Mostrar stock/disponible junto al nombre del lote en el desplegable,
                  y ocultar lotes ya facturados a proveedor (liquidados) -->
             <xpath expr="//field[@name='order_line']/list/field[@name='lot_id']"
                    position="attributes">
-                <attribute name="domain">[('product_id', '=', product_id), ('supplier_invoice_id', '=', False)]</attribute>
+                <attribute name="domain">[('product_id', '=', product_id), ('invoiced', '=', False)]</attribute>
                 <attribute name="context">{'default_product_id': product_id, 'lot_display_with_qty': 1}</attribute>
             </xpath>
             <xpath expr="//field[@name='order_line']/form//field[@name='lot_id']"
                    position="attributes">
-                <attribute name="domain">[('product_id', '=', product_id), ('supplier_invoice_id', '=', False)]</attribute>
+                <attribute name="domain">[('product_id', '=', product_id), ('invoiced', '=', False)]</attribute>
                 <attribute name="context">{'default_product_id': product_id, 'lot_display_with_qty': 1}</attribute>
+            </xpath>
+
+            <!-- Corregir lote (línea de venta con lote asignado en albarán,
+                 servido o pendiente de servir) -->
+            <xpath expr="//field[@name='order_line']/list/field[@name='lot_id']"
+                   position="after">
+                <field name="mercas_has_assigned_lot" column_invisible="1"/>
+                <button name="action_open_lot_change_wizard" type="object"
+                        icon="fa-random" title="Corregir lote" width="32px"
+                        invisible="not mercas_has_assigned_lot"
+                        groups="mercas_base.group_correct_lots"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//field[@name='lot_id']"
+                   position="after">
+                <field name="mercas_has_assigned_lot" invisible="1"/>
+                <button name="action_open_lot_change_wizard" type="object"
+                        icon="fa-random" title="Corregir lote"
+                        invisible="not mercas_has_assigned_lot"
+                        groups="mercas_base.group_correct_lots"/>
+            </xpath>
+
+            <!-- Fecha del último cambio de cantidad, icono antes de la papelera -->
+            <xpath expr="//field[@name='order_line']/list/field[last()]"
+                   position="after">
+                <field name="product_qty_datetime" widget="mercas_product_qty_datetime_icon" string="" nolabel="1" readonly="1" width="32px"/>
             </xpath>
 
         </field>

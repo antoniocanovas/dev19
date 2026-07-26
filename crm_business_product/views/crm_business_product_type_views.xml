@@ -36,11 +36,16 @@
         <field name="view_mode">list,form</field>
     </record>
 
+    <menuitem id="crm_menu_productos"
+        name="Productos"
+        parent="crm.crm_menu_config"
+        sequence="16"/>
+
     <menuitem id="crm_business_product_type_menu"
         name="Tipos de producto"
-        parent="crm.crm_menu_config"
+        parent="crm_menu_productos"
         action="crm_business_product_type_action"
         groups="sales_team.group_sale_manager"
-        sequence="16"/>
+        sequence="10"/>
 
 </odoo>

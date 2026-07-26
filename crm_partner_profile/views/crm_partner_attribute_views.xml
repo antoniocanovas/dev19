@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_partner_attribute_view_list" model="ir.ui.view">
+        <field name="name">crm.partner.attribute.list</field>
+        <field name="model">crm.partner.attribute</field>
+        <field name="arch" type="xml">
+            <list string="Tipos de clasificación">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="value_type"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="crm_partner_attribute_view_form" model="ir.ui.view">
+        <field name="name">crm.partner.attribute.form</field>
+        <field name="model">crm.partner.attribute</field>
+        <field name="arch" type="xml">
+            <form string="Tipo de clasificación">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_partners" type="object"
+                            class="oe_stat_button" icon="fa-users">
+                            <field name="partner_count" widget="statinfo" string="Clientes"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <field name="value_type"/>
+                        <field name="active" invisible="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Valores">
+                            <field name="value_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Standalone list/search for crm.partner.attribute.value: without
+         these, the "Search more..." dialog opened from a many2many_tags
+         picker (e.g. in the rule condition assistant) falls back to a
+         generic auto-generated view showing only the value's name. -->
+    <record id="crm_partner_attribute_value_view_list" model="ir.ui.view">
+        <field name="name">crm.partner.attribute.value.list</field>
+        <field name="model">crm.partner.attribute.value</field>
+        <field name="arch" type="xml">
+            <list string="Valores de clasificación">
+                <field name="attribute_id"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="crm_partner_attribute_value_view_search" model="ir.ui.view">
+        <field name="name">crm.partner.attribute.value.search</field>
+        <field name="model">crm.partner.attribute.value</field>
+        <field name="arch" type="xml">
+            <search string="Valores de clasificación">
+                <field name="name"/>
+                <field name="attribute_id"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="crm_partner_attribute_action" model="ir.actions.act_window">
+        <field name="name">Tipos de clasificación</field>
+        <field name="res_model">crm.partner.attribute</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="crm_menu_clientes"
+        name="Clientes"
+        parent="crm.crm_menu_config"
+        sequence="20"/>
+
+    <menuitem id="crm_partner_attribute_menu"
+        name="Clasificación de clientes"
+        parent="crm_menu_clientes"
+        action="crm_partner_attribute_action"
+        groups="sales_team.group_sale_manager"
+        sequence="10"/>
+
+</odoo>

@@ -5,6 +5,16 @@ from odoo.exceptions import UserError
 class AccountMove(models.Model):
     _inherit = "account.move"
 
+    def action_post(self):
+        result = super().action_post()
+        for move in self:
+            if move.move_type not in ("in_invoice", "in_refund"):
+                continue
+            lots = move.invoice_line_ids.lot_id
+            if lots:
+                lots._mercas_recompute_invoiced_status()
+        return result
+
     def action_compensate(self):
         """Create a compensation journal entry that pays the vendor bill and generates
         an outstanding credit on the partner's customer invoices."""

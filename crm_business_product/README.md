@@ -48,7 +48,7 @@ a la oportunidad.
 
 ### Tipos de producto (`crm.business.product.type`)
 
-Nuevo modelo y menú **CRM > Configuración > Tipos de producto**, con:
+Nuevo modelo y menú **CRM > Configuración > Productos > Tipos de producto**, con:
 
 - **Nombre**.
 - **Atributos** (`attribute_ids`, `product.attribute`): atributos que se

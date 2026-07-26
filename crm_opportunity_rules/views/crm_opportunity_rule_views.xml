@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_opportunity_rule_view_list" model="ir.ui.view">
+        <field name="name">crm.opportunity.rule.list</field>
+        <field name="model">crm.opportunity.rule</field>
+        <field name="arch" type="xml">
+            <list string="Reglas de oportunidad">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="product_template_id"/>
+                <field name="crm_business_id"/>
+                <field name="suggestion_count"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="crm_opportunity_rule_view_form" model="ir.ui.view">
+        <field name="name">crm.opportunity.rule.form</field>
+        <field name="model">crm.opportunity.rule</field>
+        <field name="arch" type="xml">
+            <form string="Regla de oportunidad">
+                <header>
+                    <button name="action_open_domain_wizard" type="object"
+                        string="Asistente de condición"/>
+                    <button name="action_generate_suggestions_now" type="object"
+                        string="Generar sugerencias ahora"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="%(crm_opportunity_suggestion_action)d" type="action"
+                            class="oe_stat_button" icon="fa-lightbulb-o"
+                            context="{'search_default_rule_id': id}">
+                            <field name="suggestion_count" widget="statinfo" string="Sugerencias"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <field name="product_template_id" context="{'default_crm_business': True}"/>
+                        <field name="crm_business_id"/>
+                        <field name="active" invisible="1"/>
+                    </group>
+                    <group string="Condición">
+                        <field name="domain_description" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Condición (dominio técnico)" groups="base.group_no_one">
+                        <field name="domain" widget="domain"
+                            options="{'model': 'res.partner'}" nolabel="1" colspan="2"/>
+                    </group>
+                </sheet>
+                <chatter reload_on_post="True"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="crm_opportunity_rule_action" model="ir.actions.act_window">
+        <field name="name">Reglas de oportunidad</field>
+        <field name="res_model">crm.opportunity.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="crm_opportunity_rule_menu"
+        name="Reglas de oportunidad"
+        parent="crm_partner_profile.crm_menu_clientes"
+        action="crm_opportunity_rule_action"
+        groups="sales_team.group_sale_manager"
+        sequence="20"/>
+
+</odoo>

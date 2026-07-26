@@ -15,24 +15,9 @@
                         string="Facturar lote"
                         type="object"
                         class="btn-primary"
-                        invisible="not completed or supplier_invoice_id"
+                        invisible="not invoiceable"
                     />
                 </header>
-            </xpath>
-
-            <!-- Smart button factura proveedor -->
-            <xpath expr="//div[@name='button_box']" position="inside">
-                <button
-                    name="action_view_supplier_invoice"
-                    type="object"
-                    class="oe_stat_button"
-                    icon="fa-pencil-square-o"
-                    invisible="not supplier_invoice_id"
-                >
-                    <div class="o_stat_info">
-                        <span class="o_stat_text">Factura<br/>proveedor</span>
-                    </div>
-                </button>
             </xpath>
 
             <!-- Campos de origen en el header del formulario estándar -->
@@ -49,20 +34,29 @@
                 <notebook>
                     <page string="General" name="mercas_general">
                         <field name="can_edit_margin" invisible="1"/>
+                        <field name="can_edit_firm_negotiation" invisible="1"/>
                         <group>
+                            <group string="Negociación">
+                                <field name="mercas_firm_negotiation"
+                                       widget="boolean_toggle"
+                                       readonly="not can_edit_firm_negotiation"/>
+                            </group>
                             <group string="Cantidades">
                                 <field name="purchase_kg" readonly="1"/>
+                                <field name="received_kg" readonly="1" invisible="not mercas_firm_negotiation"/>
                                 <field name="sale_kg" readonly="1"/>
                                 <field name="scrap_kg" readonly="1"/>
                                 <field name="product_qty" readonly="1"/>
                             </group>
                             <group string="Liquidación">
-                                <field name="sale_amount" readonly="1"/>
-                                <field name="mercas_margin" readonly="not can_edit_margin"/>
-                                <field name="supplier_amount" readonly="1"/>
-                                <field name="supplier_price_kg" readonly="1"/>
-                                <field name="margin" readonly="1"/>
-                                <field name="supplier_invoice_id" readonly="1"/>
+                                <field name="sale_amount" readonly="1" invisible="mercas_firm_negotiation"/>
+                                <field name="mercas_margin" readonly="not can_edit_margin" invisible="mercas_firm_negotiation"/>
+                                <field name="supplier_amount" readonly="1" invisible="mercas_firm_negotiation"/>
+                                <field name="supplier_price_kg" readonly="1" invisible="mercas_firm_negotiation"/>
+                                <field name="margin" readonly="1" invisible="mercas_firm_negotiation"/>
+                                <field name="net_invoiced_amount" readonly="1" invisible="mercas_firm_negotiation"/>
+                                <field name="net_invoiced_kg" readonly="1" invisible="not mercas_firm_negotiation"/>
+                                <field name="invoiced"/>
                             </group>
                         </group>
                     </page>
@@ -71,8 +65,9 @@
                             <list>
                                 <field name="order_id" string="Pedido"/>
                                 <field name="product_id"/>
-                                <field name="product_qty" string="Cantidad"/>
+                                <field name="product_qty" string="Cantidad" sum="Cantidad"/>
                                 <field name="price_unit" string="Precio propuesto"/>
+                                <field name="price_subtotal" string="Subtotal" sum="Subtotal"/>
                                 <field name="currency_id" column_invisible="1"/>
                             </list>
                         </field>
@@ -82,9 +77,15 @@
                             <list>
                                 <field name="order_id" string="Pedido"/>
                                 <field name="product_id"/>
-                                <field name="product_uom_qty" string="Cantidad"/>
+                                <field name="product_uom_qty" string="Cantidad" sum="Cantidad"/>
                                 <field name="price_unit" string="Precio conseguido"/>
+                                <field name="price_subtotal" string="Subtotal" sum="Subtotal"/>
                                 <field name="currency_id" column_invisible="1"/>
+                                <field name="mercas_has_assigned_lot" column_invisible="1"/>
+                                <button name="action_open_lot_change_wizard" type="object"
+                                        string="Corregir lote" icon="fa-random"
+                                        invisible="not mercas_has_assigned_lot"
+                                        groups="mercas_base.group_correct_lots"/>
                             </list>
                         </field>
                     </page>
@@ -94,9 +95,9 @@
                                 <field name="move_id" string="Factura"/>
                                 <field name="partner_id"/>
                                 <field name="name" string="Descripción"/>
-                                <field name="quantity"/>
+                                <field name="quantity" sum="Cantidad"/>
                                 <field name="price_unit"/>
-                                <field name="price_subtotal"/>
+                                <field name="price_subtotal" sum="Subtotal"/>
                                 <field name="currency_id" column_invisible="1"/>
                             </list>
                         </field>
@@ -107,9 +108,9 @@
                                 <field name="move_id" string="Factura"/>
                                 <field name="partner_id"/>
                                 <field name="name" string="Descripción"/>
-                                <field name="quantity"/>
+                                <field name="quantity" sum="Cantidad"/>
                                 <field name="price_unit"/>
-                                <field name="price_subtotal"/>
+                                <field name="price_subtotal" sum="Subtotal"/>
                                 <field name="currency_id" column_invisible="1"/>
                             </list>
                         </field>
@@ -119,7 +120,7 @@
                             <list>
                                 <field name="name" string="Referencia"/>
                                 <field name="product_id"/>
-                                <field name="scrap_qty" string="Cantidad"/>
+                                <field name="scrap_qty" string="Cantidad" sum="Cantidad"/>
                                 <field name="product_uom_id" string="UdM"/>
                                 <field name="location_id"/>
                                 <field name="date_done" string="Fecha"/>
@@ -140,16 +141,21 @@
         <field name="arch" type="xml">
             <xpath expr="//list/field[@name='product_id']" position="after">
                 <field name="partner_id" optional="show"/>
+                <field name="mercas_firm_negotiation" optional="show"/>
             </xpath>
             <xpath expr="//list/field[last()]" position="after">
                 <field name="completed" optional="show"/>
                 <field name="sale_kg" optional="show" sum="Kg vendidos"/>
                 <field name="purchase_kg" optional="show" sum="Kg comprados"/>
+                <field name="received_kg" optional="hide" sum="Kg recibidos"/>
                 <field name="scrap_kg" optional="show" sum="Kg desechados"/>
                 <field name="sale_amount" optional="show" sum="Importe vendido"/>
                 <field name="supplier_amount" optional="hide"/>
                 <field name="supplier_price_kg" optional="hide"/>
-                <field name="supplier_invoice_id" optional="hide"/>
+                <field name="net_invoiced_kg" optional="hide" sum="Kg facturados"/>
+                <field name="net_invoiced_amount" optional="hide" sum="Importe facturado"/>
+                <field name="invoiceable" optional="show"/>
+                <field name="invoiced" optional="show"/>
             </xpath>
         </field>
     </record>
@@ -167,17 +173,22 @@
                 <filter
                     string="No facturados"
                     name="not_invoiced"
-                    domain="[('supplier_invoice_id', '=', False)]"
+                    domain="[('invoiced', '=', False)]"
                 />
                 <filter
-                    string="Completados no facturados"
-                    name="completed_not_invoiced"
-                    domain="[('completed', '=', True), ('supplier_invoice_id', '=', False)]"
+                    string="Facturables"
+                    name="invoiceable"
+                    domain="[('invoiceable', '=', True)]"
                 />
                 <filter
                     string="Completado"
                     name="completed"
                     domain="[('completed', '=', True)]"
+                />
+                <filter
+                    string="Facturación firme"
+                    name="firm_negotiation"
+                    domain="[('mercas_firm_negotiation', '=', True)]"
                 />
                 <separator/>
                 <filter
@@ -195,15 +206,6 @@
         <field name="res_model">stock.lot</field>
         <field name="view_mode">list,form</field>
         <field name="context">{"search_default_not_invoiced": 1}</field>
-    </record>
-
-    <record id="action_lot_create_supplier_invoices" model="ir.actions.server">
-        <field name="name">Crear facturas proveedor</field>
-        <field name="model_id" ref="stock.model_stock_lot"/>
-        <field name="binding_model_id" ref="stock.model_stock_lot"/>
-        <field name="binding_view_types">list</field>
-        <field name="state">code</field>
-        <field name="code">action = records.action_create_supplier_invoices()</field>
     </record>
 
 </odoo>

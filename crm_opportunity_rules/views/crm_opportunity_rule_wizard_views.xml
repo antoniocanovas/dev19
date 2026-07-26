@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_opportunity_rule_wizard_view_form" model="ir.ui.view">
+        <field name="name">crm.opportunity.rule.wizard.form</field>
+        <field name="model">crm.opportunity.rule.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Asistente de condición">
+                <field name="rule_id" invisible="1"/>
+                <p class="text-muted">
+                    Al confirmar, este asistente sustituye por completo la
+                    condición actual de la regla por la que se construya aquí.
+                </p>
+                <group>
+                    <field name="required_value_ids" widget="many2many_tags"
+                        string="Propiedades a cumplir del perfil de negocio"/>
+                    <field name="excluded_value_ids" widget="many2many_tags"
+                        string="Propiedades excluyentes del perfil de negocio"/>
+                </group>
+                <separator string="Productos/servicios que ha de tener el cliente"/>
+                <field name="required_product_ids">
+                    <list editable="bottom">
+                        <field name="product_tmpl_id" context="{'default_crm_business': True}"/>
+                        <field name="state"/>
+                        <field name="provider"/>
+                    </list>
+                </field>
+                <separator string="Productos/servicios que no ha de tener el cliente"/>
+                <field name="excluded_product_ids">
+                    <list editable="bottom">
+                        <field name="product_tmpl_id" context="{'default_crm_business': True}"/>
+                        <field name="state"/>
+                        <field name="provider"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_apply" type="object" string="Generar condición"
+                        class="oe_highlight"/>
+                    <button string="Cancelar" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

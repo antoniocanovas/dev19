@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crm_opportunity_suggestion_view_list" model="ir.ui.view">
+        <field name="name">crm.opportunity.suggestion.list</field>
+        <field name="model">crm.opportunity.suggestion</field>
+        <field name="arch" type="xml">
+            <list string="Recomendaciones de venta" decoration-muted="state == 'dismissed'">
+                <field name="partner_id"/>
+                <field name="product_template_id"/>
+                <field name="rule_id"/>
+                <field name="crm_business_id"/>
+                <field name="lead_id" column_invisible="1"/>
+                <button name="action_view_lead" type="object" string="Ver oportunidad"
+                    class="btn-link" invisible="not lead_id"/>
+                <field name="state" widget="badge"
+                    decoration-success="state == 'converted'"
+                    decoration-danger="state == 'dismissed'"/>
+                <button name="action_convert" type="object" string="Convertir"
+                    class="btn-link" invisible="state == 'converted'"/>
+                <button name="action_dismiss" type="object" string="Descartar"
+                    class="btn-link" invisible="state != 'new'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="crm_opportunity_suggestion_view_form" model="ir.ui.view">
+        <field name="name">crm.opportunity.suggestion.form</field>
+        <field name="model">crm.opportunity.suggestion</field>
+        <field name="arch" type="xml">
+            <form string="Recomendación de venta">
+                <header>
+                    <button name="action_convert" type="object" string="Convertir en oportunidad"
+                        class="oe_highlight" invisible="state == 'converted'"/>
+                    <button name="action_dismiss" type="object" string="Descartar"
+                        invisible="state != 'new'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="partner_id"/>
+                        <field name="product_template_id"/>
+                        <field name="rule_id"/>
+                        <field name="crm_business_id"/>
+                        <field name="lead_id"/>
+                    </group>
+                    <group string="Condiciones de la regla">
+                        <field name="rule_domain_description" nolabel="1" colspan="2"/>
+                    </group>
+                </sheet>
+                <chatter reload_on_post="True"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="crm_opportunity_suggestion_view_search" model="ir.ui.view">
+        <field name="name">crm.opportunity.suggestion.search</field>
+        <field name="model">crm.opportunity.suggestion</field>
+        <field name="arch" type="xml">
+            <search string="Recomendaciones de venta">
+                <field name="partner_id"/>
+                <field name="rule_id"/>
+                <field name="product_template_id"/>
+                <filter string="Nuevas" name="new" domain="[('state', '=', 'new')]"/>
+                <filter string="Convertidas" name="converted" domain="[('state', '=', 'converted')]"/>
+                <filter string="Descartadas" name="dismissed" domain="[('state', '=', 'dismissed')]"/>
+                <group>
+                    <filter string="Regla" name="group_rule" context="{'group_by': 'rule_id'}"/>
+                    <filter string="Cliente" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Estado" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="crm_opportunity_suggestion_action" model="ir.actions.act_window">
+        <field name="name">Recomendaciones de venta</field>
+        <field name="res_model">crm.opportunity.suggestion</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem id="crm_opportunity_suggestion_menu"
+        name="Recomendaciones de venta"
+        parent="crm.crm_menu_sales"
+        action="crm_opportunity_suggestion_action"
+        sequence="15"/>
+
+</odoo>

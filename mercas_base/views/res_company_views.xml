@@ -19,11 +19,6 @@
                             <field name="origin_state" widget="toggle"/>
                             <field name="origin_filter" widget="toggle"/>
                         </group>
-                        <group string="Envases">
-                            <field name="box_purchase_type_id"/>
-                            <field name="box_sale_type_id"/>
-                            <field name="box_categ_ids" widget="many2many_tags"/>
-                        </group>
                         <group string="Contabilidad">
                             <field name="compensation_journal_id"/>
                             <field name="mercas_margin"/>

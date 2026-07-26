@@ -13,13 +13,21 @@ class SaleOrder(models.Model):
     )
     mercas_is_box_delivery = fields.Boolean(
         compute="_compute_mercas_is_box_delivery",
+        store=True,
         string="Es entrega de cajas a proveedor",
     )
 
-    @api.depends("box_delivery_purchase_id")
+    @api.depends(
+        "box_delivery_purchase_id", "order_line.display_type",
+        "order_line.product_id.is_box",
+    )
     def _compute_mercas_is_box_delivery(self):
         for order in self:
-            order.mercas_is_box_delivery = bool(order.box_delivery_purchase_id)
+            product_lines = order.order_line.filtered(lambda l: not l.display_type)
+            content_is_box = bool(product_lines) and all(
+                line.product_id.is_box for line in product_lines
+            )
+            order.mercas_is_box_delivery = bool(order.box_delivery_purchase_id) or content_is_box
 
     def action_confirm(self):
         regular_orders = self.filtered(lambda o: not o.mercas_is_box_delivery)
@@ -27,18 +35,18 @@ class SaleOrder(models.Model):
             order._mercas_ensure_customer_location()
             order._mercas_prepare_box_lines()
 
-        result = super().action_confirm()
-
-        box_delivery_orders = self.filtered(lambda o: o.mercas_is_box_delivery)
-        if not box_delivery_orders:
-            return result
-
-        actions = [order._mercas_box_delivery_confirm_flow() for order in box_delivery_orders]
-        invoice_actions = [a for a in actions if isinstance(a, dict)]
-        return invoice_actions[-1] if invoice_actions else result
+        return super().action_confirm()
 
     def _mercas_ensure_customer_location(self):
         self.partner_id.mercas_ensure_customer_location(self.company_id)
+
+    def action_mercas_box_deliver_and_invoice(self):
+        """Button target: deliver the boxes and invoice the customer now, for a
+        box-delivery order (mercas_is_box_delivery). A deliberate user action,
+        not automatic on confirm, so a sale that happens to contain only box
+        products for an unrelated reason never triggers this by accident."""
+        self.ensure_one()
+        return self._mercas_box_delivery_confirm_flow()
 
     def _mercas_box_delivery_confirm_flow(self):
         """Deliver boxes to the supplier's location, create and post the customer invoice."""
@@ -186,34 +194,23 @@ class SaleOrder(models.Model):
         return self._mercas_sold_and_sent_execute()
 
     def _mercas_sold_and_sent_execute(self):
-        """Confirm and auto-deliver. Called directly or via the risk wizard continue."""
+        """Confirm and auto-deliver. Called directly or via the risk wizard continue.
+        For box-delivery orders this also runs the automated deliver+invoice flow
+        (same as the "Recibir y facturar" button) since this shortcut is itself
+        an explicit "do it all now" action."""
         self.with_context(bypass_risk=True).action_confirm()
-        self._mercas_auto_deliver()
-
-    @api.model
-    def action_mercas_box_deliveries_menu(self):
-        box_type = self.env.company.box_sale_type_id
-        if not box_type:
-            raise UserError(_("Configure el tipo de venta de envases en la empresa."))
-        return {
-            "type": "ir.actions.act_window",
-            "name": _("Entregas a proveedores"),
-            "res_model": "sale.order",
-            "view_mode": "list,form",
-            "domain": [("type_id", "=", box_type.id)],
-            "context": {"default_type_id": box_type.id},
-        }
+        if self.mercas_is_box_delivery:
+            self._mercas_box_delivery_confirm_flow()
+        else:
+            self._mercas_auto_deliver()
 
     def action_open_box_return(self):
         """Open a new purchase order pre-filled for box return from this sale's customer."""
         self.ensure_one()
-        company = self.company_id
-        box_type = company.box_purchase_type_id
-        if not box_type:
-            raise UserError(_("Configure el tipo de compra de envases en la empresa."))
+        if not self.env["product.template"]._mercas_any_box_product_exists():
+            raise UserError(_("No hay ningún producto marcado como caja/envase."))
         new_po = self.env["purchase.order"].create({
             "partner_id": self.partner_id.id,
-            "order_type": box_type.id,
             "origin": self.name,
         })
         return {
@@ -222,6 +219,18 @@ class SaleOrder(models.Model):
             "res_id": new_po.id,
             "view_mode": "form",
             "target": "current",
+        }
+
+    def action_print_mercas_labels(self):
+        """Open the wizard to print product labels for this sale's boxes."""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Imprimir etiquetas"),
+            "res_model": "mercas.label.print.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {"default_sale_id": self.id},
         }
 
     def _mercas_auto_deliver(self):

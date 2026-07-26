@@ -31,21 +31,6 @@ class ResCompany(models.Model):
         default=True,
         help="Creación automática de lotes de compra al confirmar si no están establecidos.",
     )
-    box_purchase_type_id = fields.Many2one(
-        comodel_name="purchase.order.type",
-        string="Tipo de compra envases",
-        help="Tipo de compra para devolución de envases",
-    )
-    box_sale_type_id = fields.Many2one(
-        comodel_name="sale.order.type",
-        string="Tipo de venta envases",
-        help="Tipo de venta para devolución de envases",
-    )
-    box_categ_ids = fields.Many2many(
-        comodel_name="product.category",
-        string="Categorías de cajas",
-        help="Familias de productos permitidas para devolución de envases",
-    )
     origin_country = fields.Boolean(
         string="Columna país origen",
         default=True,

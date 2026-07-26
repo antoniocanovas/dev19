@@ -1,5 +1,7 @@
 from odoo import api, fields, models
 
+MERCAS_LINES_BUS_NOTIFICATION_TYPE = "mercas_sale_order_lines_updated"
+
 
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
@@ -23,7 +25,51 @@ class SaleOrderLine(models.Model):
         compute="_compute_box_product_id",
         store=True,
         readonly=False,
+        domain=[("is_box", "=", True)],
     )
+    mercas_product_is_box = fields.Boolean(related="product_id.is_box")
+    mercas_has_assigned_lot = fields.Boolean(
+        compute="_compute_mercas_has_assigned_lot",
+        help="Tiene al menos una línea de albarán (validada o pendiente) con "
+             "lote asignado: se puede corregir el lote, antes o después de "
+             "servir el pedido.",
+    )
+    product_qty_datetime = fields.Datetime(
+        string="Cantidad actualizada el",
+        copy=False,
+        help="Fecha y hora en que se creó la línea (con la cantidad inicial) o, si "
+             "es posterior, en que se modificó la cantidad por última vez.",
+    )
+
+    @api.depends("move_ids.move_line_ids.state", "move_ids.move_line_ids.lot_id")
+    def _compute_mercas_has_assigned_lot(self):
+        for line in self:
+            line.mercas_has_assigned_lot = bool(
+                line.move_ids.move_line_ids.filtered(
+                    lambda ml: ml.state != "cancel" and ml.lot_id
+                )
+            )
+
+    def action_open_lot_change_wizard(self):
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": "Corregir lote de venta",
+            "res_model": "stock.lot.change.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {"default_sale_line_id": self.id},
+        }
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        now = fields.Datetime.now()
+        for vals in vals_list:
+            if not vals.get("display_type") and "product_qty_datetime" not in vals:
+                vals["product_qty_datetime"] = now
+        lines = super().create(vals_list)
+        lines._mercas_notify_lines_changed(lines.order_id)
+        return lines
 
     @api.depends("product_id", "product_uom_id", "product_uom_qty")
     def _compute_box_qty(self):
@@ -57,7 +103,7 @@ class SaleOrderLine(models.Model):
             .search(
                 [
                     ("id", "in", [item["id"] for item in result["available"]]),
-                    ("supplier_invoice_id", "!=", False),
+                    ("invoiced", "=", True),
                 ]
             )
             .ids
@@ -71,7 +117,14 @@ class SaleOrderLine(models.Model):
         return result
 
     def write(self, vals):
+        changed_qty_lines = self.env["sale.order.line"]
+        if "product_uom_qty" in vals:
+            changed_qty_lines = self.filtered(
+                lambda l: l.product_uom_qty != vals["product_uom_qty"]
+            )
         result = super().write(vals)
+        if changed_qty_lines:
+            changed_qty_lines.product_qty_datetime = fields.Datetime.now()
         if "box_qty" in vals or "box_product_id" in vals or "product_id" in vals:
             for line in self.filtered(lambda l: not l.display_type and not l.box_sale_line_id):
                 box_lines = self.env["sale.order.line"].search(
@@ -89,4 +142,30 @@ class SaleOrderLine(models.Model):
                     update["product_id"] = line.box_product_id.id
                 if update:
                     box_lines.write(update)
+        self._mercas_notify_lines_changed(self.order_id)
         return result
+
+    def unlink(self):
+        orders = self.order_id
+        result = super().unlink()
+        self._mercas_notify_lines_changed(orders)
+        return result
+
+    def _mercas_notify_lines_changed(self, orders):
+        """Avisa por el bus a quien tenga abierto alguno de estos pedidos de
+        que sus líneas han cambiado, para que pueda ofrecer recargar la vista
+        (ver static/src/js/sale_order_lines_bus_notification.js)."""
+        for order in orders:
+            self.env["bus.bus"]._sendone(
+                self._mercas_lines_bus_channel(order.id),
+                MERCAS_LINES_BUS_NOTIFICATION_TYPE,
+                {
+                    "order_id": order.id,
+                    "user_id": self.env.user.id,
+                    "user_name": self.env.user.name,
+                },
+            )
+
+    @api.model
+    def _mercas_lines_bus_channel(self, order_id):
+        return "mercas_sale_order_lines-%s" % order_id

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="group_correct_lots" model="res.groups">
+        <field name="name">Mercas: Corregir lotes</field>
+        <field name="comment">Puede corregir el lote de una línea de venta, servida o pendiente de
+            servir (línea/s de albarán, validadas o no, factura de cliente en borrador y campo
+            lote de la línea de venta). No permite el cambio si alguno de los lotes implicados ya
+            tiene facturación al proveedor registrada.</field>
+    </record>
+
+</odoo>

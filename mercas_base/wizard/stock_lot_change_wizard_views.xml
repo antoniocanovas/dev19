@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_stock_lot_change_wizard_form" model="ir.ui.view">
+        <field name="name">stock.lot.change.wizard.form</field>
+        <field name="model">stock.lot.change.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Corregir lote de venta">
+                <group>
+                    <field name="order_id" readonly="1"/>
+                    <field name="product_id" readonly="1"/>
+                    <field name="sale_line_id" invisible="1"/>
+                </group>
+                <div class="alert alert-warning" role="alert">
+                    Esto corrige la trazabilidad de venta (línea de albarán, servida o
+                    pendiente, línea de venta y, si sigue en borrador, la factura de cliente) y
+                    recalcula los kg/importe vendidos de cada lote. Si la línea de albarán ya
+                    estaba servida, también corrige las existencias físicas (stock.quant) del
+                    producto en el origen y destino de esa entrega concreta, trasladando la
+                    cantidad del lote antiguo al nuevo.
+                </div>
+                <field name="line_ids">
+                    <list editable="bottom">
+                        <field name="move_line_id" column_invisible="1" force_save="1"/>
+                        <field name="current_lot_id" readonly="1" force_save="1"/>
+                        <field name="quantity" readonly="1" force_save="1"/>
+                        <field name="new_lot_id"
+                               domain="[('product_id', '=', parent.product_id)]"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_apply" string="Aplicar corrección"
+                            type="object" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

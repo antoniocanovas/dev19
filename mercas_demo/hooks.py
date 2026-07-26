@@ -44,21 +44,9 @@ def _activate_lot_tracking(env):
 
 
 def _configure_company(env):
-    envases_categ = env.ref("mercas_demo.product_category_envases", raise_if_not_found=False)
-    box_purchase_type = env.ref("mercas_demo.purchase_order_type_envases", raise_if_not_found=False)
-    box_sale_type = env.ref("mercas_demo.sale_order_type_envases", raise_if_not_found=False)
     for company in env["res.company"].search([]):
-        vals = {}
-        if envases_categ and envases_categ.id not in company.box_categ_ids.ids:
-            vals["box_categ_ids"] = [(4, envases_categ.id)]
         if not company.mercas_margin:
-            vals["mercas_margin"] = 10.0
-        if box_purchase_type and not company.box_purchase_type_id:
-            vals["box_purchase_type_id"] = box_purchase_type.id
-        if box_sale_type and not company.box_sale_type_id:
-            vals["box_sale_type_id"] = box_sale_type.id
-        if vals:
-            company.write(vals)
+            company.write({"mercas_margin": 10.0})
 
 
 def _assign_compensation_journal(env):

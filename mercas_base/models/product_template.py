@@ -1,20 +1,23 @@
-from odoo import api, fields, models
+from odoo import fields, models
 
 
 class ProductTemplate(models.Model):
     _inherit = "product.template"
 
+    is_box = fields.Boolean(
+        string="Es caja/envase",
+        help="Marca este producto como caja o envase: se usa para detectar "
+             "pedidos de devolución/entrega de cajas y para excluirlo de la "
+             "impresión de etiquetas y del cálculo de cajas en ubicaciones.",
+    )
     box_product_id = fields.Many2one(
         comodel_name="product.product",
         string="Caja",
         help="Producto de envase utilizado al vender este producto.",
-    )
-    mercas_box_categ_ids = fields.Many2many(
-        comodel_name="product.category",
-        compute="_compute_mercas_box_categ_ids",
+        domain=[("is_box", "=", True)],
     )
 
-    @api.depends_context("allowed_company_ids")
-    def _compute_mercas_box_categ_ids(self):
-        for rec in self:
-            rec.mercas_box_categ_ids = rec.env.company.box_categ_ids
+    def _mercas_any_box_product_exists(self):
+        return bool(self.env["product.template"].search_count(
+            [("is_box", "=", True)], limit=1
+        ))

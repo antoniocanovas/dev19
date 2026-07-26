@@ -8,11 +8,22 @@
         <field name="arch" type="xml">
             <!-- Inserta después del div que contiene qty_available (padre de uom_span) -->
             <xpath expr="//span[@name='uom_span']/.." position="after">
-                <field name="mercas_box_categ_ids" invisible="1"/>
+                <field name="is_box"/>
                 <field name="box_product_id"
-                       invisible="not is_storable"
-                       domain="[('categ_id', 'in', mercas_box_categ_ids)]"/>
+                       invisible="not is_storable or is_box"/>
             </xpath>
+        </field>
+    </record>
+
+    <record id="view_product_template_search_mercas" model="ir.ui.view">
+        <field name="name">product.template.search.mercas</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <filter name="filter_to_sell" position="after">
+                <separator/>
+                <filter string="Cajas" name="mercas_is_box" domain="[('is_box', '=', True)]"/>
+            </filter>
         </field>
     </record>
 

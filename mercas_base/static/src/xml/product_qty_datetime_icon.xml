@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="mercas_base.ProductQtyDatetimeIcon">
+        <i class="fa fa-info-circle text-muted mx-1 cursor-pointer" role="img" t-att-aria-label="text"
+           t-on-click.stop.prevent="showPopover"/>
+    </t>
+
+    <t t-name="mercas_base.ProductQtyDatetimeIconPopover">
+        <div class="p-2" t-out="props.text"/>
+    </t>
+
+</templates>

@@ -1,4 +1,5 @@
 from odoo import _, fields, models
+from odoo.exceptions import UserError
 
 
 class ResPartner(models.Model):
@@ -9,13 +10,29 @@ class ResPartner(models.Model):
         digits=(10, 2),
         help="Partner mercas margin used when not null.",
     )
+    mercas_firm_negotiation = fields.Boolean(
+        string="Facturación firme",
+        help=(
+            "Valor por defecto del campo 'Facturación firme' en las nuevas "
+            "líneas de pedido de compra a este proveedor. Se puede cambiar "
+            "manualmente en cada línea."
+        ),
+    )
     mercas_box_qty = fields.Float(
         string="Cajas",
         compute="_compute_mercas_box_qty",
         help=(
-            "Cantidad de cajas (productos de las categorías configuradas en la "
-            "empresa) presentes en las ubicaciones propias de cliente y proveedor "
-            "de este contacto."
+            "Cantidad de cajas (productos marcados como caja/envase) presentes "
+            "en las ubicaciones propias de cliente y proveedor de este contacto."
+        ),
+    )
+    mercas_has_box_location = fields.Boolean(
+        string="Tiene ubicación de cajas",
+        compute="_compute_mercas_box_qty",
+        help=(
+            "El contacto tiene ubicación propia de cliente o proveedor y hay "
+            "algún producto marcado como caja/envase, aunque ahora mismo no "
+            "haya existencias. Controla la visibilidad del botón de cajas."
         ),
     )
 
@@ -35,18 +52,20 @@ class ResPartner(models.Model):
 
     def _mercas_box_quants_domain(self, company):
         locations = self._mercas_box_locations(company)
-        box_categs = company.box_categ_ids
-        if not locations or not box_categs:
+        if not locations or not self.env["product.template"]._mercas_any_box_product_exists():
             return None
         return [
             ("location_id", "in", locations.ids),
-            ("product_id.categ_id", "in", box_categs.ids),
+            ("product_id.is_box", "=", True),
             ("quantity", "!=", 0),
         ]
 
     def _compute_mercas_box_qty(self):
         company = self.env.company
+        any_box_product = self.env["product.template"]._mercas_any_box_product_exists()
         for partner in self:
+            locations = partner._mercas_box_locations(company)
+            partner.mercas_has_box_location = bool(locations and any_box_product)
             domain = partner._mercas_box_quants_domain(company)
             if domain is None:
                 partner.mercas_box_qty = 0.0
@@ -64,6 +83,39 @@ class ResPartner(models.Model):
             "view_mode": "list",
             "domain": domain,
             "context": {"group_by": ["product_id", "location_id"]},
+        }
+
+    def action_mercas_open_box_delivery(self):
+        """Open a new sale order to deliver boxes to this partner (acting as
+        our supplier for this box exchange), same as the "Entrega cajas"
+        button on a purchase order but without a specific origin purchase."""
+        self.ensure_one()
+        if not self.env["product.template"]._mercas_any_box_product_exists():
+            raise UserError(_("No hay ningún producto marcado como caja/envase."))
+        new_so = self.env["sale.order"].create({"partner_id": self.id})
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "sale.order",
+            "res_id": new_so.id,
+            "view_mode": "form",
+            "target": "current",
+        }
+
+    def action_mercas_open_box_return(self):
+        """Open a new purchase order to receive boxes back from this partner
+        (acting as our customer for this box exchange), same as the
+        "Devolución cajas" button on a sale order but without a specific
+        origin sale."""
+        self.ensure_one()
+        if not self.env["product.template"]._mercas_any_box_product_exists():
+            raise UserError(_("No hay ningún producto marcado como caja/envase."))
+        new_po = self.env["purchase.order"].create({"partner_id": self.id})
+        return {
+            "type": "ir.actions.act_window",
+            "res_model": "purchase.order",
+            "res_id": new_po.id,
+            "view_mode": "form",
+            "target": "current",
         }
 
     def mercas_ensure_customer_location(self, company):

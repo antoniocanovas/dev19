@@ -1,5 +1,5 @@
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError
 
 
 class PurchaseOrder(models.Model):
@@ -8,31 +8,15 @@ class PurchaseOrder(models.Model):
     mercas_origin_country = fields.Boolean(related="company_id.origin_country")
     mercas_origin_state = fields.Boolean(related="company_id.origin_state")
 
-    @api.model
-    def action_mercas_box_returns_menu(self):
-        box_type = self.env.company.box_purchase_type_id
-        if not box_type:
-            raise UserError(_("Configure el tipo de compra de envases en la empresa."))
-        return {
-            "type": "ir.actions.act_window",
-            "name": _("Cajas"),
-            "res_model": "purchase.order",
-            "view_mode": "list,form",
-            "domain": [("order_type", "=", box_type.id)],
-            "context": {"default_order_type": box_type.id},
-        }
-
     def action_open_box_delivery(self):
         """Open a new sale order to deliver boxes back to this purchase's supplier."""
         self.ensure_one()
-        box_type = self.company_id.box_sale_type_id
-        if not box_type:
-            raise UserError(_("Configure el tipo de venta de envases en la empresa."))
+        if not self.env["product.template"]._mercas_any_box_product_exists():
+            raise UserError(_("No hay ningún producto marcado como caja/envase."))
         new_so = self.env["sale.order"].create({
             "partner_id": self.partner_id.id,
             "origin": self.name,
             "box_delivery_purchase_id": self.id,
-            "type_id": box_type.id,
         })
         return {
             "type": "ir.actions.act_window",
@@ -42,27 +26,31 @@ class PurchaseOrder(models.Model):
             "target": "current",
         }
 
+    def action_print_mercas_labels(self):
+        """Open the wizard to print product labels for this purchase's boxes."""
+        self.ensure_one()
+        return {
+            "type": "ir.actions.act_window",
+            "name": _("Imprimir etiquetas"),
+            "res_model": "mercas.label.print.wizard",
+            "view_mode": "form",
+            "target": "new",
+            "context": {"default_purchase_id": self.id},
+        }
+
     mercas_is_box_return = fields.Boolean(
-        compute="_compute_mercas_box_fields",
+        compute="_compute_mercas_is_box_return",
+        store=True,
         string="Es devolución de envases",
     )
-    mercas_box_categ_ids = fields.Many2many(
-        comodel_name="product.category",
-        compute="_compute_mercas_box_fields",
-        string="Categorías de cajas permitidas",
-    )
 
-    @api.depends("order_type", "company_id", "company_id.box_purchase_type_id",
-                 "company_id.box_categ_ids")
-    def _compute_mercas_box_fields(self):
+    @api.depends("order_line.display_type", "order_line.product_id.is_box")
+    def _compute_mercas_is_box_return(self):
         for order in self:
-            box_type = order.company_id.box_purchase_type_id
-            if box_type and order.order_type == box_type:
-                order.mercas_is_box_return = True
-                order.mercas_box_categ_ids = order.company_id.box_categ_ids
-            else:
-                order.mercas_is_box_return = False
-                order.mercas_box_categ_ids = self.env["product.category"]
+            product_lines = order.order_line.filtered(lambda l: not l.display_type)
+            order.mercas_is_box_return = bool(product_lines) and all(
+                line.product_id.is_box for line in product_lines
+            )
 
     def button_confirm(self):
         # Pre-confirm: auto-create lots for tracked lines without one
@@ -87,14 +75,7 @@ class PurchaseOrder(models.Model):
             ):
                 line.lot_id.partner_id = order.partner_id
 
-        # Post-confirm: full automated flow for box return orders
-        box_orders = self.filtered(lambda o: o.mercas_is_box_return)
-        if not box_orders:
-            return result
-
-        actions = [order._mercas_box_confirm_flow() for order in box_orders]
-        invoice_actions = [a for a in actions if isinstance(a, dict)]
-        return invoice_actions[-1] if invoice_actions else result
+        return result
 
     def _mercas_prepare_box_lines(self):
         """Add PRODUCTOS/Envases sections and one box line per product line with
@@ -174,7 +155,16 @@ class PurchaseOrder(models.Model):
                     "partner_id": self.partner_id.id,
                     "origin_country_id": line.origin_country_id.id,
                     "origin_state_id": line.origin_state_id.id,
+                    "mercas_firm_negotiation": line.mercas_firm_negotiation,
                 })
+
+    def action_mercas_box_receive_and_invoice(self):
+        """Button target: receive the boxes and invoice the supplier now, for a
+        box-return order (mercas_is_box_return). A deliberate user action, not
+        automatic on confirm, so a purchase that happens to contain only box
+        products for an unrelated reason never triggers this by accident."""
+        self.ensure_one()
+        return self._mercas_box_confirm_flow()
 
     def _mercas_box_confirm_flow(self):
         """Receive boxes from customer location, create vendor bill and post it."""
@@ -219,12 +209,14 @@ class PurchaseOrder(models.Model):
         }
 
     def button_purchase_and_receive(self):
-        """Confirm the PO and validate receipts.
-        Invoice is only created automatically for box return orders (handled inside
-        button_confirm → _mercas_box_confirm_flow). For regular orders the invoice
-        is created manually by the user."""
+        """Confirm the PO and validate receipts. For box-return orders this also
+        runs the automated receive+invoice flow (same as the "Recibir y facturar"
+        button) since this shortcut is itself an explicit "do it all now" action.
+        For regular orders the invoice is created manually by the user."""
         self.button_confirm()
-        if not self.mercas_is_box_return:
+        if self.mercas_is_box_return:
+            self._mercas_box_confirm_flow()
+        else:
             self._mercas_auto_receive()
 
     def _mercas_auto_receive(self):
@@ -259,6 +251,7 @@ class PurchaseOrderLine(models.Model):
         compute="_compute_box_product_id",
         store=True,
         readonly=False,
+        domain=[("is_box", "=", True)],
     )
     origin_country_id = fields.Many2one(
         comodel_name="res.country",
@@ -269,6 +262,23 @@ class PurchaseOrderLine(models.Model):
         string="Provincia origen",
         domain="[('country_id', '=', origin_country_id)]",
     )
+    mercas_firm_negotiation = fields.Boolean(
+        string="Facturación firme",
+        compute="_compute_mercas_firm_negotiation",
+        store=True,
+        readonly=False,
+        help=(
+            "Se paga al proveedor la totalidad de lo recibido en esta línea, "
+            "con independencia de lo vendido. Por defecto toma el valor "
+            "configurado en el proveedor, pero se puede cambiar aquí. Se "
+            "traslada al lote al confirmar la compra."
+        ),
+    )
+
+    @api.depends("order_id.partner_id")
+    def _compute_mercas_firm_negotiation(self):
+        for line in self:
+            line.mercas_firm_negotiation = line.order_id.partner_id.mercas_firm_negotiation
 
     @api.depends("product_id")
     def _compute_box_product_id(self):
@@ -298,6 +308,10 @@ class PurchaseOrderLine(models.Model):
                 if line.origin_state_id:
                     update["origin_state_id"] = line.origin_state_id.id
                 line.lot_id.write(update)
+            for line in self.filtered(lambda l: l.lot_id):
+                line.lot_id.with_context(mercas_propagate_firm_negotiation=True).write(
+                    {"mercas_firm_negotiation": line.mercas_firm_negotiation}
+                )
         if "origin_country_id" in vals or "origin_state_id" in vals:
             for line in self.filtered(lambda l: l.lot_id):
                 update = {}
@@ -306,6 +320,11 @@ class PurchaseOrderLine(models.Model):
                 if "origin_state_id" in vals:
                     update["origin_state_id"] = line.origin_state_id.id or False
                 line.lot_id.write(update)
+        if "mercas_firm_negotiation" in vals:
+            for line in self.filtered(lambda l: l.lot_id):
+                line.lot_id.with_context(mercas_propagate_firm_negotiation=True).write(
+                    {"mercas_firm_negotiation": line.mercas_firm_negotiation}
+                )
         if "box_qty" in vals or "box_product_id" in vals or "product_id" in vals:
             for line in self.filtered(lambda l: not l.display_type and not l.box_purchase_line_id):
                 box_lines = self.env["purchase.order.line"].search(
@@ -324,19 +343,3 @@ class PurchaseOrderLine(models.Model):
                 if update:
                     box_lines.write(update)
         return result
-
-    @api.constrains("product_id", "order_id")
-    def _check_mercas_box_product_category(self):
-        for line in self:
-            if not line.product_id:
-                continue
-            order = line.order_id
-            if not order.mercas_is_box_return:
-                continue
-            allowed = order.company_id.box_categ_ids
-            if allowed and line.product_id.categ_id not in allowed:
-                raise ValidationError(
-                    _("En pedidos de devolución de envases solo se permiten productos "
-                      "de las categorías: %s")
-                    % ", ".join(allowed.mapped("name"))
-                )

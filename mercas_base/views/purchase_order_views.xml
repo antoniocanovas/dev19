@@ -27,10 +27,28 @@
                         invisible="state != 'purchase'"/>
             </button>
 
+            <!-- Botón Recibir y facturar (solo pedidos de devolución de envases
+                 ya confirmados: acción explícita, no automática al confirmar) -->
+            <button name="action_open_box_delivery" position="after">
+                <button name="action_mercas_box_receive_and_invoice"
+                        string="Recibir y facturar"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="not mercas_is_box_return or state not in ('purchase', 'done')"/>
+            </button>
+
+            <!-- Botón Imprimir etiquetas (visible en pedidos confirmados) -->
+            <button name="action_mercas_box_receive_and_invoice" position="after">
+                <button name="action_print_mercas_labels"
+                        string="Imprimir etiquetas"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="state not in ('purchase', 'done')"/>
+            </button>
+
             <!-- Campos auxiliares para dominio y visibilidad de columnas -->
             <xpath expr="//field[@name='order_line']" position="before">
                 <field name="mercas_is_box_return" invisible="1"/>
-                <field name="mercas_box_categ_ids" invisible="1"/>
                 <field name="mercas_origin_country" invisible="1"/>
                 <field name="mercas_origin_state" invisible="1"/>
             </xpath>
@@ -47,9 +65,8 @@
             <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
                    position="after">
                 <field name="box_qty" optional="show"/>
-                <field name="box_product_id"
-                       optional="show"
-                       domain="[('categ_id', 'in', parent.mercas_box_categ_ids)] if parent.mercas_box_categ_ids else []"/>
+                <field name="box_product_id" optional="show"/>
+                <field name="mercas_firm_negotiation" optional="show"/>
             </xpath>
 
             <!-- Columnas país y provincia de origen -->
