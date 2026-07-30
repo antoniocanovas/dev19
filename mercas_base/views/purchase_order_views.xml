@@ -66,7 +66,8 @@
                    position="after">
                 <field name="box_qty" optional="show"/>
                 <field name="box_product_id" optional="show"/>
-                <field name="mercas_firm_negotiation" optional="show"/>
+                <field name="mercas_firm_negotiation" string="FF" optional="show"
+                       help="FF: Facturación firme. Se paga al proveedor la totalidad de lo recibido en esta línea, con independencia de lo vendido. Por defecto toma el valor configurado en el proveedor, pero se puede cambiar aquí. Se traslada al lote al confirmar la compra."/>
             </xpath>
 
             <!-- Columnas país y provincia de origen -->

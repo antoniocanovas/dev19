@@ -29,39 +29,32 @@ class OllamaProvider(ProviderBase):
     default_context_window = 8192
 
     # ----------------------------------------------------------
-    # Setup
+    # Config
     # ----------------------------------------------------------
-
-    def __init__(
-        self,
-        env,
-        api_key: str = '',
-        request_timeout: int = 120,
-        idle_timeout: int = 90,
-        max_tokens: int = 4096,
-        base_url: str | None = None,
-        context_windows: dict[str, int] | None = None,
-    ) -> None:
-        super().__init__(env, api_key, request_timeout, idle_timeout, max_tokens)
-        base_url = base_url or self.default_url
-        # Back-compat: earlier versions of this addon pointed at the
-        # OpenAI-compatible /v1 base URL — strip it so saved system
-        # parameters keep working against the native API.
-        self._base_url = base_url[:-3] if base_url.endswith('/v1') else base_url
-        self._context_windows = context_windows or {}
 
     @property
     def api_url(self) -> str:
-        return self._base_url
-
-    def _context_window_for(self, model: str) -> int:
-        return self._context_windows.get(model) or self.default_context_window
+        """Return the configured base URL, normalized to the native API."""
+        base_url = self.env['ir.config_parameter'].sudo().get_param(
+            'muk_ai_ollama.base_url', self.default_url
+        )
+        # Back-compat: earlier versions of this addon pointed at the
+        # OpenAI-compatible /v1 base URL — strip it so saved system
+        # parameters keep working against the native API.
+        return base_url[:-3] if base_url.endswith('/v1') else base_url
 
     @property
     def api_key(self) -> str:
         # Ollama does not validate the bearer token; fall back to a placeholder
         # so the base class does not raise when no key is configured.
         return self._api_key or 'ollama'
+
+    def _context_window_for(self, model: str) -> int:
+        """Return the configured context window for ``model``, or the default."""
+        record = self.provider.sudo().model_ids.filtered(
+            lambda m: m.technical_name == model
+        )[:1]
+        return record.context_window or self.default_context_window
 
     # ----------------------------------------------------------
     # Contract
@@ -94,6 +87,12 @@ class OllamaProvider(ProviderBase):
             'model': resolved_model,
             'messages': messages,
             'options': options,
+            # Thinking-capable models (gemma4, qwen3...) sometimes spend their
+            # whole turn reasoning in `message.thinking` and leave `content`
+            # and `tool_calls` empty, which this adapter has no use for and
+            # which the agent runtime reports as "no output". Disabling
+            # thinking makes the model answer directly instead.
+            'think': False,
         }
         tools = self._tools_to_openai(tools_schema)
         if tools:

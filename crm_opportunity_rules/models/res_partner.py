@@ -44,15 +44,32 @@ class ResPartner(models.Model):
     def write(self, vals):
         res = super().write(vals)
         if self._CRM_PROFILE_TRIGGER_FIELDS & set(vals):
-            self.env["crm.opportunity.rule"].sudo().search([])._generate_suggestions(self)
-            # The same profile change that may open up a new match can also
-            # close one: e.g. a client had "ERP Odoo" and got suggested
-            # "RRHH Odoo", but now also has "Factorial" for HR — the rule's
-            # exclusion no longer holds, so that suggestion is stale.
-            self.env["crm.opportunity.suggestion"].sudo().search([
-                ("partner_id", "in", self.ids), ("state", "=", "new"),
-            ])._prune_stale()
+            self._crm_evaluate_rules()
         return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        partners = super().create(vals_list)
+        # A new contact created inline (e.g. quick-create in a form) sends
+        # its profile lines through create(), not write() — without this,
+        # rules would only fire the next time the record is saved again.
+        to_check = self.env["res.partner"].union(*(
+            partner for partner, vals in zip(partners, vals_list)
+            if self._CRM_PROFILE_TRIGGER_FIELDS & set(vals)
+        ))
+        if to_check:
+            to_check._crm_evaluate_rules()
+        return partners
+
+    def _crm_evaluate_rules(self):
+        self.env["crm.opportunity.rule"].sudo().search([])._generate_suggestions(self)
+        # The same profile change that may open up a new match can also
+        # close one: e.g. a client had "ERP Odoo" and got suggested
+        # "RRHH Odoo", but now also has "Factorial" for HR — the rule's
+        # exclusion no longer holds, so that suggestion is stale.
+        self.env["crm.opportunity.suggestion"].sudo().search([
+            ("partner_id", "in", self.ids), ("state", "=", "new"),
+        ])._prune_stale()
 
     def action_view_crm_suggestions(self):
         self.ensure_one()

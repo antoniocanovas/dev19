@@ -9,7 +9,7 @@
         The base URL is configurable from Settings in case Ollama runs on a remote
         host or non-default port.
     """,
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.2',
     'category': 'Productivity',
     'license': 'LGPL-3',
     'author': 'MuK IT',
