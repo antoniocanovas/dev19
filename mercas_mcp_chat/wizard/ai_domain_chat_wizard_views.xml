@@ -6,28 +6,26 @@
         <field name="model">mercas.mcp.domain.chat.wizard</field>
         <field name="arch" type="xml">
             <form string="Consultas IA">
-                <sheet>
-                    <div class="oe_title">
-                        <h1>Consultas IA</h1>
-                        <p class="text-muted">
-                            Ventas, compras, facturación y stock. Cualquier otra pregunta
-                            será rechazada. Los importes/cantidades vienen directamente
-                            de Odoo — no los alucina la IA.
-                        </p>
-                    </div>
-                    <field name="history_display" nolabel="1" widget="mercas_chat_history"/>
-                    <group>
-                        <field name="message" nolabel="1"
-                               placeholder="Ej: ¿Cuánto ha comprado Cliente1 este mes? (Ctrl+Enter / Cmd+Enter para enviar)"
-                               widget="mercas_chat_message"/>
-                    </group>
-                    <div class="mt-2">
-                        <button name="action_send" type="object" string="Enviar"
-                                class="btn-primary o_mercas_chat_send"/>
-                        <button name="action_reset" type="object" string="Nueva conversación"
-                                class="btn-secondary" confirm="Se archivará el historial actual. ¿Continuar?"/>
-                    </div>
-                </sheet>
+                <div class="oe_title">
+                    <h1>Consultas IA</h1>
+                    <p class="text-muted">
+                        [Debug] Consola de dominio original, previa a la fusión en
+                        "Chat IA" — se mantiene solo para depuración/comparación,
+                        misma lógica que Chat IA.
+                    </p>
+                </div>
+                <field name="history_display" nolabel="1" widget="mercas_chat_history"/>
+                <group>
+                    <field name="message" nolabel="1"
+                           placeholder="Ej: ¿Cuánto ha comprado Cliente1 este mes? (Ctrl+Enter / Cmd+Enter para enviar)"
+                           widget="mercas_chat_message"/>
+                </group>
+                <div class="mt-2">
+                    <button name="action_send" type="object" string="Enviar"
+                            class="btn-primary o_mercas_chat_send"/>
+                    <button name="action_reset" type="object" string="Nueva conversación"
+                            class="btn-secondary" confirm="Se archivará el historial actual. ¿Continuar?"/>
+                </div>
             </form>
         </field>
     </record>
@@ -39,10 +37,14 @@
         <field name="target">current</field>
     </record>
 
+    <!-- Debug-only: su lógica se fusionó en "Chat IA" (ai_chat_wizard.py). Se
+         conserva sin borrar para depuración/comparación, visible solo con el
+         modo desarrollador activo. -->
     <menuitem id="mcp_gateway_menu_domain_chat"
-              name="Consultas IA"
+              name="Consultas IA (debug)"
               parent="odoo_mcp_manager.mcp_gateway_menu_root"
               action="ai_domain_chat_wizard_action"
+              groups="base.group_no_one"
               sequence="6"/>
 
 </odoo>

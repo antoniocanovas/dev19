@@ -6,7 +6,7 @@ _CUSTOM_INSTRUCTIONS_PARAM = 'mercas_mcp_chat.custom_instructions'
 
 
 class ResConfigSettings(models.TransientModel):
-    """Two-tier prompt configuration for 'Consultas IA':
+    """Two-tier prompt configuration for 'Chat IA':
 
     - mercas_mcp_chat_base_instructions: fixed business glossary owned by the
       module (readonly in the UI, sourced from prompts.py) -- not meant to be

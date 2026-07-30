@@ -15,7 +15,8 @@ export class ChatHistoryField extends Component {
     setup() {
         this.boxRef = useRef("box");
         useEffect(
-            (el) => {
+            () => {
+                const el = this.boxRef.el;
                 if (el) {
                     el.scrollTop = el.scrollHeight;
                 }

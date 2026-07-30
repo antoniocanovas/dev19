@@ -7,17 +7,17 @@
         <field name="inherit_id" ref="odoo_mcp_manager.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//app[@name='odoo_mcp_manager']" position="inside">
-                <block title="Consultas IA (Ventas / Compras / Facturación / Stock)"
+                <block title="Chat IA (Ventas / Compras / Facturación / Stock)"
                        name="mercas_mcp_domain_chat_config">
 
                     <setting title="Instrucciones generales (fijas)"
-                             help="Instrucciones de negocio que el módulo aplica siempre a la clasificación de preguntas de 'Consultas IA'. No son editables desde aquí — para cambiarlas hay que modificar mercas_mcp_chat/prompts.py.">
+                             help="Instrucciones de negocio que el módulo aplica siempre a la clasificación de preguntas de 'Chat IA'. No son editables desde aquí — para cambiarlas hay que modificar mercas_mcp_chat/prompts.py.">
                         <field name="mercas_mcp_chat_base_instructions" nolabel="1"
                                readonly="1" widget="text"/>
                     </setting>
 
                     <setting title="Instrucciones personalizadas"
-                             help="Texto libre que se añade a las instrucciones anteriores en cada consulta de 'Consultas IA'. Útil para afinar el comportamiento sin tocar código.">
+                             help="Texto libre que se añade a las instrucciones anteriores en cada consulta de 'Chat IA'. Útil para afinar el comportamiento sin tocar código.">
                         <field name="mercas_mcp_chat_custom_instructions" nolabel="1"
                                widget="text"
                                placeholder="Ej: los importes de compras deben mostrarse sin IVA..."/>

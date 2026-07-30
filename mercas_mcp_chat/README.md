@@ -8,23 +8,22 @@ del propio proceso de Odoo.
 ## Estado / continuidad (para retomar la sesión)
 
 Todo lo descrito en este README está implementado y probado **por ORM** (`odoo-bin shell`,
-simulando exactamente lo que hace cada botón). Lo único que **no** se ha podido verificar de
-primera mano es el comportamiento en un navegador real: el entorno de agente usado en estas
-sesiones no tiene ruta de red hacia `localhost:8069` de esta máquina (confirmado con
-`ERR_CONNECTION_REFUSED` navegando a `localhost`/`127.0.0.1`, mientras `curl` desde el propio
-Mac sí llega sin problema). En concreto, pendiente de que el usuario confirme visualmente:
+simulando exactamente lo que hace cada botón). El comportamiento en navegador real (JS/CSS) no
+siempre se ha podido verificar de primera mano en las sesiones de agente (sin ruta de red a
+`localhost:8069` desde ese entorno) — confirmarlo visualmente sigue siendo responsabilidad del
+usuario, pero un bug ya detectado y corregido así fue: el auto-scroll del historial
+(`static/src/js/chat_fields.js`, widget `mercas_chat_history`) usaba
+`useEffect((el) => {...}, () => [this.value, this.boxRef.el])` — Owl invoca el callback de
+`useEffect` con las dependencias **por posición**, así que `el` recibía `this.value` (el string
+HTML del historial), no `this.boxRef.el` (el nodo DOM); `el.scrollTop = el.scrollHeight` sobre
+un string es un no-op silencioso, sin error en consola. Arreglado leyendo `this.boxRef.el` desde
+el cierre en vez de por posición. Si aparece otro comportamiento raro de un widget Owl en este
+módulo, sospechar primero de este mismo patrón (deps posicionales de `useEffect`) antes de asumir
+un problema de timing/API de la build de Odoo 19.
 
-- **Auto-scroll del historial** (`static/src/js/chat_fields.js`, widget
-  `mercas_chat_history`): al enviar un mensaje, el cuadro de conversación debería quedarse
-  desplazado abajo del todo (última respuesta visible) en vez de arriba del todo.
-- **Atajo de teclado Ctrl+Enter / Cmd+Enter** (widget `mercas_chat_message`, mismo fichero):
-  debería enviar el formulario sin necesidad de hacer click en "Enviar". Comprobado que el
-  bundle de assets se sirve sin 404 (`/mercas_mcp_chat/static/src/js/chat_fields.js` etc.) y
-  que el JS/XML son sintácticamente válidos, pero no se ha ejecutado en un navegador real.
-
-Si algo de esto no funciona tal cual al probarlo, lo más probable es un detalle de la API de
-Owl/`TextField` de esta build concreta de Odoo 19 (nombres de refs, timing del hook
-`useInputField`) — revisar `chat_fields.js` con el navegador abierto y la consola de errores.
+El atajo de teclado Ctrl+Enter / Cmd+Enter (widget `mercas_chat_message`, mismo fichero) no usa
+este patrón (lee `ev.target` directamente), así que no debería tener el mismo problema, pero
+sigue pendiente de confirmación visual en navegador.
 
 **Recordatorio operativo**: cada vez que se toque este módulo con Odoo ya arrancado, hay que
 reiniciar el proceso para que los cambios se vean (ver "Limitaciones conocidas" más abajo) — es
@@ -64,34 +63,45 @@ Parámetros comunes: `date_from` / `date_to` (`YYYY-MM-DD`), `group_by`. Estas h
 también quedan disponibles para el resto del ecosistema MCP (el chat general, el MCP Gateway
 externo, Telegram/WhatsApp/Web) — no son exclusivas de la consola de este módulo.
 
-### 3. Dos consolas de chat en el menú **MCP Gateway**
+### 3. Una consola de chat en el menú **MCP Gateway**, restringida a su dominio de negocio
 
-- **Chat IA** (`mercas.mcp.chat.wizard`) — asistente de propósito general: usa el mismo
-  `LLMRouter` y el mismo catálogo de tools que el bot gateway (`ask_ai`, `search_records`,
-  `create_record`, etc.), pero llamando a `ai.tool.execute()` directamente por ORM en vez de
-  saltar por HTTP a `/mcp_gateway`, así que no hace falta una MCP API Key solo para usar esta
-  pantalla. Conversación persistida en `ai.bot.conversation` (`platform='web'`,
-  `platform_user_id='backend-<uid>'`).
+- **Chat IA** (`mercas.mcp.chat.wizard`) — **única consola visible por defecto**. Consola de
+  ámbito cerrado: **solo** responde preguntas de ventas, compras, facturación y stock. Una
+  única llamada corta al LLM clasifica la pregunta en uno de esos 4 dominios (o `otro`) y
+  extrae los parámetros de filtrado; si el dominio es `otro`, responde el mensaje fijo *"Sólo
+  puedo responder preguntas de VENTAS, COMPRAS, FACTURACIÓN Y STOCK."* sin llamar a ninguna
+  tool. Si el dominio es válido, ejecuta la tool determinista correspondiente y formatea el
+  resultado en Python — **sin** una segunda llamada de "humanizar" al LLM, por eso los importes
+  nunca los redacta/parafrasea la IA (siempre exactos, salen de Odoo). Conversación persistida
+  en `ai.bot.conversation` (`platform='web'`, `platform_user_id='backend-<uid>'`).
 
-- **Consultas IA** (`mercas.mcp.domain.chat.wizard`) — consola de ámbito cerrado: **solo**
-  responde preguntas de ventas, compras, facturación y stock. Una única llamada corta al LLM
-  clasifica la pregunta en uno de esos 4 dominios (o `otro`) y extrae los parámetros de
-  filtrado; si el dominio es `otro`, responde el mensaje fijo *"Sólo puedo responder preguntas
-  de VENTAS, COMPRAS, FACTURACIÓN Y STOCK."* sin llamar a ninguna tool. Si el dominio es válido,
-  ejecuta la tool determinista correspondiente y formatea el resultado en Python — **sin**
-  una segunda llamada de "humanizar", por eso es notablemente más rápida que el Chat IA
-  general (una sola llamada al modelo por pregunta, en vez de dos). Conversación persistida en
-  `ai.bot.conversation` con `platform_user_id='domain-<uid>'`.
+- **Consultas IA (debug)** (`mercas.mcp.domain.chat.wizard`) — wizard/vista/acción originales,
+  **no borrados**: es el código del que se copió la lógica anterior a `ai_chat_wizard.py`. Su
+  menú (`mcp_gateway_menu_domain_chat`) lleva `groups="base.group_no_one"`, así que solo
+  aparece con el modo desarrollador activo (Ajustes → Activar modo desarrollador, o
+  `?debug=1` en la URL). Se mantiene únicamente para depurar/comparar contra `ai_chat_wizard.py`
+  sin tener que revertir código; en uso normal ambos wizards se comportan igual, con historiales
+  de conversación independientes (`platform_user_id`: `backend-<uid>` vs `domain-<uid>`).
+
+  Históricamente hubo un tercer modo: `ai_chat_wizard.py` usaba `LLMRouter` (el mismo router
+  genérico del bot gateway) para elegir libremente entre *cualquier* tool (`ask_ai`,
+  `search_records`, `create_record`, `update_record`, `delete_record`, `analyze_records`), y
+  humanizaba el resultado con una segunda llamada al LLM. Se retiró porque `LLMRouter` solo
+  pasa al modelo la `description` de una línea de cada tool — nunca el `input_schema` — así que
+  no tenía forma de conocer parámetros como `only_boxes`, ni las reglas de negocio de
+  `prompts.py`, y el paso de "humanizar" arriesgaba a que el LLM alterase cifras ya exactas al
+  parafrasearlas. Esa capacidad genérica sigue existiendo en `odoo_mcp_manager` (la usan
+  Telegram/WhatsApp/Web bot gateway), simplemente ya no está expuesta en este menú.
 
 Ambas consolas recuerdan la conversación del usuario entre visitas al menú (botón "Nueva
 conversación" para archivarla y empezar de cero) y usan siempre el proveedor de IA activo de
-mayor prioridad configurado en **MCP Gateway → Providers** (en este entorno, Ollama +
-`gemma4:latest`).
+mayor prioridad configurado en **MCP Gateway → Providers**.
 
-### 4. Instrucciones de negocio en dos capas (solo "Consultas IA")
+### 4. Instrucciones de negocio en dos capas
 
-En **Ajustes → MCP Gateway → Consultas IA** hay dos campos que se inyectan en el prompt de
-clasificación (`_CLASSIFY_PROMPT` en `wizard/ai_domain_chat_wizard.py`):
+En **Ajustes → MCP Gateway → Chat IA** hay dos campos que se inyectan en el prompt de
+clasificación (`_CLASSIFY_PROMPT`, definido igual en `wizard/ai_chat_wizard.py` y en
+`wizard/ai_domain_chat_wizard.py`):
 
 - **Instrucciones generales (fijas)** — de solo lectura en el UI, vienen de
   `prompts.py::BASE_BUSINESS_INSTRUCTIONS` (no editable desde Ajustes; para cambiarlas hay que
@@ -125,6 +135,13 @@ Dos widgets de campo (Owl) usados en ambas vistas de wizard:
   de cada formulario) — de ahí que ambos botones "Enviar" lleven esa clase además de
   `btn-primary`.
 
+Ambas vistas de formulario (`ai_chat_wizard_views.xml`, `ai_domain_chat_wizard_views.xml`)
+deliberadamente no usan `<sheet>`: desde Odoo 16.3, un `<form>` sin `<sheet>` recibe
+automáticamente la clase `o_form_nosheet` (`form_compiler.js`), que ocupa todo el ancho
+disponible en vez del `max-width` centrado que aplica `.o_form_sheet_bg`
+(`form_controller.scss`). Es el mecanismo soportado por el framework, no un CSS a mano — si se
+le vuelve a añadir `<sheet>`, el chat volverá a quedarse estrecho.
+
 ## Limitaciones conocidas
 
 - **`stock_report` sin filtro de producto ni `only_boxes`**: si no se especifica ninguno de
@@ -153,9 +170,13 @@ Dos widgets de campo (Owl) usados en ambas vistas de wizard:
    `_builtin_<nombre>`), siguiendo el patrón de `_read_group_amount` si es un total monetario.
 2. Registrar el `ai.tool` correspondiente en un XML de datos (ver
    `data/ai_tool_domain_reports.xml`).
-3. En `wizard/ai_domain_chat_wizard.py`: añadir la clave a `_DOMAIN_TOOL`, describir el dominio
-   en `_CLASSIFY_PROMPT`, y añadir el caso en `_build_tool_params` / `_format_result`.
+3. En `wizard/ai_chat_wizard.py` (consola visible): añadir la clave a `_DOMAIN_TOOL`, describir
+   el dominio en `_CLASSIFY_PROMPT`, y añadir el caso en `_build_tool_params` / `_format_result`.
+   Replicar el mismo cambio en `wizard/ai_domain_chat_wizard.py` (el gemelo debug-only) para que
+   no se desincronicen — ambos ficheros llevan una copia literal de esta lógica a propósito, ver
+   sección 3.
 4. Si el dominio necesita su propio glosario de negocio, añadirlo a
-   `prompts.py::BASE_BUSINESS_INSTRUCTIONS` en vez de tocar `_CLASSIFY_PROMPT` directamente.
+   `prompts.py::BASE_BUSINESS_INSTRUCTIONS` en vez de tocar `_CLASSIFY_PROMPT` directamente
+   (esto sí lo comparten ambos wizards, no hay que duplicarlo).
 
 No hace falta tocar `odoo_mcp_manager`.
