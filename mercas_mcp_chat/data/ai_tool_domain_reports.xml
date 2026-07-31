@@ -40,7 +40,7 @@
             <field name="input_schema">{
                 "type": "object",
                 "properties": {
-                    "product": {"type": "string", "description": "Nombre (parcial) del producto a filtrar. Vacío = todos."},
+                    "product": {"type": "string", "description": "Nombre (parcial) o referencia interna (código) del producto a filtrar. Vacío = todos."},
                     "date_from": {"type": "string", "description": "Fecha inicio YYYY-MM-DD. Vacío = sin límite."},
                     "date_to": {"type": "string", "description": "Fecha fin YYYY-MM-DD. Vacío = sin límite."},
                     "group_by": {"type": "string", "enum": ["product", "day", "product_day", "total"], "description": "Cómo agrupar las cantidades."},

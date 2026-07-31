@@ -11,6 +11,7 @@
         "purchase",
         "account",
         "stock",
+        "product_expiry",
     ],
     "data": [
         "security/ir.model.access.csv",

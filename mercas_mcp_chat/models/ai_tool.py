@@ -134,8 +134,15 @@ class AiTool(models.Model):
         domain = [('state', '=', 'done')]
 
         product = (parameters.get('product') or '').strip()
+        matched_products = self.env['product.product']
         if product:
-            domain.append(('product_id.name', 'ilike', product))
+            matched_products = self.env['product.product'].sudo().search([
+                '|', ('name', 'ilike', product), ('default_code', 'ilike', product),
+            ])
+            domain += [
+                '|', ('product_id.name', 'ilike', product),
+                ('product_id.default_code', 'ilike', product),
+            ]
         if parameters.get('only_boxes'):
             domain.append(('product_id.is_box', '=', True))
 
@@ -171,11 +178,43 @@ class AiTool(models.Model):
                 entry['day'] = day[1]
             rows.append(entry)
 
-        uom = ''
-        if product:
-            prod = self.env['product.product'].sudo().search(
-                [('name', 'ilike', product)], limit=1
-            )
-            uom = prod.uom_id.name if prod else ''
+        uom = matched_products[:1].uom_id.name if matched_products else ''
 
-        return {'rows': rows, 'grand_qty': round(grand_qty, 2), 'count': count, 'uom': uom}
+        result = {'rows': rows, 'grand_qty': round(grand_qty, 2), 'count': count, 'uom': uom}
+
+        # Desglose por lote (proveedor + caducidad): solo cuando la pregunta apunta a
+        # un producto concreto -- no a "cajas" (only_boxes) ni a un listado general --
+        # y sobre existencias actuales (stock.quant), no sobre los movimientos del
+        # rango de fechas consultado, que es lo que agregan `rows` arriba.
+        if matched_products and not parameters.get('only_boxes'):
+            result['lots'] = self._stock_lots_detail(matched_products)
+
+        return result
+
+    def _stock_lots_detail(self, products, limit=15):
+        """On-hand lots for *products*: lote, proveedor y caducidad, más
+        próximos a caducar primero (criterio FEFO)."""
+        quants = self.env['stock.quant'].sudo().search([
+            ('product_id', 'in', products.ids),
+            ('location_id.usage', '=', 'internal'),
+            ('lot_id', '!=', False),
+            ('quantity', '>', 0),
+        ])
+        by_lot = {}
+        for quant in quants:
+            lot = quant.lot_id
+            entry = by_lot.setdefault(lot.id, {
+                'lot': lot.name,
+                'supplier': lot.partner_id.name or '',
+                'expiration': (
+                    lot.expiration_date.strftime('%Y-%m-%d') if lot.expiration_date else ''
+                ),
+                'qty': 0.0,
+            })
+            entry['qty'] += quant.quantity
+        lots = sorted(
+            by_lot.values(), key=lambda entry: entry['expiration'] or '9999-99-99'
+        )
+        for entry in lots:
+            entry['qty'] = round(entry['qty'], 2)
+        return lots[:limit]

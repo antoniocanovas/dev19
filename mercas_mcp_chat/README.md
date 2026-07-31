@@ -35,6 +35,7 @@ la fuente más probable de "no veo el cambio" en la próxima sesión.
 |---|---|
 | `odoo_mcp_manager` | Aporta `ai.provider`, `ai.model`, `ai.tool`, `ai.bot.conversation` y el motor de enrutado LLM (`LLMRouter`) que este módulo reutiliza. |
 | `sale`, `purchase`, `account`, `stock` | Modelos sobre los que consultan las herramientas de informes (`sale.order`, `purchase.order`, `account.move`, `stock.move`). |
+| `product_expiry` | Aporta `stock.lot.expiration_date`, usado por `stock_report` para mostrar la caducidad de cada lote (ver sección 2). |
 
 ## Qué instala
 
@@ -59,39 +60,60 @@ devuelven cifras exactas; la IA solo redacta la respuesta a partir de datos ya c
 | `invoice_report` | `account.move` (solo `state='posted'`) | cliente/proveedor y/o día | `amount_total` | `move_type`: `customer`/`vendor`/`all` |
 | `stock_report` | `stock.move` (solo `state='done'`) | producto y/o día | `quantity` | `direction`: `in`/`out`/`internal`; `only_boxes`: solo productos con `is_box=True` (ver más abajo) |
 
+**`stock_report` y el desglose por lote**: cuando `product` identifica exactamente uno o más
+`product.product` concretos (nombre o referencia interna — ver "Limitaciones conocidas" sobre
+`only_boxes`, que desactiva este desglose por ir dirigido a varios productos a la vez), la
+herramienta añade una clave `lots` con las existencias actuales (`stock.quant`, ubicaciones
+internas, cantidad > 0) agrupadas por `stock.lot`, ordenadas por caducidad más próxima primero
+(FEFO): `lot` (nombre del lote), `supplier` (`stock.lot.partner_id`, de `mercas_base`),
+`expiration` (`stock.lot.expiration_date`, de `product_expiry`) y `qty`. `_format_result` en
+`domain_chat_mixin.py` lo añade como sección "Lotes en stock" tras el resumen de cantidades. Es
+información de **existencias actuales**, no de los movimientos del rango de fechas consultado
+(que es lo que agrega el resto de la tool) — por eso no depende de `date_from`/`date_to`.
+Limitado a 15 lotes (`_stock_lots_detail(products, limit=15)`) para no disparar el tamaño de la
+respuesta con productos con muchísimos lotes abiertos.
+
 Parámetros comunes: `date_from` / `date_to` (`YYYY-MM-DD`), `group_by`. Estas herramientas
 también quedan disponibles para el resto del ecosistema MCP (el chat general, el MCP Gateway
 externo, Telegram/WhatsApp/Web) — no son exclusivas de la consola de este módulo.
 
 ### 3. Una consola de chat en el menú **MCP Gateway**, restringida a su dominio de negocio
 
-- **Chat IA** (`mercas.mcp.chat.wizard`) — **única consola visible por defecto**. Consola de
-  ámbito cerrado: **solo** responde preguntas de ventas, compras, facturación y stock. Una
-  única llamada corta al LLM clasifica la pregunta en uno de esos 4 dominios (o `otro`) y
-  extrae los parámetros de filtrado; si el dominio es `otro`, responde el mensaje fijo *"Sólo
-  puedo responder preguntas de VENTAS, COMPRAS, FACTURACIÓN Y STOCK."* sin llamar a ninguna
-  tool. Si el dominio es válido, ejecuta la tool determinista correspondiente y formatea el
-  resultado en Python — **sin** una segunda llamada de "humanizar" al LLM, por eso los importes
-  nunca los redacta/parafrasea la IA (siempre exactos, salen de Odoo). Conversación persistida
-  en `ai.bot.conversation` (`platform='web'`, `platform_user_id='backend-<uid>'`).
+Toda la lógica (prompt de clasificación, reglas de negocio, extracción de parámetros,
+formateo determinista) vive en un único sitio: `wizard/domain_chat_mixin.py`
+(`MercasDomainChatMixin`, `models.AbstractModel`). Los dos wizards de abajo son
+`_inherit = ['mercas.mcp.domain.chat.mixin']` — no llevan copia propia de esa lógica, solo
+difieren en su `_conversation_prefix` (para no compartir historial) y en su vista/menú:
 
-- **Consultas IA (debug)** (`mercas.mcp.domain.chat.wizard`) — wizard/vista/acción originales,
-  **no borrados**: es el código del que se copió la lógica anterior a `ai_chat_wizard.py`. Su
-  menú (`mcp_gateway_menu_domain_chat`) lleva `groups="base.group_no_one"`, así que solo
-  aparece con el modo desarrollador activo (Ajustes → Activar modo desarrollador, o
-  `?debug=1` en la URL). Se mantiene únicamente para depurar/comparar contra `ai_chat_wizard.py`
-  sin tener que revertir código; en uso normal ambos wizards se comportan igual, con historiales
-  de conversación independientes (`platform_user_id`: `backend-<uid>` vs `domain-<uid>`).
+- **Chat IA** (`mercas.mcp.chat.wizard`, `ai_chat_wizard.py`) — **única consola visible por
+  defecto**. `_conversation_prefix = 'backend'`. Conversación persistida en
+  `ai.bot.conversation` (`platform='web'`, `platform_user_id='backend-<uid>'`).
 
-  Históricamente hubo un tercer modo: `ai_chat_wizard.py` usaba `LLMRouter` (el mismo router
-  genérico del bot gateway) para elegir libremente entre *cualquier* tool (`ask_ai`,
-  `search_records`, `create_record`, `update_record`, `delete_record`, `analyze_records`), y
-  humanizaba el resultado con una segunda llamada al LLM. Se retiró porque `LLMRouter` solo
-  pasa al modelo la `description` de una línea de cada tool — nunca el `input_schema` — así que
-  no tenía forma de conocer parámetros como `only_boxes`, ni las reglas de negocio de
-  `prompts.py`, y el paso de "humanizar" arriesgaba a que el LLM alterase cifras ya exactas al
-  parafrasearlas. Esa capacidad genérica sigue existiendo en `odoo_mcp_manager` (la usan
-  Telegram/WhatsApp/Web bot gateway), simplemente ya no está expuesta en este menú.
+- **Consultas IA (debug)** (`mercas.mcp.domain.chat.wizard`, `ai_domain_chat_wizard.py`) —
+  **no borrado**: mismo mixin, `_conversation_prefix = 'domain'`. Su menú
+  (`mcp_gateway_menu_domain_chat`) lleva `groups="base.group_no_one"`, así que solo aparece con
+  el modo desarrollador activo (Ajustes → Activar modo desarrollador, o `?debug=1` en la URL).
+  Se mantiene únicamente para depurar/comparar contra `ai_chat_wizard.py` sin tener que revertir
+  código; en uso normal ambos wizards se comportan igual, con historiales de conversación
+  independientes.
+
+Ambas consolas responden **solo** preguntas de ventas, compras, facturación y stock. Una única
+llamada corta al LLM clasifica la pregunta en uno de esos 4 dominios (o `otro`) y extrae los
+parámetros de filtrado; si el dominio es `otro`, responde el mensaje fijo *"Sólo puedo responder
+preguntas de VENTAS, COMPRAS, FACTURACIÓN Y STOCK."* sin llamar a ninguna tool. Si el dominio es
+válido, ejecuta la tool determinista correspondiente y formatea el resultado en Python — **sin**
+una segunda llamada de "humanizar" al LLM, por eso los importes nunca los redacta/parafrasea la
+IA (siempre exactos, salen de Odoo).
+
+Históricamente hubo un tercer modo: `ai_chat_wizard.py` usaba `LLMRouter` (el mismo router
+genérico del bot gateway) para elegir libremente entre *cualquier* tool (`ask_ai`,
+`search_records`, `create_record`, `update_record`, `delete_record`, `analyze_records`), y
+humanizaba el resultado con una segunda llamada al LLM. Se retiró porque `LLMRouter` solo pasa
+al modelo la `description` de una línea de cada tool — nunca el `input_schema` — así que no
+tenía forma de conocer parámetros como `only_boxes`, ni las reglas de negocio de `prompts.py`, y
+el paso de "humanizar" arriesgaba a que el LLM alterase cifras ya exactas al parafrasearlas. Esa
+capacidad genérica sigue existiendo en `odoo_mcp_manager` (la usan Telegram/WhatsApp/Web bot
+gateway), simplemente ya no está expuesta en este menú.
 
 Ambas consolas recuerdan la conversación del usuario entre visitas al menú (botón "Nueva
 conversación" para archivarla y empezar de cero) y usan siempre el proveedor de IA activo de
@@ -100,8 +122,7 @@ mayor prioridad configurado en **MCP Gateway → Providers**.
 ### 4. Instrucciones de negocio en dos capas
 
 En **Ajustes → MCP Gateway → Chat IA** hay dos campos que se inyectan en el prompt de
-clasificación (`_CLASSIFY_PROMPT`, definido igual en `wizard/ai_chat_wizard.py` y en
-`wizard/ai_domain_chat_wizard.py`):
+clasificación (`_CLASSIFY_PROMPT`, definido una sola vez en `wizard/domain_chat_mixin.py`):
 
 - **Instrucciones generales (fijas)** — de solo lectura en el UI, vienen de
   `prompts.py::BASE_BUSINESS_INSTRUCTIONS` (no editable desde Ajustes; para cambiarlas hay que
@@ -170,13 +191,14 @@ le vuelve a añadir `<sheet>`, el chat volverá a quedarse estrecho.
    `_builtin_<nombre>`), siguiendo el patrón de `_read_group_amount` si es un total monetario.
 2. Registrar el `ai.tool` correspondiente en un XML de datos (ver
    `data/ai_tool_domain_reports.xml`).
-3. En `wizard/ai_chat_wizard.py` (consola visible): añadir la clave a `_DOMAIN_TOOL`, describir
-   el dominio en `_CLASSIFY_PROMPT`, y añadir el caso en `_build_tool_params` / `_format_result`.
-   Replicar el mismo cambio en `wizard/ai_domain_chat_wizard.py` (el gemelo debug-only) para que
-   no se desincronicen — ambos ficheros llevan una copia literal de esta lógica a propósito, ver
-   sección 3.
+3. En `wizard/domain_chat_mixin.py`: añadir la clave a `_DOMAIN_TOOL`, describir el dominio en
+   `_CLASSIFY_PROMPT`, y añadir el caso en `_build_tool_params` / `_format_result`. Es el único
+   sitio a tocar — tanto `ai_chat_wizard.py` (consola visible) como
+   `ai_domain_chat_wizard.py` (gemelo debug-only) heredan de este mixin (`_inherit =
+   ['mercas.mcp.domain.chat.mixin']`) sin llevar copia propia de la lógica, así que no hay nada
+   que sincronizar entre ambos.
 4. Si el dominio necesita su propio glosario de negocio, añadirlo a
-   `prompts.py::BASE_BUSINESS_INSTRUCTIONS` en vez de tocar `_CLASSIFY_PROMPT` directamente
-   (esto sí lo comparten ambos wizards, no hay que duplicarlo).
+   `prompts.py::BASE_BUSINESS_INSTRUCTIONS`, que ya usa el mixin en vez de tocar
+   `_CLASSIFY_PROMPT` directamente.
 
 No hace falta tocar `odoo_mcp_manager`.
