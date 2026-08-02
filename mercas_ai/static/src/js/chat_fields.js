@@ -9,7 +9,7 @@ import { TextField, textField } from "@web/views/fields/text/text_field";
 // (the newest message) instead of leaving the user scrolled to the top
 // after the form reloads.
 export class ChatHistoryField extends Component {
-    static template = "mercas_mcp_chat.ChatHistoryField";
+    static template = "mercas_ai.ChatHistoryField";
     static props = { ...standardFieldProps };
 
     setup() {
@@ -35,9 +35,10 @@ registry.category("fields").add("mercas_chat_history", {
     supportedTypes: ["html"],
 });
 
-// Message input: adds Ctrl+Enter (Windows/Linux) / Cmd+Enter (macOS) as a
-// shortcut for the "Enviar" button, in addition to the regular TextField
-// behaviour it extends.
+// Message input: plain Enter submits (like a chat app); Shift+Enter still
+// inserts a newline, in addition to the regular TextField behaviour it
+// extends. Also keeps the cursor in the field after every send/reload, so
+// the user can keep asking follow-up questions without re-clicking into it.
 export class ChatMessageField extends TextField {
     setup() {
         super.setup();
@@ -46,6 +47,9 @@ export class ChatMessageField extends TextField {
                 if (!el) {
                     return undefined;
                 }
+                el.focus();
+                const end = el.value.length;
+                el.setSelectionRange(end, end);
                 const onKeydown = (ev) => this.onSendShortcut(ev);
                 el.addEventListener("keydown", onKeydown);
                 return () => el.removeEventListener("keydown", onKeydown);
@@ -55,7 +59,7 @@ export class ChatMessageField extends TextField {
     }
 
     async onSendShortcut(ev) {
-        if (!((ev.ctrlKey || ev.metaKey) && ev.key === "Enter")) {
+        if (ev.key !== "Enter" || ev.shiftKey || ev.isComposing) {
             return;
         }
         ev.preventDefault();

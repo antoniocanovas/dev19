@@ -9,23 +9,30 @@ from ..prompts import BASE_BUSINESS_INSTRUCTIONS
 
 _logger = logging.getLogger(__name__)
 
-_OUT_OF_SCOPE_REPLY = 'Sólo puedo responder preguntas de VENTAS, COMPRAS, FACTURACIÓN Y STOCK.'
+_OUT_OF_SCOPE_REPLY = (
+    'Sólo puedo responder preguntas de VENTAS, COMPRAS, FACTURACIÓN, STOCK, '
+    'EXISTENCIAS, CAJAS y LOTES.'
+)
 
 _DOMAIN_TOOL = {
     'ventas': 'sales_report',
     'compras': 'purchase_report',
     'facturacion': 'invoice_report',
     'stock': 'stock_report',
+    'existencias': 'stock_lookup',
+    'cajas': 'box_stock_report',
+    'lote': 'lot_report',
 }
 
 _CLASSIFY_PROMPT = (
     'Classify the user message into exactly one business domain and extract query '
     'parameters. Return ONLY a valid JSON object, no markdown, no explanation:\n'
-    '{{"domain": "ventas"|"compras"|"facturacion"|"stock"|"otro", '
+    '{{"domain": "ventas"|"compras"|"facturacion"|"stock"|"existencias"|"cajas"|"lote"|"otro", '
     '"partner": "<nombre parcial de cliente/proveedor o null>", '
-    '"product": "<nombre parcial o referencia interna (código) de producto, o null, '
-    'solo relevante para stock>", '
+    '"product": "<nombre parcial o referencia interna (código) de producto, o null>", '
+    '"lot": "<nombre exacto del lote si se menciona uno, o null, solo relevante para lote>", '
     '"only_boxes": true|false, '
+    '"pending": true|false, '
     '"date_from": "<YYYY-MM-DD o null>", "date_to": "<YYYY-MM-DD o null>", '
     '"group_by": "customer"|"day"|"customer_day"|"product"|"product_day"|"total", '
     '"move_type": "customer"|"vendor"|"all", '
@@ -33,9 +40,19 @@ _CLASSIFY_PROMPT = (
     'DOMINIOS:\n'
     '- ventas: pedidos de venta (sale.order) a clientes.\n'
     '- compras: pedidos de compra (purchase.order) a proveedores.\n'
-    '- facturacion: facturas emitidas o recibidas (account.move).\n'
-    '- stock: movimientos o cantidades de productos (stock.move).\n'
-    '- otro: cualquier otra cosa que no sea ventas, compras, facturación o stock.\n\n'
+    '- facturacion: facturas emitidas o recibidas (account.move). Si pregunta lo que '
+    'SE DEBE o queda PENDIENTE de pagar (sobre todo a proveedores), pon "pending": true.\n'
+    '- stock: movimientos de stock (stock.move) en un rango de fechas — entradas, '
+    'salidas, cuánto ha entrado/salido/movido de un producto.\n'
+    '- existencias: cantidad disponible AHORA MISMO de un producto (no un rango de '
+    'fechas, no movimientos) — "¿cuánto tenemos de X?", "¿qué stock queda de X?".\n'
+    '- cajas: cajas/envases en depósito en el almacén de un cliente o proveedor '
+    'concreto (no un producto que se llame "caja") — usa "partner" para el nombre.\n'
+    '- lote: cualquier pregunta sobre un lote (stock.lot) concreto — cuándo se vendió, '
+    'a qué clientes, cuánto queda por facturar al proveedor, si está completado o '
+    'facturado, cualquier dato de su ficha. Usa "lot" para el número de lote si se '
+    'menciona, o "product" si solo se nombra el producto.\n'
+    '- otro: cualquier otra cosa que no sea ninguno de los anteriores.\n\n'
     '{business_instructions}'
     '{custom_instructions}'
     'Today is {today}. Resolve relative dates ("hoy", "ayer", "esta semana", "este mes", '
@@ -101,12 +118,13 @@ class MercasDomainChatMixin(models.AbstractModel):
             safe = html.escape(msg.content or '').replace('\n', '<br/>')
             rows.append(
                 f'<div style="text-align:{align};margin:6px 0;">'
-                f'<div style="display:inline-block;max-width:75%;padding:8px 12px;'
+                f'<div style="display:inline-block;max-width:92%;padding:8px 12px;'
                 f'border-radius:8px;background:{bg};text-align:left;">'
                 f'<b>{who}</b><br/>{safe}</div></div>'
             )
         return ''.join(rows) or (
-            f'<p><i>{_("Pregunta sobre ventas, compras, facturación o stock.")}</i></p>'
+            f'<p><i>{_("Pregunta sobre ventas, compras, facturación, stock, "
+                       "existencias, cajas o lotes.")}</i></p>'
         )
 
     def action_send(self):
@@ -121,7 +139,7 @@ class MercasDomainChatMixin(models.AbstractModel):
         try:
             parsed = self._classify(text, history)
         except Exception:
-            _logger.exception('mercas_mcp_chat: domain classification failed')
+            _logger.exception('mercas_ai: domain classification failed')
             parsed = {'domain': 'otro'}
 
         domain_key = (parsed.get('domain') or 'otro').strip().lower()
@@ -161,7 +179,7 @@ class MercasDomainChatMixin(models.AbstractModel):
         provider, model_name = LLMRouter(self.env)._routing_provider()
         convo = '\n'.join(f"{h['role']}: {h['content']}" for h in (history or [])[-4:])
         custom = self.env['ir.config_parameter'].sudo().get_param(
-            'mercas_mcp_chat.custom_instructions', ''
+            'mercas_ai.custom_instructions', ''
         ).strip()
         prompt = _CLASSIFY_PROMPT.format(
             business_instructions=BASE_BUSINESS_INSTRUCTIONS + '\n',
@@ -203,6 +221,7 @@ class MercasDomainChatMixin(models.AbstractModel):
                 'date_from': date_from, 'date_to': date_to,
                 'group_by': group_by if group_by in allowed else 'customer',
                 'move_type': parsed.get('move_type') or 'all',
+                'pending': bool(parsed.get('pending')),
             }
         if domain_key == 'stock':
             allowed = {'product', 'day', 'product_day', 'total'}
@@ -213,6 +232,12 @@ class MercasDomainChatMixin(models.AbstractModel):
                 'group_by': group_by if group_by in allowed else 'product',
                 'direction': parsed.get('direction'),
             }
+        if domain_key == 'existencias':
+            return {'product': parsed.get('product')}
+        if domain_key == 'cajas':
+            return {'partner': parsed.get('partner')}
+        if domain_key == 'lote':
+            return {'lot': parsed.get('lot'), 'product': parsed.get('product')}
         return {}
 
     def _run_report(self, tool_name, domain_key, params):
@@ -225,12 +250,104 @@ class MercasDomainChatMixin(models.AbstractModel):
             with self.env.cr.savepoint():
                 result = tool.execute(params)
         except Exception as exc:
-            _logger.warning('mercas_mcp_chat: %s failed: %s', tool_name, exc)
+            _logger.warning('mercas_ai: %s failed: %s', tool_name, exc)
             return _('[Error] %s') % exc
         return self._format_result(domain_key, result)
 
     @staticmethod
     def _format_result(domain_key, result):
+        if domain_key == 'cajas':
+            if not result.get('found'):
+                return _('No encuentro ningún cliente/proveedor que coincida con "%s".') % (
+                    result.get('searched') or ''
+                )
+            qty = result.get('box_qty', 0.0)
+            qty_str = str(int(qty)) if qty == int(qty) else '%.2f' % qty
+            return _('%(partner)s tiene %(qty)s cajas en su almacén.') % {
+                'partner': result['partner'], 'qty': qty_str,
+            }
+
+        if domain_key == 'existencias':
+            if not result.get('found'):
+                return _('No encuentro ningún producto que coincida con "%s".') % (
+                    result.get('searched') or ''
+                )
+            rows = result.get('rows') or []
+            # Different sizes/attributes of the same product name often match
+            # (e.g. several product.product variants) — most may be at 0
+            # while just one holds the actual stock. Hide zero rows once at
+            # least one has real quantity, so the reply isn't 8 empty lines
+            # for 1 useful one; if everything is 0, show that plainly instead.
+            nonzero = [r for r in rows if r.get('qty')]
+            shown = nonzero or rows
+            lines = ['• %(name)s: %(qty).2f %(uom)s' % row for row in shown]
+            text = '\n'.join(lines)
+            uoms = {row['uom'] for row in shown}
+            if len(shown) > 1 and len(uoms) == 1:
+                total = sum(row['qty'] for row in shown)
+                text += '\n\n' + _('Total: %(qty).2f %(uom)s') % {
+                    'qty': total, 'uom': shown[0]['uom'],
+                }
+            return text
+
+        if domain_key == 'lote':
+            if not result.get('found'):
+                return _('No encuentro ningún lote/producto que coincida con "%s".') % (
+                    result.get('searched') or ''
+                )
+            lines = []
+            for d in result.get('details') or []:
+                uom = d.get('uom') or ''
+                firm = bool(d.get('mercas_firm_negotiation'))
+                regime = _('facturación firme') if firm else _('liquidación por venta')
+                product_name = d['product_id'][1] if d.get('product_id') else ''
+                lines.append(_('Lote %(name)s (%(product)s) — %(regime)s') % {
+                    'name': d['name'], 'product': product_name, 'regime': regime,
+                })
+                if d.get('partner_id'):
+                    lines.append('  ' + _('Proveedor: %s') % d['partner_id'][1])
+                origin = [
+                    d[f][1] for f in ('origin_country_id', 'origin_state_id') if d.get(f)
+                ]
+                if origin:
+                    lines.append('  ' + _('Origen: %s') % ', '.join(origin))
+                lines.append('  ' + _('En almacén: %(qty).2f %(uom)s') % {
+                    'qty': d.get('product_qty', 0.0), 'uom': uom,
+                })
+                if firm:
+                    pending = (d.get('received_kg') or 0.0) - (d.get('net_invoiced_kg') or 0.0)
+                    lines.append('  ' + _(
+                        'Recibido: %(r).2f %(uom)s | Facturado: %(f).2f %(uom)s | '
+                        'Pendiente: %(p).2f %(uom)s'
+                    ) % {
+                        'r': d.get('received_kg', 0.0), 'f': d.get('net_invoiced_kg', 0.0),
+                        'p': pending, 'uom': uom,
+                    })
+                else:
+                    if d.get('invoiced'):
+                        status = _('completamente facturado')
+                    elif d.get('invoiceable'):
+                        status = _('pendiente de facturar')
+                    else:
+                        status = _('sin importe pendiente todavía')
+                    lines.append('  ' + _(
+                        'Vendido: %(s).2f %(uom)s (%(a).2f €) | Facturado al proveedor: '
+                        '%(inv).2f € | %(status)s'
+                    ) % {
+                        's': d.get('sale_kg', 0.0), 'uom': uom, 'a': d.get('sale_amount', 0.0),
+                        'inv': d.get('net_invoiced_amount', 0.0), 'status': status,
+                    })
+
+            trace = result.get('trace') or []
+            if trace:
+                lines.append('')
+                lines.append(_('Ventas de este lote:'))
+                for t in trace:
+                    lines.append(
+                        '  • %(partner)s: %(qty).2f %(uom)s (%(order)s, %(date)s)' % t
+                    )
+            return '\n'.join(lines)
+
         if domain_key == 'stock':
             rows = sorted(result.get('rows') or [], key=lambda r: r.get('qty', 0), reverse=True)
             uom = (' ' + result['uom'].strip()) if result.get('uom') else ''
@@ -265,19 +382,21 @@ class MercasDomainChatMixin(models.AbstractModel):
 
             return text
 
+        unit = _('facturas') if domain_key == 'facturacion' else _('pedidos')
+        label_total = _('Pendiente') if result.get('pending') else _('Total')
         rows = sorted(result.get('rows') or [], key=lambda r: r.get('amount', 0), reverse=True)
         currency = result.get('currency') or ''
-        summary = _('Total: %(total).2f %(currency)s (%(count)s pedidos)') % {
-            'total': result.get('grand_amount', 0.0), 'currency': currency,
-            'count': result.get('count', 0),
+        summary = _('%(label)s: %(total).2f %(currency)s (%(count)s %(unit)s)') % {
+            'label': label_total, 'total': result.get('grand_amount', 0.0),
+            'currency': currency, 'count': result.get('count', 0), 'unit': unit,
         }
         lines = []
         for row in rows:
             label = ' — '.join(
                 part for part in (row.get('partner'), row.get('day')) if part
             ) or _('Total')
-            lines.append('• %(label)s: %(amount).2f %(currency)s (%(count)s pedidos)' % {
+            lines.append('• %(label)s: %(amount).2f %(currency)s (%(count)s %(unit)s)' % {
                 'label': label, 'amount': row.get('amount', 0.0), 'currency': currency,
-                'count': row.get('count', 0),
+                'count': row.get('count', 0), 'unit': unit,
             })
         return summary + ('\n\n' + '\n'.join(lines) if lines else '')

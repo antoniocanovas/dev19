@@ -2,7 +2,7 @@
 prompt (wizard/ai_domain_chat_wizard.py). Kept in its own module (not a DB
 field) so it stays under version control and cannot be edited away by mistake
 from the UI — the editable counterpart lives in res.config.settings as
-mercas_mcp_chat.custom_instructions."""
+mercas_ai.custom_instructions."""
 
 BASE_BUSINESS_INSTRUCTIONS = (
     'INSTRUCCIONES DE NEGOCIO (fijas):\n'

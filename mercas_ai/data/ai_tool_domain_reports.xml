@@ -19,7 +19,7 @@
 
         <record id="tool_invoice_report" model="ai.tool">
             <field name="name">invoice_report</field>
-            <field name="description">Totaliza facturas emitidas y/o recibidas (account.move, solo asientos contabilizados) por cliente/proveedor y/o día con importes reales (amount_total).</field>
+            <field name="description">Totaliza facturas emitidas y/o recibidas (account.move, solo asientos contabilizados) por cliente/proveedor y/o día. Con pending=true, totaliza lo pendiente de pago (amount_residual) en vez del importe total.</field>
             <field name="implementation">builtin</field>
             <field name="input_schema">{
                 "type": "object",
@@ -28,7 +28,47 @@
                     "date_from": {"type": "string", "description": "Fecha inicio YYYY-MM-DD. Vacío = sin límite."},
                     "date_to": {"type": "string", "description": "Fecha fin YYYY-MM-DD. Vacío = sin límite."},
                     "group_by": {"type": "string", "enum": ["customer", "day", "customer_day", "total"], "description": "Cómo agrupar los totales."},
-                    "move_type": {"type": "string", "enum": ["customer", "vendor", "all"], "description": "customer = facturas emitidas, vendor = facturas recibidas, all = ambas."}
+                    "move_type": {"type": "string", "enum": ["customer", "vendor", "all"], "description": "customer = facturas emitidas, vendor = facturas recibidas, all = ambas."},
+                    "pending": {"type": "boolean", "description": "Si es true, filtra solo facturas no pagadas y totaliza el importe pendiente (amount_residual) en vez del total."}
+                }
+            }</field>
+        </record>
+
+        <record id="tool_box_stock_report" model="ai.tool">
+            <field name="name">box_stock_report</field>
+            <field name="description">Cantidad de cajas/envases en depósito en el almacén dedicado de un cliente o proveedor concreto (res.partner.mercas_box_qty).</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "partner": {"type": "string", "description": "Nombre (parcial) del cliente o proveedor."}
+                },
+                "required": ["partner"]
+            }</field>
+        </record>
+
+        <record id="tool_stock_lookup" model="ai.tool">
+            <field name="name">stock_lookup</field>
+            <field name="description">Cantidad disponible AHORA MISMO de uno o varios productos (product.product.qty_available) — no un rango de fechas ni movimientos, existencias actuales.</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "product": {"type": "string", "description": "Nombre (parcial) o referencia interna (código) del producto."}
+                },
+                "required": ["product"]
+            }</field>
+        </record>
+
+        <record id="tool_lot_report" model="ai.tool">
+            <field name="name">lot_report</field>
+            <field name="description">Ficha completa de un lote (stock.lot): proveedor, origen, cantidades, régimen de facturación (firme o liquidación por venta), importes facturados/pendientes, estado, y a qué clientes se ha vendido y cuándo.</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "lot": {"type": "string", "description": "Nombre exacto del lote, si se menciona uno."},
+                    "product": {"type": "string", "description": "Nombre (parcial) del producto, si no se da el nombre exacto del lote."}
                 }
             }</field>
         </record>

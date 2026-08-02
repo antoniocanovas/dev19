@@ -10,7 +10,8 @@
             <xpath expr="//span[@name='uom_span']/.." position="after">
                 <field name="is_box"/>
                 <field name="box_product_id"
-                       invisible="not is_storable or is_box"/>
+                       invisible="not is_storable or is_box"
+                       context="{'default_is_box': True}"/>
             </xpath>
         </field>
     </record>

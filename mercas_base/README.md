@@ -136,7 +136,7 @@ El botón **Compensar** en facturas de proveedor (`in_invoice`) en estado public
 En la ficha de producto (`product.template`) hay dos campos junto a la cantidad disponible:
 
 - **Es caja/envase** (`is_box`, booleano): marca el producto como caja/envase. Es el campo que usan todos los filtros y detecciones relacionadas con cajas del módulo (devolución/entrega de envases, exclusión en la impresión de etiquetas, cálculo de cajas por contacto) — global, no por compañía.
-- **Caja** (`box_product_id`): producto de envase por defecto a usar al vender/comprar *este* producto (p. ej., "Caja1" para Manzana). Solo admite productos marcados como caja/envase (dominio `is_box = True`), y se oculta si el propio producto ya está marcado como caja (una caja no necesita su propia caja).
+- **Caja** (`box_product_id`): producto de envase por defecto a usar al vender/comprar *este* producto (p. ej., "Caja1" para Manzana). Solo admite productos marcados como caja/envase (dominio `is_box = True`), y se oculta si el propio producto ya está marcado como caja (una caja no necesita su propia caja). Si se crea un producto nuevo directamente desde este campo (crear y editar / creación rápida), la vista pasa `context="{'default_is_box': True}"` para que el producto recién creado nazca ya marcado como caja/envase — si no, no cumpliría el propio dominio (`is_box = True`) que exige el campo y no volvería a aparecer al buscarlo.
 
 ### Maestros — País y Provincia de origen
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="res_config_settings_view_form_inherit_mercas_mcp_chat" model="ir.ui.view">
-        <field name="name">res.config.settings.view.form.inherit.mercas_mcp_chat</field>
+    <record id="res_config_settings_view_form_inherit_mercas_ai" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.mercas_ai</field>
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="odoo_mcp_manager.res_config_settings_view_form"/>
         <field name="arch" type="xml">
@@ -11,14 +11,14 @@
                        name="mercas_mcp_domain_chat_config">
 
                     <setting title="Instrucciones generales (fijas)"
-                             help="Instrucciones de negocio que el módulo aplica siempre a la clasificación de preguntas de 'Chat IA'. No son editables desde aquí — para cambiarlas hay que modificar mercas_mcp_chat/prompts.py.">
-                        <field name="mercas_mcp_chat_base_instructions" nolabel="1"
+                             help="Instrucciones de negocio que el módulo aplica siempre a la clasificación de preguntas de 'Chat IA'. No son editables desde aquí — para cambiarlas hay que modificar mercas_ai/prompts.py.">
+                        <field name="mercas_ai_base_instructions" nolabel="1"
                                readonly="1" widget="text"/>
                     </setting>
 
                     <setting title="Instrucciones personalizadas"
                              help="Texto libre que se añade a las instrucciones anteriores en cada consulta de 'Chat IA'. Útil para afinar el comportamiento sin tocar código.">
-                        <field name="mercas_mcp_chat_custom_instructions" nolabel="1"
+                        <field name="mercas_ai_custom_instructions" nolabel="1"
                                widget="text"
                                placeholder="Ej: los importes de compras deben mostrarse sin IVA..."/>
                     </setting>

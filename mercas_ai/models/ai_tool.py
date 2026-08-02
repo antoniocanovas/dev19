@@ -5,7 +5,19 @@ class AiTool(models.Model):
     """Deterministic built-in report tools: plain read_group aggregations with
     real figures (amount_total / quantity), instead of relying on the LLM to
     compute totals from a raw record dump — which it cannot do reliably,
-    since search_records never even exposes financial fields to it."""
+    since search_records never even exposes financial fields to it.
+
+    All ORM access below goes through ``self._user_model(model_name)``
+    (inherited from odoo_mcp_manager's ai.tool: ``self.env[model_name]
+    .with_user(self._effective_uid())``) instead of ``.sudo()`` — the
+    report is built with the real access rights and record rules of
+    whoever is asking (``mcp_user_id`` in context when set, e.g. the real
+    Discuss author or an authenticated MCP client, otherwise
+    ``self.env.uid``), never with elevated/bot privileges. A user without
+    read access to sale.order/purchase.order/account.move/stock.move (or
+    to the specific records matched by a multi-company record rule) gets a
+    real AccessError instead of silently seeing figures they aren't
+    supposed to see."""
 
     _inherit = 'ai.tool'
 
@@ -15,6 +27,9 @@ class AiTool(models.Model):
             'purchase_report': self._builtin_purchase_report,
             'invoice_report': self._builtin_invoice_report,
             'stock_report': self._builtin_stock_report,
+            'box_stock_report': self._builtin_box_stock_report,
+            'lot_report': self._builtin_lot_report,
+            'stock_lookup': self._builtin_stock_lookup,
         }.get(self.name)
         if handler:
             return handler(parameters)
@@ -26,10 +41,28 @@ class AiTool(models.Model):
         value = (name or '').strip()
         if not value:
             return []
-        partner = self.env['res.partner'].sudo().search([('name', 'ilike', value)], limit=1)
+        partner = self._user_model('res.partner').search([('name', 'ilike', value)], limit=1)
         if partner:
             return [(partner_field, '=', partner.id)]
         return [(f'{partner_field}.name', 'ilike', value)]
+
+    def _singularize_es(self, term):
+        """Best-effort Spanish singularization, word by word.
+
+        ilike is a plain substring match, so a plural query ('manzanas') would
+        otherwise only match product names themselves stored in plural — it
+        would miss both `MANZANA` and `MANZANA ROJA`. Stripping a trailing
+        "s"/"es" turns the query into a stem that matches singular names too.
+        """
+        words = []
+        for word in term.split():
+            lower = word.lower()
+            if len(word) > 3 and lower.endswith('es'):
+                word = word[:-2]
+            elif len(word) > 3 and lower.endswith('s'):
+                word = word[:-1]
+            words.append(word)
+        return ' '.join(words)
 
     def _date_domain(self, parameters, field):
         domain = []
@@ -41,8 +74,10 @@ class AiTool(models.Model):
             domain.append((field, '<=', date_to))
         return domain
 
-    def _read_group_amount(self, records, domain, date_field, group_by, partner_field):
-        """Group *records* by partner and/or day, summing amount_total."""
+    def _read_group_amount(
+        self, records, domain, date_field, group_by, partner_field, amount_field='amount_total'
+    ):
+        """Group *records* by partner and/or day, summing *amount_field*."""
         groupby_fields = []
         if group_by in ('customer', 'customer_day'):
             groupby_fields.append(partner_field)
@@ -50,13 +85,13 @@ class AiTool(models.Model):
             groupby_fields.append(f'{date_field}:day')
 
         data = records.formatted_read_group(
-            domain, groupby=groupby_fields, aggregates=['amount_total:sum', '__count']
+            domain, groupby=groupby_fields, aggregates=[f'{amount_field}:sum', '__count']
         )
         rows = []
         grand_amount = 0.0
         count = 0
         for row in data:
-            amount = round(row.get('amount_total:sum') or 0.0, 2)
+            amount = round(row.get(f'{amount_field}:sum') or 0.0, 2)
             n = row.get('__count', 0)
             grand_amount += amount
             count += n
@@ -77,7 +112,7 @@ class AiTool(models.Model):
             self._date_domain(parameters, 'date_order')
         group_by = (parameters.get('group_by') or 'customer').strip().lower()
         rows, grand_amount, count = self._read_group_amount(
-            self.env['sale.order'].sudo(), domain, 'date_order', group_by, 'partner_id'
+            self._user_model('sale.order'), domain, 'date_order', group_by, 'partner_id'
         )
         return {
             'rows': rows, 'grand_amount': grand_amount, 'count': count,
@@ -91,7 +126,7 @@ class AiTool(models.Model):
             self._date_domain(parameters, 'date_order')
         group_by = (parameters.get('group_by') or 'customer').strip().lower()
         rows, grand_amount, count = self._read_group_amount(
-            self.env['purchase.order'].sudo(), domain, 'date_order', group_by, 'partner_id'
+            self._user_model('purchase.order'), domain, 'date_order', group_by, 'partner_id'
         )
         return {
             'rows': rows, 'grand_amount': grand_amount, 'count': count,
@@ -108,19 +143,29 @@ class AiTool(models.Model):
 
     def _builtin_invoice_report(self, parameters):
         move_type = (parameters.get('move_type') or 'all').strip().lower()
+        pending = bool(parameters.get('pending'))
         domain = [
             ('move_type', 'in', self._INVOICE_TYPES.get(move_type, self._INVOICE_TYPES['all'])),
             ('state', '=', 'posted'),
         ]
+        if pending:
+            # payment_state == 'reversed' means a credit note cancelled the
+            # bill; nothing is actually owed on it either.
+            domain.append(('payment_state', 'not in', ('paid', 'in_payment', 'reversed')))
         domain += self._partner_domain(parameters.get('partner')) + \
             self._date_domain(parameters, 'invoice_date')
         group_by = (parameters.get('group_by') or 'customer').strip().lower()
+        # "pendiente" cares about what's still owed (amount_residual), not the
+        # original total — a partially-paid bill would otherwise overstate the debt.
+        amount_field = 'amount_residual' if pending else 'amount_total'
         rows, grand_amount, count = self._read_group_amount(
-            self.env['account.move'].sudo(), domain, 'invoice_date', group_by, 'partner_id'
+            self._user_model('account.move'), domain, 'invoice_date', group_by, 'partner_id',
+            amount_field=amount_field,
         )
         return {
             'rows': rows, 'grand_amount': grand_amount, 'count': count,
             'currency': self.env.company.currency_id.symbol,
+            'pending': pending,
         }
 
     # ── Stock ───────────────────────────────────────────────────────────────
@@ -130,17 +175,18 @@ class AiTool(models.Model):
                           'internal': 'internal'}
 
     def _builtin_stock_report(self, parameters):
-        stock_move = self.env['stock.move'].sudo()
+        stock_move = self._user_model('stock.move')
         domain = [('state', '=', 'done')]
 
         product = (parameters.get('product') or '').strip()
         matched_products = self.env['product.product']
         if product:
-            matched_products = self.env['product.product'].sudo().search([
-                '|', ('name', 'ilike', product), ('default_code', 'ilike', product),
+            name_term = self._singularize_es(product)
+            matched_products = self._user_model('product.product').search([
+                '|', ('name', 'ilike', name_term), ('default_code', 'ilike', product),
             ])
             domain += [
-                '|', ('product_id.name', 'ilike', product),
+                '|', ('product_id.name', 'ilike', name_term),
                 ('product_id.default_code', 'ilike', product),
             ]
         if parameters.get('only_boxes'):
@@ -194,7 +240,7 @@ class AiTool(models.Model):
     def _stock_lots_detail(self, products, limit=15):
         """On-hand lots for *products*: lote, proveedor y caducidad, más
         próximos a caducar primero (criterio FEFO)."""
-        quants = self.env['stock.quant'].sudo().search([
+        quants = self._user_model('stock.quant').search([
             ('product_id', 'in', products.ids),
             ('location_id.usage', '=', 'internal'),
             ('lot_id', '!=', False),
@@ -218,3 +264,88 @@ class AiTool(models.Model):
         for entry in lots:
             entry['qty'] = round(entry['qty'], 2)
         return lots[:limit]
+
+    # ── Cajas en cliente/proveedor ───────────────────────────────────────────
+
+    def _builtin_box_stock_report(self, parameters):
+        partner_name = (parameters.get('partner') or '').strip()
+        if not partner_name:
+            return {'found': False, 'searched': ''}
+        partner = self._user_model('res.partner').search(
+            [('name', 'ilike', partner_name)], limit=1
+        )
+        if not partner:
+            return {'found': False, 'searched': partner_name}
+        return {'found': True, 'partner': partner.name, 'box_qty': partner.mercas_box_qty}
+
+    # ── Existencias puntuales (a fecha de hoy, no un rango de movimientos) ──────
+
+    def _builtin_stock_lookup(self, parameters):
+        product = (parameters.get('product') or '').strip()
+        if not product:
+            return {'found': False, 'searched': ''}
+        name_term = self._singularize_es(product)
+        products = self._user_model('product.product').search([
+            '|', ('name', 'ilike', name_term), ('default_code', 'ilike', product),
+        ], limit=20)
+        if not products:
+            return {'found': False, 'searched': product}
+        rows = [
+            {'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name}
+            for p in products
+        ]
+        return {'found': True, 'rows': rows}
+
+    # ── Lote: ficha completa + trazabilidad de venta ────────────────────────────
+
+    _LOT_DETAIL_FIELDS = [
+        'name', 'product_id', 'partner_id', 'origin_country_id', 'origin_state_id',
+        'product_qty', 'purchase_kg', 'received_kg', 'sale_kg', 'scrap_kg',
+        'mercas_firm_negotiation', 'sale_amount', 'mercas_margin', 'supplier_amount',
+        'net_invoiced_amount', 'net_invoiced_kg', 'completed', 'invoiced', 'invoiceable',
+    ]
+
+    def _builtin_lot_report(self, parameters):
+        """Full lot ledger (regime, quantities, invoicing status) plus which
+        customers it has been sold to — everything about one lot in a single
+        deterministic call, so the classifier only has to recognise "this is
+        a lot question" and extract a name, never reason about which of the
+        ~20 stock.lot fields to fetch."""
+        lot_name = (parameters.get('lot') or '').strip()
+        product_name = (parameters.get('product') or '').strip()
+        domain = []
+        if lot_name:
+            domain.append(('name', '=', lot_name))
+        if product_name:
+            domain.append(('product_id.name', 'ilike', self._singularize_es(product_name)))
+        if not domain:
+            return {'found': False, 'searched': ''}
+
+        lots = self._user_model('stock.lot').search(domain, limit=5)
+        if not lots:
+            return {'found': False, 'searched': lot_name or product_name}
+
+        details = []
+        for lot in lots:
+            data = lot.read(self._LOT_DETAIL_FIELDS)[0]
+            data['uom'] = lot.product_id.uom_id.name
+            details.append(data)
+
+        sale_lines = self._user_model('sale.order.line').search([
+            ('lot_id', 'in', lots.ids),
+        ])
+        trace = []
+        for line in sale_lines:
+            trace.append({
+                'lot': line.lot_id.name,
+                'partner': line.order_partner_id.name,
+                'qty': line.product_uom_qty,
+                'uom': line.product_uom_id.name,
+                'order': line.order_id.name,
+                'date': (
+                    line.order_id.date_order.strftime('%Y-%m-%d')
+                    if line.order_id.date_order else ''
+                ),
+            })
+
+        return {'found': True, 'details': details, 'trace': trace}
