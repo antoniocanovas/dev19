@@ -1,4 +1,5 @@
 from odoo import models
+from odoo.fields import Domain
 
 
 class AiTool(models.Model):
@@ -64,6 +65,26 @@ class AiTool(models.Model):
             words.append(word)
         return ' '.join(words)
 
+    def _product_name_domain(self, term, name_field='product_id.name',
+                              code_field='product_id.default_code'):
+        """Domain matching *term* against a product name/code, word by word.
+
+        A single ilike on the whole phrase requires an unbroken run of words
+        with no connector in between: "tomate pera" never matches "Tomate
+        DE pera" (the "de" breaks the substring), and neither would a
+        single run-together word like "tomatepera". Requiring each
+        significant word (short connectors like "de"/"el" dropped) to
+        independently match somewhere in the name fixes the connector-word
+        case. The raw term is still matched as a straight substring against
+        the product code, which is not natural-language text.
+        """
+        stem = self._singularize_es(term)
+        words = [w for w in stem.split() if len(w) > 2] or [stem or term]
+        name_domain = Domain.AND([[(name_field, 'ilike', w)] for w in words])
+        # Domain objects iterate back into the old-style polish-notation
+        # list, which every call site still concatenates with `domain +=`.
+        return list(Domain.OR([name_domain, [(code_field, 'ilike', term)]]))
+
     def _date_domain(self, parameters, field):
         domain = []
         date_from = (parameters.get('date_from') or '').strip()
@@ -105,12 +126,77 @@ class AiTool(models.Model):
             rows.append(entry)
         return rows, round(grand_amount, 2), count
 
+    def _line_product_detail(self, model_name, domain, group_by, qty_field, date_path,
+                              amount_field='price_subtotal'):
+        """Product(+lot)-level breakdown shared by ventas/compras/facturación
+        detail modes: which products, how much of each (with UoM), and — per
+        the business requirement that any product/quantity detail must carry
+        its lot with original vs. current stock — which lot(s), how much was
+        originally in that lot and how much is left right now.
+
+        *qty_field* differs per line model (sale.order.line: product_uom_qty,
+        purchase.order.line: product_qty, account.move.line: quantity — they
+        are NOT interchangeable). *date_path* is the read_group path to the
+        line's document date (e.g. 'order_id.date_order', 'move_id.invoice_date').
+        """
+        groupby_fields = ['product_id', 'product_uom_id', 'lot_id']
+        if group_by == 'product_day':
+            groupby_fields.append(f'{date_path}:day')
+
+        data = self._user_model(model_name).formatted_read_group(
+            domain, groupby=groupby_fields,
+            aggregates=[f'{qty_field}:sum', f'{amount_field}:sum', '__count'],
+        )
+        rows = []
+        grand_amount = 0.0
+        count = 0
+        lot_ids = set()
+        for row in data:
+            qty = round(row.get(f'{qty_field}:sum') or 0.0, 2)
+            amount = round(row.get(f'{amount_field}:sum') or 0.0, 2)
+            n = row.get('__count', 0)
+            grand_amount += amount
+            count += n
+            # Weighted average price/unit for the group -- exact per-line
+            # price when a row is a single line, average price paid/charged
+            # for that product over the period when several lines were
+            # summed together (group_by=product / product_day).
+            unit_price = round(amount / qty, 4) if qty else 0.0
+            entry = {'count': n, 'amount': amount, 'qty': qty, 'unit_price': unit_price}
+            if row.get('product_id'):
+                entry['product'] = row['product_id'][1]
+            if row.get('product_uom_id'):
+                entry['uom'] = row['product_uom_id'][1]
+            day = row.get(f'{date_path}:day')
+            if day:
+                entry['day'] = day[1]
+            if row.get('lot_id'):
+                entry['lot_id'] = row['lot_id'][0]
+                entry['lot'] = row['lot_id'][1]
+                lot_ids.add(row['lot_id'][0])
+            rows.append(entry)
+
+        if lot_ids:
+            lots = self._user_model('stock.lot').browse(list(lot_ids))
+            lot_info = {lot.id: (lot.purchase_kg, lot.product_qty) for lot in lots}
+            for entry in rows:
+                if entry.get('lot_id') in lot_info:
+                    entry['lot_original'], entry['lot_stock'] = lot_info[entry['lot_id']]
+
+        return {
+            'rows': rows, 'grand_amount': round(grand_amount, 2), 'count': count,
+            'currency': self.env.company.currency_id.symbol,
+            'product_detail': True,
+        }
+
     # ── Ventas ──────────────────────────────────────────────────────────────
 
     def _builtin_sales_report(self, parameters):
+        group_by = (parameters.get('group_by') or 'customer').strip().lower()
+        if group_by in ('product', 'product_day'):
+            return self._builtin_sales_product_detail(parameters, group_by)
         domain = self._partner_domain(parameters.get('customer')) + \
             self._date_domain(parameters, 'date_order')
-        group_by = (parameters.get('group_by') or 'customer').strip().lower()
         rows, grand_amount, count = self._read_group_amount(
             self._user_model('sale.order'), domain, 'date_order', group_by, 'partner_id'
         )
@@ -119,12 +205,38 @@ class AiTool(models.Model):
             'currency': self.env.company.currency_id.symbol,
         }
 
+    def _builtin_sales_product_detail(self, parameters, group_by):
+        domain = [('state', 'in', ('sale', 'done')), ('display_type', '=', False)]
+        domain += self._partner_domain(parameters.get('customer'), partner_field='order_partner_id')
+        product = (parameters.get('product') or '').strip()
+        if product:
+            domain += self._product_name_domain(product)
+        date_from = (parameters.get('date_from') or '').strip()
+        date_to = (parameters.get('date_to') or '').strip()
+        if date_from:
+            domain.append(('order_id.date_order', '>=', date_from))
+        if date_to:
+            domain.append(('order_id.date_order', '<=', date_to))
+        return self._line_product_detail(
+            'sale.order.line', domain, group_by,
+            qty_field='product_uom_qty', date_path='order_id.date_order',
+        )
+
     # ── Compras ─────────────────────────────────────────────────────────────
 
     def _builtin_purchase_report(self, parameters):
+        group_by = (parameters.get('group_by') or 'customer').strip().lower()
+        # "customer"/"day"/"total" aggregate on purchase.order (order-level
+        # totals, count = number of orders) -- unchanged, already covers "how
+        # much have we spent with X". "product"/"product_day" need line-level
+        # detail (which products, how much of each) that purchase.order alone
+        # can't answer -- it has no product_id. Kept as a separate path so the
+        # existing customer/day behaviour (and what "count" means there)
+        # never changes.
+        if group_by in ('product', 'product_day'):
+            return self._builtin_purchase_product_detail(parameters, group_by)
         domain = self._partner_domain(parameters.get('vendor')) + \
             self._date_domain(parameters, 'date_order')
-        group_by = (parameters.get('group_by') or 'customer').strip().lower()
         rows, grand_amount, count = self._read_group_amount(
             self._user_model('purchase.order'), domain, 'date_order', group_by, 'partner_id'
         )
@@ -133,6 +245,26 @@ class AiTool(models.Model):
             'currency': self.env.company.currency_id.symbol,
         }
 
+    def _builtin_purchase_product_detail(self, parameters, group_by):
+        """Per-product(+lot) breakdown of what was bought from a vendor —
+        'compras' on its own only ever gave an order-level total, never
+        which products (or which lot each purchase fed)."""
+        domain = [('state', 'in', ('purchase', 'done')), ('display_type', '=', False)]
+        domain += self._partner_domain(parameters.get('vendor'), partner_field='partner_id')
+        product = (parameters.get('product') or '').strip()
+        if product:
+            domain += self._product_name_domain(product)
+        date_from = (parameters.get('date_from') or '').strip()
+        date_to = (parameters.get('date_to') or '').strip()
+        if date_from:
+            domain.append(('order_id.date_order', '>=', date_from))
+        if date_to:
+            domain.append(('order_id.date_order', '<=', date_to))
+        return self._line_product_detail(
+            'purchase.order.line', domain, group_by,
+            qty_field='product_qty', date_path='order_id.date_order',
+        )
+
     # ── Facturación ─────────────────────────────────────────────────────────
 
     _INVOICE_TYPES = {
@@ -140,8 +272,19 @@ class AiTool(models.Model):
         'vendor': ['in_invoice', 'in_refund'],
         'all': ['out_invoice', 'out_refund', 'in_invoice', 'in_refund'],
     }
+    _PAYMENT_STATE_ES = {
+        'not_paid': 'sin pagar', 'in_payment': 'en proceso de pago',
+        'paid': 'pagada', 'partial': 'pago parcial', 'reversed': 'anulada',
+        'invoicing_legacy': 'legado',
+    }
 
     def _builtin_invoice_report(self, parameters):
+        group_by = (parameters.get('group_by') or 'customer').strip().lower()
+        if group_by in ('product', 'product_day'):
+            return self._builtin_invoice_product_detail(parameters, group_by)
+        if group_by == 'detail':
+            return self._builtin_invoice_detail(parameters)
+
         move_type = (parameters.get('move_type') or 'all').strip().lower()
         pending = bool(parameters.get('pending'))
         domain = [
@@ -154,7 +297,6 @@ class AiTool(models.Model):
             domain.append(('payment_state', 'not in', ('paid', 'in_payment', 'reversed')))
         domain += self._partner_domain(parameters.get('partner')) + \
             self._date_domain(parameters, 'invoice_date')
-        group_by = (parameters.get('group_by') or 'customer').strip().lower()
         # "pendiente" cares about what's still owed (amount_residual), not the
         # original total — a partially-paid bill would otherwise overstate the debt.
         amount_field = 'amount_residual' if pending else 'amount_total'
@@ -166,6 +308,64 @@ class AiTool(models.Model):
             'rows': rows, 'grand_amount': grand_amount, 'count': count,
             'currency': self.env.company.currency_id.symbol,
             'pending': pending,
+        }
+
+    def _builtin_invoice_product_detail(self, parameters, group_by):
+        """Per-product(+lot) breakdown of invoice lines — 'facturacion' on
+        its own only ever gave a per-invoice/customer total, never which
+        products were actually billed."""
+        move_type = (parameters.get('move_type') or 'all').strip().lower()
+        domain = [
+            ('move_id.move_type', 'in', self._INVOICE_TYPES.get(move_type, self._INVOICE_TYPES['all'])),
+            ('move_id.state', '=', 'posted'),
+            # account.move.line uses explicit display_type values ('product',
+            # 'tax', 'payment_term'...) unlike sale/purchase order lines,
+            # where a regular line is display_type=False -- filtering on
+            # False here would silently exclude every real product line.
+            ('display_type', '=', 'product'),
+            ('product_id', '!=', False),
+        ]
+        domain += self._partner_domain(parameters.get('partner'))
+        product = (parameters.get('product') or '').strip()
+        if product:
+            domain += self._product_name_domain(product)
+        date_from = (parameters.get('date_from') or '').strip()
+        date_to = (parameters.get('date_to') or '').strip()
+        if date_from:
+            domain.append(('move_id.invoice_date', '>=', date_from))
+        if date_to:
+            domain.append(('move_id.invoice_date', '<=', date_to))
+        return self._line_product_detail(
+            'account.move.line', domain, group_by,
+            qty_field='quantity', date_path='move_id.invoice_date',
+        )
+
+    def _builtin_invoice_detail(self, parameters):
+        """Individual invoices with their own state/payment_state — 'estado
+        de facturas'. The aggregate path above only ever gives one summed
+        total, never which specific invoices are behind it or what state
+        each one is in."""
+        move_type = (parameters.get('move_type') or 'all').strip().lower()
+        domain = [
+            ('move_type', 'in', self._INVOICE_TYPES.get(move_type, self._INVOICE_TYPES['all'])),
+            ('state', '=', 'posted'),
+        ]
+        domain += self._partner_domain(parameters.get('partner')) + \
+            self._date_domain(parameters, 'invoice_date')
+        moves = self._user_model('account.move').search(
+            domain, order='invoice_date desc, id desc', limit=20
+        )
+        rows = [{
+            'name': m.name,
+            'partner': m.partner_id.name,
+            'date': m.invoice_date.strftime('%Y-%m-%d') if m.invoice_date else '',
+            'total': m.amount_total,
+            'residual': m.amount_residual,
+            'payment_state': self._PAYMENT_STATE_ES.get(m.payment_state, m.payment_state),
+        } for m in moves]
+        return {
+            'rows': rows, 'currency': self.env.company.currency_id.symbol,
+            'invoice_detail': True,
         }
 
     # ── Stock ───────────────────────────────────────────────────────────────
@@ -181,14 +381,10 @@ class AiTool(models.Model):
         product = (parameters.get('product') or '').strip()
         matched_products = self.env['product.product']
         if product:
-            name_term = self._singularize_es(product)
-            matched_products = self._user_model('product.product').search([
-                '|', ('name', 'ilike', name_term), ('default_code', 'ilike', product),
-            ])
-            domain += [
-                '|', ('product_id.name', 'ilike', name_term),
-                ('product_id.default_code', 'ilike', product),
-            ]
+            matched_products = self._user_model('product.product').search(
+                self._product_name_domain(product, name_field='name', code_field='default_code')
+            )
+            domain += self._product_name_domain(product)
         if parameters.get('only_boxes'):
             domain.append(('product_id.is_box', '=', True))
 
@@ -238,7 +434,8 @@ class AiTool(models.Model):
         return result
 
     def _stock_lots_detail(self, products, limit=15):
-        """On-hand lots for *products*: lote, proveedor y caducidad, más
+        """On-hand lots for *products*: lote, proveedor, caducidad, cantidad
+        original comprada (`purchase_kg`) y cantidad actual en stock — más
         próximos a caducar primero (criterio FEFO)."""
         quants = self._user_model('stock.quant').search([
             ('product_id', 'in', products.ids),
@@ -255,6 +452,7 @@ class AiTool(models.Model):
                 'expiration': (
                     lot.expiration_date.strftime('%Y-%m-%d') if lot.expiration_date else ''
                 ),
+                'original': lot.purchase_kg,
                 'qty': 0.0,
             })
             entry['qty'] += quant.quantity
@@ -283,61 +481,107 @@ class AiTool(models.Model):
     def _builtin_stock_lookup(self, parameters):
         product = (parameters.get('product') or '').strip()
         if not product:
-            return {'found': False, 'searched': ''}
-        name_term = self._singularize_es(product)
-        products = self._user_model('product.product').search([
-            '|', ('name', 'ilike', name_term), ('default_code', 'ilike', product),
-        ], limit=20)
+            # "stock actual" sin nombrar producto -> listado general, no un
+            # "no encontrado" (no se buscaba nada en concreto que no aparezca).
+            return self._builtin_stock_lookup_general()
+        products = self._user_model('product.product').search(
+            self._product_name_domain(product, name_field='name', code_field='default_code'),
+            limit=20,
+        )
         if not products:
             return {'found': False, 'searched': product}
         rows = [
             {'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name}
             for p in products
         ]
-        return {'found': True, 'rows': rows}
+        # Siempre con desglose por lote (cantidad original comprada vs. lo que
+        # queda ahora) -- no solo el total agregado del producto.
+        return {'found': True, 'rows': rows, 'lots': self._stock_lots_detail(products)}
+
+    def _builtin_stock_lookup_general(self, limit=20):
+        """No hay producto que buscar por nombre, así que no se puede acotar
+        por domain -- se trae un lote razonable de candidatos con stock y se
+        ordena/recorta en Python (qty_available no es un campo almacenado,
+        no fiable para 'order' en el propio search). Sin desglose por lote
+        aquí a propósito: con hasta `limit` productos, un desglose de lotes
+        por cada uno enterraría la vista general que se pide -- para eso
+        está preguntar por un producto concreto."""
+        candidates = self._user_model('product.product').search(
+            [('qty_available', '>', 0)], limit=200
+        )
+        products = candidates.sorted('qty_available', reverse=True)[:limit]
+        rows = [
+            {'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name}
+            for p in products
+        ]
+        return {'found': True, 'rows': rows, 'general': True}
 
     # ── Lote: ficha completa + trazabilidad de venta ────────────────────────────
 
     _LOT_DETAIL_FIELDS = [
         'name', 'product_id', 'partner_id', 'origin_country_id', 'origin_state_id',
-        'product_qty', 'purchase_kg', 'received_kg', 'sale_kg', 'scrap_kg',
-        'mercas_firm_negotiation', 'sale_amount', 'mercas_margin', 'supplier_amount',
-        'net_invoiced_amount', 'net_invoiced_kg', 'completed', 'invoiced', 'invoiceable',
+        'product_qty', 'expiration_date',
     ]
 
+    #: Lots currently in stock with no lot/product name given ("todos los
+    #: lotes en stock") -- capped so the reply stays readable.
+    _LOT_LIST_LIMIT = 30
+
     def _builtin_lot_report(self, parameters):
-        """Full lot ledger (regime, quantities, invoicing status) plus which
-        customers it has been sold to — everything about one lot in a single
-        deterministic call, so the classifier only has to recognise "this is
-        a lot question" and extract a name, never reason about which of the
-        ~20 stock.lot fields to fetch."""
+        """Lot ficha (where it's from, how much is on hand, when it came in,
+        expiry, who it's been sold to) — or, with no lot/product given, the
+        same ficha for every lot currently in stock. Never includes billing/
+        invoicing figures (régimen, facturado, pendiente) — that belongs to
+        the internal back-office, not to a business question about a lot.
+        Box/crate products (product_id.is_box) are never real goods lots and
+        are always excluded."""
         lot_name = (parameters.get('lot') or '').strip()
         product_name = (parameters.get('product') or '').strip()
-        domain = []
+        not_box = [('product_id.is_box', '=', False)]
+
+        if not lot_name and not product_name:
+            lots = self._user_model('stock.lot').search(
+                not_box + [('product_qty', '>', 0)],
+                order='expiration_date', limit=self._LOT_LIST_LIMIT,
+            )
+            if not lots:
+                return {'found': False, 'searched': ''}
+            return {'found': True, 'details': self._lot_details(lots)}
+
+        alternatives = []
         if lot_name:
-            domain.append(('name', '=', lot_name))
+            alternatives.append([('name', '=', lot_name)])
+            # The classifier sometimes puts a whole product phrase into "lot"
+            # instead of "product" (e.g. "lote tomate pera" reads as if
+            # "tomate pera" were the lot code) — an exact match on a name
+            # that isn't a real lot code always misses, so also try it as a
+            # product name.
+            alternatives.append(
+                self._product_name_domain(lot_name, code_field='product_id.default_code')
+            )
         if product_name:
-            domain.append(('product_id.name', 'ilike', self._singularize_es(product_name)))
-        if not domain:
-            return {'found': False, 'searched': ''}
+            alternatives.append(
+                self._product_name_domain(product_name, code_field='product_id.default_code')
+            )
+        domain = list(Domain.AND([Domain.OR(alternatives), not_box]))
 
         lots = self._user_model('stock.lot').search(domain, limit=5)
         if not lots:
             return {'found': False, 'searched': lot_name or product_name}
+        return {'found': True, 'details': self._lot_details(lots)}
 
-        details = []
-        for lot in lots:
-            data = lot.read(self._LOT_DETAIL_FIELDS)[0]
-            data['uom'] = lot.product_id.uom_id.name
-            details.append(data)
-
+    def _lot_details(self, lots):
+        """Read *lots* into the plain business ficha shape, each with its own
+        embedded 'entry' date (first physical reception) and 'sales' trace —
+        never a shared trace list, so a multi-lot listing doesn't mix up
+        which sale belongs to which lot."""
+        entry_dates = self._lot_entry_dates(lots.ids)
         sale_lines = self._user_model('sale.order.line').search([
             ('lot_id', 'in', lots.ids),
         ])
-        trace = []
+        sales_by_lot = {}
         for line in sale_lines:
-            trace.append({
-                'lot': line.lot_id.name,
+            sales_by_lot.setdefault(line.lot_id.id, []).append({
                 'partner': line.order_partner_id.name,
                 'qty': line.product_uom_qty,
                 'uom': line.product_uom_id.name,
@@ -348,4 +592,28 @@ class AiTool(models.Model):
                 ),
             })
 
-        return {'found': True, 'details': details, 'trace': trace}
+        details = []
+        for lot in lots:
+            data = lot.read(self._LOT_DETAIL_FIELDS)[0]
+            data['uom'] = lot.product_id.uom_id.name
+            data['entry'] = entry_dates.get(lot.id, '')
+            data['sales'] = sales_by_lot.get(lot.id, [])
+            details.append(data)
+        return details
+
+    def _lot_entry_dates(self, lot_ids):
+        """First physical reception date (supplier -> internal, done) per
+        lot — the same 'received' criterion as stock.lot.received_kg, just
+        keeping the earliest move date instead of summing quantities."""
+        data = self._user_model('stock.move.line').formatted_read_group(
+            [
+                ('lot_id', 'in', lot_ids), ('state', '=', 'done'),
+                ('location_id.usage', '=', 'supplier'),
+                ('location_dest_id.usage', '=', 'internal'),
+            ],
+            groupby=['lot_id'], aggregates=['date:min'],
+        )
+        return {
+            row['lot_id'][0]: row['date:min'].strftime('%Y-%m-%d')
+            for row in data if row.get('lot_id') and row.get('date:min')
+        }

@@ -62,7 +62,7 @@
 
         <record id="tool_lot_report" model="ai.tool">
             <field name="name">lot_report</field>
-            <field name="description">Ficha completa de un lote (stock.lot): proveedor, origen, cantidades, régimen de facturación (firme o liquidación por venta), importes facturados/pendientes, estado, y a qué clientes se ha vendido y cuándo.</field>
+            <field name="description">Ficha de negocio de un lote (stock.lot): producto, cantidad en almacén, país/provincia de origen, proveedor, fecha de entrada, caducidad y a qué clientes se ha vendido y cuándo. Sin "lot" ni "product", lista todos los lotes actualmente en stock. Nunca incluye cajas/envases (is_box) ni información de facturación al proveedor.</field>
             <field name="implementation">builtin</field>
             <field name="input_schema">{
                 "type": "object",

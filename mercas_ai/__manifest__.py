@@ -18,6 +18,7 @@
         "security/ir.model.access.csv",
         "data/ai_tool_sales_report.xml",
         "data/ai_tool_domain_reports.xml",
+        "data/ai_resource_lines.xml",
         "views/res_config_settings_views.xml",
         "wizard/ai_chat_wizard_views.xml",
         "wizard/ai_domain_chat_wizard_views.xml",
