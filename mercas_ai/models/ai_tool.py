@@ -31,6 +31,7 @@ class AiTool(models.Model):
             'box_stock_report': self._builtin_box_stock_report,
             'lot_report': self._builtin_lot_report,
             'stock_lookup': self._builtin_stock_lookup,
+            'partner_info': self._builtin_partner_info,
         }.get(self.name)
         if handler:
             return handler(parameters)
@@ -120,6 +121,7 @@ class AiTool(models.Model):
             partner = row.get(partner_field)
             if partner:
                 entry['partner'] = partner[1]
+                entry['partner_id'] = partner[0]
             day = row.get(f'{date_field}:day')
             if day:
                 entry['day'] = day[1]
@@ -165,6 +167,7 @@ class AiTool(models.Model):
             entry = {'count': n, 'amount': amount, 'qty': qty, 'unit_price': unit_price}
             if row.get('product_id'):
                 entry['product'] = row['product_id'][1]
+                entry['product_id'] = row['product_id'][0]
             if row.get('product_uom_id'):
                 entry['uom'] = row['product_uom_id'][1]
             day = row.get(f'{date_path}:day')
@@ -335,10 +338,12 @@ class AiTool(models.Model):
             domain.append(('move_id.invoice_date', '>=', date_from))
         if date_to:
             domain.append(('move_id.invoice_date', '<=', date_to))
-        return self._line_product_detail(
+        result = self._line_product_detail(
             'account.move.line', domain, group_by,
             qty_field='quantity', date_path='move_id.invoice_date',
         )
+        result['move_type'] = move_type
+        return result
 
     def _builtin_invoice_detail(self, parameters):
         """Individual invoices with their own state/payment_state — 'estado
@@ -356,8 +361,10 @@ class AiTool(models.Model):
             domain, order='invoice_date desc, id desc', limit=20
         )
         rows = [{
+            'id': m.id,
             'name': m.name,
             'partner': m.partner_id.name,
+            'partner_id': m.partner_id.id,
             'date': m.invoice_date.strftime('%Y-%m-%d') if m.invoice_date else '',
             'total': m.amount_total,
             'residual': m.amount_residual,
@@ -415,6 +422,7 @@ class AiTool(models.Model):
             entry = {'count': n, 'qty': qty}
             if row.get('product_id'):
                 entry['product'] = row['product_id'][1]
+                entry['product_id'] = row['product_id'][0]
             day = row.get('date:day')
             if day:
                 entry['day'] = day[1]
@@ -448,7 +456,10 @@ class AiTool(models.Model):
             lot = quant.lot_id
             entry = by_lot.setdefault(lot.id, {
                 'lot': lot.name,
+                'lot_id': lot.id,
+                'product_id': lot.product_id.id,
                 'supplier': lot.partner_id.name or '',
+                'partner_id': lot.partner_id.id,
                 'expiration': (
                     lot.expiration_date.strftime('%Y-%m-%d') if lot.expiration_date else ''
                 ),
@@ -474,7 +485,40 @@ class AiTool(models.Model):
         )
         if not partner:
             return {'found': False, 'searched': partner_name}
-        return {'found': True, 'partner': partner.name, 'box_qty': partner.mercas_box_qty}
+        return {
+            'found': True, 'partner': partner.name, 'partner_id': partner.id,
+            'box_qty': partner.mercas_box_qty,
+        }
+
+    # ── Contacto: datos generales de un cliente/proveedor/contacto ─────────
+
+    def _builtin_partner_info(self, parameters):
+        """Business-card info for a client/vendor/contact: phone, address,
+        province, VAT (NIF) and the related company when the match is an
+        individual contact (parent_id), not a company itself."""
+        name = (parameters.get('partner') or '').strip()
+        if not name:
+            return {'found': False, 'searched': ''}
+        partner = self._user_model('res.partner').search(
+            [('name', 'ilike', name)], limit=1
+        )
+        if not partner:
+            return {'found': False, 'searched': name}
+        return {
+            'found': True,
+            'id': partner.id,
+            'name': partner.name,
+            'phone': partner.phone or '',
+            'street': partner.street or '',
+            'street2': partner.street2 or '',
+            'city': partner.city or '',
+            'zip': partner.zip or '',
+            'state': partner.state_id.name if partner.state_id else '',
+            'country': partner.country_id.name if partner.country_id else '',
+            'vat': partner.vat or '',
+            'parent_id': partner.parent_id.id if partner.parent_id else None,
+            'parent_name': partner.parent_id.name if partner.parent_id else '',
+        }
 
     # ── Existencias puntuales (a fecha de hoy, no un rango de movimientos) ──────
 
@@ -491,7 +535,7 @@ class AiTool(models.Model):
         if not products:
             return {'found': False, 'searched': product}
         rows = [
-            {'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name}
+            {'id': p.id, 'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name}
             for p in products
         ]
         # Siempre con desglose por lote (cantidad original comprada vs. lo que
@@ -511,7 +555,7 @@ class AiTool(models.Model):
         )
         products = candidates.sorted('qty_available', reverse=True)[:limit]
         rows = [
-            {'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name}
+            {'id': p.id, 'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name}
             for p in products
         ]
         return {'found': True, 'rows': rows, 'general': True}
@@ -583,9 +627,11 @@ class AiTool(models.Model):
         for line in sale_lines:
             sales_by_lot.setdefault(line.lot_id.id, []).append({
                 'partner': line.order_partner_id.name,
+                'partner_id': line.order_partner_id.id,
                 'qty': line.product_uom_qty,
                 'uom': line.product_uom_id.name,
                 'order': line.order_id.name,
+                'order_id': line.order_id.id,
                 'date': (
                     line.order_id.date_order.strftime('%Y-%m-%d')
                     if line.order_id.date_order else ''

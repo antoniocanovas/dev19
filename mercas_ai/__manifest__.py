@@ -12,7 +12,7 @@
     "category": "Productivity/AI",
     "depends": [
         "odoo_mcp_manager",
-        "chat_ia",
+        "chat_ai",
         "sale",
         "purchase",
         "account",

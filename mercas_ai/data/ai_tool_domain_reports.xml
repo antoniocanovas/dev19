@@ -60,6 +60,19 @@
             }</field>
         </record>
 
+        <record id="tool_partner_info" model="ai.tool">
+            <field name="name">partner_info</field>
+            <field name="description">Datos generales de un cliente/proveedor/contacto (res.partner): telefono, direccion, provincia, pais, NIF y empresa relacionada si es un contacto individual (parent_id).</field>
+            <field name="implementation">builtin</field>
+            <field name="input_schema">{
+                "type": "object",
+                "properties": {
+                    "partner": {"type": "string", "description": "Nombre (parcial) del cliente, proveedor o contacto."}
+                },
+                "required": ["partner"]
+            }</field>
+        </record>
+
         <record id="tool_lot_report" model="ai.tool">
             <field name="name">lot_report</field>
             <field name="description">Ficha de negocio de un lote (stock.lot): producto, cantidad en almacén, país/provincia de origen, proveedor, fecha de entrada, caducidad y a qué clientes se ha vendido y cuándo. Sin "lot" ni "product", lista todos los lotes actualmente en stock. Nunca incluye cajas/envases (is_box) ni información de facturación al proveedor.</field>

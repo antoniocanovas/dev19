@@ -89,7 +89,7 @@ externo, Telegram/WhatsApp/Web) — no son exclusivas de la consola de este mód
 `stock.move`/`res.partner`/`product.product`/`stock.quant` vía `self._user_model(model_name)`
 (heredado de `odoo_mcp_manager`: `self.env[model_name].with_user(self._effective_uid())`), nunca
 con `.sudo()`. `_effective_uid()` resuelve al usuario real que pregunta — `mcp_user_id` del
-contexto si viene de `chat_ia`/Discuss o de un cliente MCP autenticado con su propia API key, o
+contexto si viene de `chat_ai`/Discuss o de un cliente MCP autenticado con su propia API key, o
 `self.env.uid` en cualquier otro caso (wizard incluido) — así que un usuario sin acceso de
 lectura a alguno de esos modelos, o cuyas record rules multi-compañía no cubran los registros
 consultados, recibe un `AccessError` real en vez de ver cifras a las que no debería llegar.
