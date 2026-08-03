@@ -2,6 +2,11 @@
     "name": "Mercas AI",
     "version": "19.0.1.0.0",
     "summary": "Consola de chat con la IA (MCP Gateway) desde el propio backend de Odoo",
+    "description": (
+        "Consola de chat con la IA (MCP Gateway) desde el propio backend de Odoo: "
+        "ventas, compras, facturacion, stock, existencias, cajas y lotes. "
+        "Ver README.md para el detalle de la arquitectura."
+    ),
     "author": "Antonio Cánovas",
     "license": "LGPL-3",
     "category": "Productivity/AI",
