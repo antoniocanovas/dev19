@@ -4,30 +4,32 @@
 
         <record id="tool_purchase_report" model="ai.tool">
             <field name="name">purchase_report</field>
-            <field name="description">Totaliza las compras (purchase.order) por proveedor y/o día con importes reales (amount_total).</field>
+            <field name="description">Totaliza las compras (purchase.order) por proveedor y/o día con importes reales (amount_total), o el detalle por producto (con lote) si se agrupa por producto.</field>
             <field name="implementation">builtin</field>
             <field name="input_schema">{
                 "type": "object",
                 "properties": {
                     "vendor": {"type": "string", "description": "Nombre (parcial) del proveedor a filtrar. Vacío = todos."},
+                    "product": {"type": "string", "description": "Nombre (parcial) o referencia interna (código) del producto. Solo se aplica con group_by=product/product_day."},
                     "date_from": {"type": "string", "description": "Fecha inicio YYYY-MM-DD. Vacío = sin límite."},
                     "date_to": {"type": "string", "description": "Fecha fin YYYY-MM-DD. Vacío = sin límite."},
-                    "group_by": {"type": "string", "enum": ["customer", "day", "customer_day", "total"], "description": "Cómo agrupar los totales (customer = agrupa por proveedor)."}
+                    "group_by": {"type": "string", "enum": ["customer", "day", "customer_day", "product", "product_day", "total"], "description": "Cómo agrupar: customer/day/customer_day/total totalizan importes (customer = agrupa por proveedor); product/product_day dan el detalle por producto (con lote)."}
                 }
             }</field>
         </record>
 
         <record id="tool_invoice_report" model="ai.tool">
             <field name="name">invoice_report</field>
-            <field name="description">Totaliza facturas emitidas y/o recibidas (account.move, solo asientos contabilizados) por cliente/proveedor y/o día. Con pending=true, totaliza lo pendiente de pago (amount_residual) en vez del importe total.</field>
+            <field name="description">Totaliza facturas emitidas y/o recibidas (account.move, solo asientos contabilizados) por cliente/proveedor y/o día. Con pending=true, totaliza lo pendiente de pago (amount_residual) en vez del importe total. group_by=product/product_day da el detalle por producto (con lote); group_by=detail lista las facturas individuales con su estado de pago.</field>
             <field name="implementation">builtin</field>
             <field name="input_schema">{
                 "type": "object",
                 "properties": {
                     "partner": {"type": "string", "description": "Nombre (parcial) del cliente o proveedor a filtrar. Vacío = todos."},
+                    "product": {"type": "string", "description": "Nombre (parcial) o referencia interna (código) del producto. Solo se aplica con group_by=product/product_day."},
                     "date_from": {"type": "string", "description": "Fecha inicio YYYY-MM-DD. Vacío = sin límite."},
                     "date_to": {"type": "string", "description": "Fecha fin YYYY-MM-DD. Vacío = sin límite."},
-                    "group_by": {"type": "string", "enum": ["customer", "day", "customer_day", "total"], "description": "Cómo agrupar los totales."},
+                    "group_by": {"type": "string", "enum": ["customer", "day", "customer_day", "product", "product_day", "detail", "total"], "description": "Cómo agrupar: customer/day/customer_day/total totalizan importes; product/product_day dan el detalle por producto (con lote); detail lista las facturas individuales con su estado de pago."},
                     "move_type": {"type": "string", "enum": ["customer", "vendor", "all"], "description": "customer = facturas emitidas, vendor = facturas recibidas, all = ambas."},
                     "pending": {"type": "boolean", "description": "Si es true, filtra solo facturas no pagadas y totaliza el importe pendiente (amount_residual) en vez del total."}
                 }

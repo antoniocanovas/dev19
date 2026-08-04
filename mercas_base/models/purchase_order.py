@@ -326,20 +326,36 @@ class PurchaseOrderLine(models.Model):
                     {"mercas_firm_negotiation": line.mercas_firm_negotiation}
                 )
         if "box_qty" in vals or "box_product_id" in vals or "product_id" in vals:
-            for line in self.filtered(lambda l: not l.display_type and not l.box_purchase_line_id):
-                box_lines = self.env["purchase.order.line"].search(
-                    [("box_purchase_line_id", "=", line.id)]
+            lines_to_check = self.filtered(lambda l: not l.display_type and not l.box_purchase_line_id)
+            if lines_to_check:
+                # One search for every affected line's box line instead of
+                # one per line -- a multi-line update (e.g. a bulk quantity
+                # change) would otherwise do N queries here.
+                all_box_lines = self.env["purchase.order.line"].search(
+                    [("box_purchase_line_id", "in", lines_to_check.ids)]
                 )
-                if not box_lines:
-                    continue
-                if "box_qty" in vals and line.box_qty == 0:
-                    box_lines.unlink()
-                    continue
-                update = {}
-                if "box_qty" in vals:
-                    update["product_qty"] = line.box_qty
-                if ("box_product_id" in vals or "product_id" in vals) and line.box_product_id:
-                    update["product_id"] = line.box_product_id.id
-                if update:
-                    box_lines.write(update)
+                box_lines_by_parent = {}
+                for box_line in all_box_lines:
+                    box_lines_by_parent.setdefault(
+                        box_line.box_purchase_line_id.id, self.env["purchase.order.line"]
+                    )
+                    box_lines_by_parent[box_line.box_purchase_line_id.id] |= box_line
+
+                to_unlink = self.env["purchase.order.line"]
+                for line in lines_to_check:
+                    box_lines = box_lines_by_parent.get(line.id)
+                    if not box_lines:
+                        continue
+                    if "box_qty" in vals and line.box_qty == 0:
+                        to_unlink |= box_lines
+                        continue
+                    update = {}
+                    if "box_qty" in vals:
+                        update["product_qty"] = line.box_qty
+                    if ("box_product_id" in vals or "product_id" in vals) and line.box_product_id:
+                        update["product_id"] = line.box_product_id.id
+                    if update:
+                        box_lines.write(update)
+                if to_unlink:
+                    to_unlink.unlink()
         return result

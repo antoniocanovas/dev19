@@ -638,9 +638,14 @@ class AiTool(models.Model):
                 ),
             })
 
+        # One read() for the whole batch instead of one per lot -- matters
+        # now that "todos los lotes en stock" can return up to
+        # _LOT_LIST_LIMIT lots in a single call.
+        data_by_id = {row['id']: row for row in lots.read(self._LOT_DETAIL_FIELDS)}
+
         details = []
         for lot in lots:
-            data = lot.read(self._LOT_DETAIL_FIELDS)[0]
+            data = data_by_id[lot.id]
             data['uom'] = lot.product_id.uom_id.name
             data['entry'] = entry_dates.get(lot.id, '')
             data['sales'] = sales_by_lot.get(lot.id, [])

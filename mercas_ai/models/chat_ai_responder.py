@@ -31,6 +31,16 @@ class ChatAiResponder(models.AbstractModel):
         mixin = self.env["mercas.mcp.domain.chat.mixin"]
         try:
             parsed = mixin._classify(text, history)
+        except RuntimeError:
+            # No active ai.provider with chat models configured at all — a
+            # setup problem, not an out-of-scope question (see the same
+            # guard in domain_chat_mixin.py's action_send).
+            _logger.warning("mercas_ai: no active AI provider configured")
+            return self.env._(
+                "No hay ningún proveedor de IA activo configurado. Pide a un "
+                "administrador que configure uno en MCP Gateway → "
+                "Configuración → Proveedores."
+            )
         except Exception:
             _logger.exception("mercas_ai: domain classification failed")
             parsed = {"domain": "otro"}

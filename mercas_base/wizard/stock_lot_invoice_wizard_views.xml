@@ -14,12 +14,12 @@
                 <field name="currency_id" invisible="1"/>
                 <field name="line_ids">
                     <list create="0" editable="bottom">
-                        <field name="selected" readonly="not invoiceable" force_save="1"/>
+                        <field name="selected" readonly="not invoiceable" force_save="1" string=""/>
                         <field name="lot_id" readonly="1" force_save="1"/>
-                        <field name="mercas_firm_negotiation" string="Firme" widget="boolean_toggle" readonly="1" optional="show"/>
+                        <field name="mercas_firm_negotiation" string="FF" widget="boolean_toggle" readonly="1" optional="show"/>
                         <field name="invoiceable" readonly="1" column_invisible="1"/>
                         <field name="ref" readonly="1" optional="hide"/>
-                        <field name="create_date" readonly="1"/>
+                        <field name="create_date" readonly="1" string="Alta"/>
                         <field name="company_id" readonly="1" optional="hide" groups="base.group_multi_company"/>
                         <field name="partner_ids" readonly="1" optional="hide" widget="many2many_tags"/>
                         <field name="product_qty" readonly="1" optional="hide"/>
@@ -35,8 +35,8 @@
                         <field name="mercas_margin" readonly="mercas_firm_negotiation"/>
                         <field name="supplier_price_kg" readonly="1" invisible="mercas_firm_negotiation"/>
                         <field name="supplier_amount" readonly="1" invisible="mercas_firm_negotiation"/>
-                        <field name="net_invoiced_amount" readonly="1" optional="show" invisible="mercas_firm_negotiation" sum="Importe facturado"/>
-                        <field name="amount_to_invoice" readonly="1" sum="Importe a facturar"/>
+                        <field name="net_invoiced_amount" readonly="1" optional="show" invisible="mercas_firm_negotiation" string="Facturado" sum="Facturado"/>
+                        <field name="amount_to_invoice" readonly="1" string="A facturar" sum="A facturar"/>
                     </list>
                 </field>
                 <group class="oe_subtotal_footer">

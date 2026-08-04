@@ -50,9 +50,11 @@ class ResPartner(models.Model):
             locations |= supplier_loc
         return locations
 
-    def _mercas_box_quants_domain(self, company):
+    def _mercas_box_quants_domain(self, company, any_box_product=None):
         locations = self._mercas_box_locations(company)
-        if not locations or not self.env["product.template"]._mercas_any_box_product_exists():
+        if any_box_product is None:
+            any_box_product = self.env["product.template"]._mercas_any_box_product_exists()
+        if not locations or not any_box_product:
             return None
         return [
             ("location_id", "in", locations.ids),
@@ -63,15 +65,33 @@ class ResPartner(models.Model):
     def _compute_mercas_box_qty(self):
         company = self.env.company
         any_box_product = self.env["product.template"]._mercas_any_box_product_exists()
+        if not any_box_product:
+            self.mercas_has_box_location = False
+            self.mercas_box_qty = 0.0
+            return
+
+        # One search across every partner's locations instead of one search
+        # per partner -- a contact list computing this column would otherwise
+        # do N queries (plus a redundant _mercas_any_box_product_exists() per
+        # partner, already hoisted above) instead of a single one.
+        locations_by_partner = {partner.id: partner._mercas_box_locations(company) for partner in self}
+        all_location_ids = {loc_id for locs in locations_by_partner.values() for loc_id in locs.ids}
+
+        qty_by_location = {}
+        if all_location_ids:
+            quants = self.env["stock.quant"].search([
+                ("location_id", "in", list(all_location_ids)),
+                ("product_id.is_box", "=", True),
+                ("quantity", "!=", 0),
+            ])
+            for quant in quants:
+                loc_id = quant.location_id.id
+                qty_by_location[loc_id] = qty_by_location.get(loc_id, 0.0) + quant.quantity
+
         for partner in self:
-            locations = partner._mercas_box_locations(company)
-            partner.mercas_has_box_location = bool(locations and any_box_product)
-            domain = partner._mercas_box_quants_domain(company)
-            if domain is None:
-                partner.mercas_box_qty = 0.0
-                continue
-            quants = self.env["stock.quant"].search(domain)
-            partner.mercas_box_qty = sum(quants.mapped("quantity"))
+            locations = locations_by_partner[partner.id]
+            partner.mercas_has_box_location = bool(locations)
+            partner.mercas_box_qty = sum(qty_by_location.get(loc_id, 0.0) for loc_id in locations.ids)
 
     def action_view_mercas_box_quants(self):
         self.ensure_one()

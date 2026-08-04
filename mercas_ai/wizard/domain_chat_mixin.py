@@ -4,6 +4,7 @@ import logging
 from markupsafe import Markup
 
 from odoo import _, api, fields, models
+from odoo.exceptions import AccessError, UserError
 
 from odoo.addons.odoo_mcp_manager.services.bot_gateway_service import LLMRouter
 
@@ -26,6 +27,10 @@ _DOMAIN_TOOL = {
     'lote': 'lot_report',
     'contacto': 'partner_info',
 }
+
+#: group_by values shared by ventas/compras (facturacion adds its own
+#: 'detail' on top of this same set).
+_AMOUNT_GROUP_BY = {'customer', 'day', 'customer_day', 'total', 'product', 'product_day'}
 
 _CLASSIFY_PROMPT = (
     'Classify the user message into exactly one business domain and extract query '
@@ -61,13 +66,19 @@ _CLASSIFY_PROMPT = (
     '"group_by": "detail".\n'
     '- stock [group_by permitido: product, day, product_day, total — por defecto product]: '
     'movimientos de stock (stock.move) en un rango de fechas — entradas, salidas, cuánto ha '
-    'entrado/salido/movido de un producto. Nunca uses "customer" ni "customer_day" aquí.\n'
+    'entrado/salido/movido de un producto. Nunca uses "customer" ni "customer_day" aquí. Si '
+    'preguntan por "cajas"/"envases" en general SIN nombrar un cliente o proveedor concreto '
+    '(p.ej. "stock de cajas", "¿cuántas cajas tenemos?"), este es el dominio correcto: pon '
+    '"only_boxes": true y deja "product" en null — NO uses el dominio "cajas" para esto, ese '
+    'es solo para cajas en depósito EN CASA de un cliente/proveedor concreto.\n'
     '- existencias [group_by: no aplica a este dominio, pon siempre null]: cantidad disponible '
     'AHORA MISMO de un producto (no un rango de fechas, no movimientos) — "¿cuánto tenemos de '
     'X?", "¿qué stock queda de X?".\n'
-    '- cajas [group_by: no aplica a este dominio, pon siempre null]: cajas/envases en depósito '
-    'en el almacén de un cliente o proveedor concreto (no un producto que se llame "caja") — '
-    'usa "partner" para el nombre.\n'
+    '- cajas [group_by: no aplica a este dominio, pon siempre null]: cajas/envases que un '
+    'cliente o proveedor CONCRETO tiene en depósito en su propio almacén — requiere '
+    'obligatoriamente un nombre de cliente/proveedor en "partner". Si no se nombra a nadie '
+    '("stock de cajas", "¿cuántas cajas tenemos en total?"), NO es este dominio: usa "stock" '
+    'con "only_boxes": true en su lugar.\n'
     '- lote [group_by: no aplica a este dominio, pon siempre null]: cualquier pregunta sobre '
     'un lote (stock.lot) concreto, o sobre el LISTADO de todos los lotes que hay en stock '
     'ahora mismo — de dónde viene, cuándo entró, caducidad, cuánto queda, a qué clientes se '
@@ -90,6 +101,11 @@ _CLASSIFY_PROMPT = (
     'R: {{"domain":"cajas","partner":"Frutas García","product":null,"lot":null,'
     '"only_boxes":true,"pending":false,"date_from":null,"date_to":null,"group_by":null,'
     '"move_type":"all","direction":null}}\n'
+    'P: "Stock de cajas" (sin nombrar cliente/proveedor — no es el dominio "cajas", es '
+    '"stock" filtrado a envases)\n'
+    'R: {{"domain":"stock","partner":null,"product":null,"lot":null,"only_boxes":true,'
+    '"pending":false,"date_from":null,"date_to":null,"group_by":"product","move_type":"all",'
+    '"direction":null}}\n'
     'P: "¿Cuánto stock tenemos de Caja1?" (aquí "Caja1" SÍ es el nombre de un producto '
     'concreto del catálogo, no el envase genérico — no es el dominio "cajas")\n'
     'R: {{"domain":"existencias","partner":null,"product":"Caja1","lot":null,'
@@ -227,20 +243,34 @@ class MercasDomainChatMixin(models.AbstractModel):
         conversation = self._get_conversation()
         history = conversation.get_recent_messages(limit=6)
 
+        reply = None
         try:
             parsed = self._classify(text, history)
+        except RuntimeError:
+            # LLMRouter._routing_provider() raises this when there is no
+            # active ai.provider with chat models configured at all — a
+            # setup problem, not an out-of-scope question, so it must not
+            # be shown as one (an admin with a broken/missing provider
+            # would otherwise have no way to tell from the chat itself).
+            _logger.warning('mercas_ai: no active AI provider configured')
+            reply = _(
+                'No hay ningún proveedor de IA activo configurado. Pide a un '
+                'administrador que configure uno en MCP Gateway → '
+                'Configuración → Proveedores.'
+            )
+            tool_name = 'no_provider'
         except Exception:
             _logger.exception('mercas_ai: domain classification failed')
             parsed = {'domain': 'otro'}
 
-        domain_key = (parsed.get('domain') or 'otro').strip().lower()
-        tool_name = _DOMAIN_TOOL.get(domain_key)
-
-        if not tool_name:
-            reply = _OUT_OF_SCOPE_REPLY
-        else:
-            params = self._build_tool_params(domain_key, parsed)
-            reply = self._run_report(tool_name, domain_key, params)
+        if reply is None:
+            domain_key = (parsed.get('domain') or 'otro').strip().lower()
+            tool_name = _DOMAIN_TOOL.get(domain_key)
+            if not tool_name:
+                reply = _OUT_OF_SCOPE_REPLY
+            else:
+                params = self._build_tool_params(domain_key, parsed)
+                reply = self._run_report(tool_name, domain_key, params)
 
         conversation.sudo().add_message('user', text, None)
         conversation.sudo().add_message('assistant', reply, tool_name or 'out_of_scope')
@@ -297,26 +327,21 @@ class MercasDomainChatMixin(models.AbstractModel):
         group_by = (parsed.get('group_by') or '').strip().lower()
 
         if domain_key == 'ventas':
-            allowed = {'customer', 'day', 'customer_day', 'total', 'product', 'product_day'}
             return {
                 'customer': parsed.get('partner'),
                 'product': parsed.get('product'),
                 'date_from': date_from, 'date_to': date_to,
-                'group_by': group_by if group_by in allowed else 'customer',
+                'group_by': group_by if group_by in _AMOUNT_GROUP_BY else 'customer',
             }
         if domain_key == 'compras':
-            allowed = {'customer', 'day', 'customer_day', 'total', 'product', 'product_day'}
             return {
                 'vendor': parsed.get('partner'),
                 'product': parsed.get('product'),
                 'date_from': date_from, 'date_to': date_to,
-                'group_by': group_by if group_by in allowed else 'customer',
+                'group_by': group_by if group_by in _AMOUNT_GROUP_BY else 'customer',
             }
         if domain_key == 'facturacion':
-            allowed = {
-                'customer', 'day', 'customer_day', 'total',
-                'product', 'product_day', 'detail',
-            }
+            allowed = _AMOUNT_GROUP_BY | {'detail'}
             return {
                 'partner': parsed.get('partner'),
                 'product': parsed.get('product'),
@@ -353,9 +378,21 @@ class MercasDomainChatMixin(models.AbstractModel):
         try:
             with self.env.cr.savepoint():
                 result = tool.execute(params)
-        except Exception as exc:
+        except (UserError, AccessError) as exc:
+            # These are Odoo's own user-facing messages (a real permission
+            # denial, a business rule) -- safe and meant to be shown as-is.
             _logger.warning('mercas_ai: %s failed: %s', tool_name, exc)
             return _('[Error] %s') % exc
+        except Exception:
+            # Anything else is an internal/unexpected failure (ORM error,
+            # bad field name...) -- log it in full for debugging, but never
+            # show its raw message to a business user: it can contain
+            # technical field/model names that mean nothing to them.
+            _logger.exception('mercas_ai: %s failed unexpectedly', tool_name)
+            return _(
+                '[Error] Ha ocurrido un error inesperado generando esta respuesta. '
+                'Inténtalo de nuevo o contacta con tu administrador.'
+            )
         # Markup, not a plain str: _format_result already escaped every piece
         # of dynamic text itself and can contain real <a> links to Odoo
         # records — chat_ai_bot.py checks for this exact type to decide
@@ -387,7 +424,10 @@ class MercasDomainChatMixin(models.AbstractModel):
         text = MercasDomainChatMixin._esc(label)
         if not record_id:
             return text
-        return '<a href="/odoo/%s/%s" target="_blank">%s</a>' % (model, record_id, text)
+        return (
+            '<a href="/odoo/%s/%s" target="_blank" rel="noopener noreferrer">%s</a>'
+            % (model, record_id, text)
+        )
 
     @staticmethod
     def _format_lot_lines(lots, uom_suffix=''):
