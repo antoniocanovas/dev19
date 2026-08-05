@@ -535,12 +535,25 @@ class AiTool(models.Model):
         if not products:
             return {'found': False, 'searched': product}
         rows = [
-            {'id': p.id, 'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name}
+            {
+                'id': p.id, 'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name,
+                'variant': self._product_variant_label(p),
+            }
             for p in products
         ]
         # Siempre con desglose por lote (cantidad original comprada vs. lo que
         # queda ahora) -- no solo el total agregado del producto.
         return {'found': True, 'rows': rows, 'lots': self._stock_lots_detail(products)}
+
+    @staticmethod
+    def _product_variant_label(product):
+        """Combination label ("Grande", "Grande, Rojo"...) for *product*, but
+        only when its template actually has more than one variant -- a
+        single-variant product never needs to spell that out, even if its
+        attributes technically produced one (e.g. a single-value line)."""
+        if product.product_tmpl_id.product_variant_count <= 1:
+            return ''
+        return product.product_template_attribute_value_ids._get_combination_name()
 
     def _builtin_stock_lookup_general(self, limit=20):
         """No hay producto que buscar por nombre, así que no se puede acotar
@@ -555,7 +568,10 @@ class AiTool(models.Model):
         )
         products = candidates.sorted('qty_available', reverse=True)[:limit]
         rows = [
-            {'id': p.id, 'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name}
+            {
+                'id': p.id, 'name': p.name, 'qty': p.qty_available, 'uom': p.uom_id.name,
+                'variant': self._product_variant_label(p),
+            }
             for p in products
         ]
         return {'found': True, 'rows': rows, 'general': True}

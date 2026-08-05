@@ -69,6 +69,17 @@ class SaleOrderLine(models.Model):
                 vals["product_qty_datetime"] = now
         lines = super().create(vals_list)
         lines._mercas_notify_lines_changed(lines.order_id)
+        # A product line added after confirmation needs the same PRODUCTOS/
+        # Envases classification that action_confirm applies on first
+        # confirm -- otherwise it's left out of both sections.
+        trigger_lines = lines.filtered(
+            lambda l: not l.display_type and not l.box_sale_line_id
+        )
+        confirmed_orders = trigger_lines.order_id.filtered(
+            lambda o: o.state in ("sale", "done")
+        )
+        for order in confirmed_orders:
+            order._mercas_prepare_box_lines()
         return lines
 
     @api.depends("product_id", "product_uom_id", "product_uom_qty")
@@ -158,6 +169,16 @@ class SaleOrderLine(models.Model):
                         box_lines.write(update)
                 if to_unlink:
                     to_unlink.unlink()
+
+                # A previously box-less line that just got a box_qty/box_product_id
+                # (or a product change that gives it one) needs its box line
+                # created, same as create() -- write() above only updates lines
+                # that already had one.
+                confirmed_orders = lines_to_check.order_id.filtered(
+                    lambda o: o.state in ("sale", "done")
+                )
+                for order in confirmed_orders:
+                    order._mercas_prepare_box_lines()
         self._mercas_notify_lines_changed(self.order_id)
         return result
 

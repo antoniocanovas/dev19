@@ -78,58 +78,59 @@ class PurchaseOrder(models.Model):
         return result
 
     def _mercas_prepare_box_lines(self):
-        """Add PRODUCTOS/Envases sections and one box line per product line with
-        box_qty > 0, using the box product's purchase price (same logic as sales)."""
+        """Add PRODUCTOS/Envases sections, create/refresh one box line per
+        product line with box_qty > 0 (using the box product's purchase
+        price, same logic as sales), and re-sequence every line so it stays
+        inside the section it belongs to. Runs again after confirm (from
+        line create/write) so lines added later are grouped too, instead of
+        trailing after Envases where the UI appends new rows by default."""
         PurchaseLine = self.env["purchase.order.line"]
 
         product_lines = self.order_line.filtered(
             lambda l: not l.display_type and not l.box_purchase_line_id
         )
-        box_lines_needed = product_lines.filtered(
-            lambda l: l.box_qty > 0 and l.box_product_id
-        )
-        if not box_lines_needed:
-            return
-
-        # --- PRODUCTOS section before first product line ---
         has_productos = self.order_line.filtered(
             lambda l: l.display_type == "line_section" and l.name == "PRODUCTOS"
         )
-        if not has_productos and product_lines:
-            min_seq = min(product_lines.mapped("sequence"))
-            PurchaseLine.create({
+        box_lines_needed = product_lines.filtered(
+            lambda l: l.box_qty > 0 and l.box_product_id
+        )
+        if not product_lines or (not box_lines_needed and not has_productos):
+            return
+
+        # --- PRODUCTOS section ---
+        if has_productos:
+            productos_section = has_productos[0]
+        else:
+            productos_section = PurchaseLine.create({
                 "order_id": self.id,
                 "display_type": "line_section",
                 "name": "PRODUCTOS",
-                "sequence": min_seq - 1,
+                "sequence": 0,
                 "product_qty": 0,
             })
 
-        # --- Envases section after all non-box lines ---
+        # --- Envases section ---
         has_envases = self.order_line.filtered(
             lambda l: l.display_type == "line_section" and l.name == "Envases"
         )
-        non_box_lines = self.order_line.filtered(lambda l: not l.box_purchase_line_id)
-        max_seq = max(non_box_lines.mapped("sequence")) if non_box_lines else 10
-
-        if not has_envases:
-            envases_seq = max_seq + 10
-            PurchaseLine.create({
+        if has_envases:
+            envases_section = has_envases[0]
+        else:
+            envases_section = PurchaseLine.create({
                 "order_id": self.id,
                 "display_type": "line_section",
                 "name": "Envases",
-                "sequence": envases_seq,
+                "sequence": 0,
                 "product_qty": 0,
             })
-        else:
-            envases_seq = has_envases[0].sequence
 
         # --- Create / update box lines ---
         existing_by_parent = {
             bl.box_purchase_line_id.id: bl
             for bl in self.order_line.filtered(lambda l: l.box_purchase_line_id)
         }
-        for i, line in enumerate(box_lines_needed):
+        for line in box_lines_needed:
             if line.id in existing_by_parent:
                 existing_by_parent[line.id].write({
                     "product_id": line.box_product_id.id,
@@ -141,8 +142,36 @@ class PurchaseOrder(models.Model):
                     "product_id": line.box_product_id.id,
                     "product_qty": line.box_qty,
                     "box_purchase_line_id": line.id,
-                    "sequence": envases_seq + (i + 1) * 10,
                 })
+
+        self._mercas_reorder_box_sections(productos_section, envases_section)
+
+    def _mercas_reorder_box_sections(self, productos_section, envases_section):
+        """Renumber sequence so every line sits inside its section: PRODUCTOS,
+        then all product lines (keeping their current relative order), then
+        Envases, then all box lines (following their parent line's order)."""
+        product_lines = self.order_line.filtered(
+            lambda l: not l.display_type and not l.box_purchase_line_id
+        ).sorted(key=lambda l: (l.sequence, l.id))
+        box_lines_by_parent = {
+            bl.box_purchase_line_id.id: bl
+            for bl in self.order_line.filtered(lambda l: l.box_purchase_line_id)
+        }
+
+        seq = 0
+        productos_section.sequence = seq
+        for line in product_lines:
+            seq += 10
+            line.sequence = seq
+
+        seq += 10
+        envases_section.sequence = seq
+
+        for line in product_lines:
+            box_line = box_lines_by_parent.get(line.id)
+            if box_line:
+                seq += 10
+                box_line.sequence = seq
 
     def _mercas_autocreate_lots(self):
         """Auto-assign new lots to tracked lines that have no lot set."""
@@ -294,6 +323,25 @@ class PurchaseOrderLine(models.Model):
             vals["lot_id"] = self.lot_id.id
         return vals
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        # A product line added after confirmation needs the same treatment
+        # button_confirm applies on first confirm -- lot autocreation and
+        # PRODUCTOS/Envases classification -- otherwise it's left untracked
+        # and out of both sections.
+        trigger_lines = lines.filtered(
+            lambda l: not l.display_type and not l.box_purchase_line_id
+        )
+        confirmed_orders = trigger_lines.order_id.filtered(
+            lambda o: o.state in ("purchase", "done")
+        )
+        for order in confirmed_orders:
+            if order.company_id.purchase_lot_autocomplete:
+                order._mercas_autocreate_lots()
+            order._mercas_prepare_box_lines()
+        return lines
+
     def write(self, vals):
         result = super().write(vals)
         if "lot_id" in vals and vals.get("lot_id"):
@@ -358,4 +406,16 @@ class PurchaseOrderLine(models.Model):
                         box_lines.write(update)
                 if to_unlink:
                     to_unlink.unlink()
+
+                # A previously box-less line that just got a box_qty/box_product_id
+                # (or a product change that gives it one) needs its box line
+                # created, same as create() -- write() above only updates lines
+                # that already had one.
+                confirmed_orders = lines_to_check.order_id.filtered(
+                    lambda o: o.state in ("purchase", "done")
+                )
+                for order in confirmed_orders:
+                    if "product_id" in vals and order.company_id.purchase_lot_autocomplete:
+                        order._mercas_autocreate_lots()
+                    order._mercas_prepare_box_lines()
         return result

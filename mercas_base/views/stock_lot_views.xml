@@ -17,6 +17,12 @@
                         class="btn-primary"
                         invisible="not invoiceable"
                     />
+                    <button
+                        name="action_open_scrap"
+                        string="Desechar"
+                        type="object"
+                        class="btn-secondary"
+                    />
                 </header>
             </xpath>
 

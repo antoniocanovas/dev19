@@ -520,15 +520,19 @@ class MercasDomainChatMixin(models.AbstractModel):
             if result.get('general'):
                 if not shown:
                     return _('No hay ningún producto con existencias ahora mismo.')
-                blocks = [
-                    '\n'.join([
+                blocks = []
+                for row in shown:
+                    block_lines = [
                         _('Producto: %s') % link('product.product', row.get('id'), row['name']),
-                        _('Stock disponible: %(qty).2f %(uom)s') % {
-                            'qty': row['qty'], 'uom': esc(row['uom']),
-                        },
-                    ])
-                    for row in shown
-                ]
+                    ]
+                    if row.get('variant'):
+                        block_lines.append(_('Variante: %s') % link(
+                            'product.product', row.get('id'), row['variant']
+                        ))
+                    block_lines.append(_('Stock disponible: %(qty).2f %(uom)s') % {
+                        'qty': row['qty'], 'uom': esc(row['uom']),
+                    })
+                    blocks.append('\n'.join(block_lines))
                 return _('Productos con existencias (los que más stock tienen primero):') \
                     + '\n\n' + separator.join(blocks)
 
@@ -544,10 +548,14 @@ class MercasDomainChatMixin(models.AbstractModel):
             for row in shown:
                 lines = [
                     _('Producto: %s') % link('product.product', row.get('id'), row['name']),
-                    _('Stock disponible: %(qty).2f %(uom)s') % {
-                        'qty': row['qty'], 'uom': esc(row['uom']),
-                    },
                 ]
+                if row.get('variant'):
+                    lines.append(_('Variante: %s') % link(
+                        'product.product', row.get('id'), row['variant']
+                    ))
+                lines.append(_('Stock disponible: %(qty).2f %(uom)s') % {
+                    'qty': row['qty'], 'uom': esc(row['uom']),
+                })
                 for lot_entry in lots_by_product.get(row.get('id'), []):
                     lines.append('')
                     lines.append(_('Lote: %s') % link(

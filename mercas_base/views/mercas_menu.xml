@@ -96,4 +96,12 @@
         sequence="70"
     />
 
+    <menuitem
+        id="menu_mercas_inventario"
+        name="Inventario"
+        parent="menu_mercas_root"
+        action="stock.action_view_inventory_tree"
+        sequence="80"
+    />
+
 </odoo>

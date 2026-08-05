@@ -280,6 +280,28 @@ class StockLot(models.Model):
             if lot.invoiced != new_value:
                 lot.with_context(mercas_auto_invoiced=True).write({"invoiced": new_value})
 
+    def action_open_scrap(self):
+        """Open the standard scrap wizard (same one stock.picking's own
+        "Scrap" button opens), pre-filled with this lot's product and lot
+        and quantity left at 0 for the user to fill in."""
+        self.ensure_one()
+        view = self.env.ref("stock.stock_scrap_form_view2")
+        return {
+            "name": _("Desechar"),
+            "type": "ir.actions.act_window",
+            "res_model": "stock.scrap",
+            "view_mode": "form",
+            "view_id": view.id,
+            "views": [(view.id, "form")],
+            "target": "new",
+            "context": {
+                "default_product_id": self.product_id.id,
+                "default_lot_id": self.id,
+                "default_scrap_qty": 0,
+                "default_company_id": self.company_id.id,
+            },
+        }
+
     def _mercas_has_firm_invoicing(self):
         self.ensure_one()
         return bool(self.supplier_invoice_line_ids.filtered(
