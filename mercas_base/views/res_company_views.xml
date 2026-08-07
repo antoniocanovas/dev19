@@ -23,6 +23,8 @@
                             <field name="compensation_journal_id"/>
                             <field name="mercas_margin"/>
                             <field name="auto_confirm_supplier_invoice" widget="toggle"/>
+                            <field name="liquidation_mode"/>
+                            <field name="liquidation_show_sale_breakdown" widget="toggle"/>
                         </group>
                     </group>
                 </page>

@@ -58,7 +58,7 @@
                                 <field name="sale_amount" readonly="1" invisible="mercas_firm_negotiation"/>
                                 <field name="mercas_margin" readonly="not can_edit_margin" invisible="mercas_firm_negotiation"/>
                                 <field name="supplier_amount" readonly="1" invisible="mercas_firm_negotiation"/>
-                                <field name="supplier_price_kg" readonly="1" invisible="mercas_firm_negotiation"/>
+                                <field name="supplier_price_kg" readonly="not can_edit_margin" invisible="mercas_firm_negotiation"/>
                                 <field name="margin" readonly="1" invisible="mercas_firm_negotiation"/>
                                 <field name="net_invoiced_amount" readonly="1" invisible="mercas_firm_negotiation"/>
                                 <field name="net_invoiced_kg" readonly="1" invisible="not mercas_firm_negotiation"/>

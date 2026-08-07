@@ -157,6 +157,7 @@ class StockLot(models.Model):
     supplier_price_kg = fields.Float(
         string="Precio/kg proveedor",
         compute="_compute_supplier_fields",
+        inverse="_inverse_supplier_price_kg",
         digits=(16, 4),
     )
     margin = fields.Float(
@@ -226,21 +227,43 @@ class StockLot(models.Model):
                     net -= line.price_subtotal
             lot.net_invoiced_amount = net
 
+    def _mercas_company(self):
+        """`company_id` (compute='_compute_company_id', from product_id.company_id)
+        is empty for any lot whose product has no company set (a product
+        shared across companies) unless something wrote it explicitly (e.g.
+        `_mercas_autocreate_lots` does, from the purchase order's own
+        company) -- reading Mercas company settings via `self.company_id.x`
+        directly would then silently see nothing instead of the intended
+        configuration. Fall back to the current company in that case."""
+        self.ensure_one()
+        return self.company_id or self.env.company
+
     def _mercas_liquidation_gross(self):
         """Valor bruto de liquidación por venta de este lote: el definitivo
-        (purchase_kg × supplier_price_kg) si está completado (sin stock), o una
-        estimación de anticipo si todavía queda stock. El importe del anticipo
-        es siempre el de lo realmente vendido neto de margen (el desecho no se
-        paga); la cantidad mostrada (vendido + desechado) solo reparte ese
-        importe fijo en un precio/kg menor, igual que hace la liquidación
-        final con purchase_kg. Devuelve (cantidad, precio, importe)."""
+        (sale_amount neto de margen) si está completado (sin stock), o una
+        estimación de anticipo si todavía queda stock -- en ambos casos es
+        siempre el importe de lo realmente vendido neto de margen (el
+        desecho no se paga nunca). La cantidad/precio que se reparte ese
+        importe depende de `company.liquidation_mode`:
+        - "average_price": vendido + desechado (el desecho diluye el
+          precio/kg de la única línea, sin aparecer aparte).
+        - "average_price_scrap_split": solo lo vendido (el desecho se
+          factura aparte a precio 0, ver `_mercas_prepare_invoice_lines`).
+        Devuelve (cantidad, precio, importe)."""
         self.ensure_one()
         if self.completed:
-            return self.purchase_kg, self.supplier_price_kg, self.supplier_amount
-        if not self.sale_kg:
+            amount = self.supplier_amount
+        elif not self.sale_kg:
             return 0.0, 0.0, 0.0
-        amount = self.sale_amount * (1.0 - self.mercas_margin / 100.0)
-        qty = self.sale_kg + self.scrap_kg
+        else:
+            amount = self.sale_amount * (1.0 - self.mercas_margin / 100.0)
+
+        if self._mercas_company().liquidation_mode == "average_price_scrap_split":
+            qty = self.sale_kg
+        elif self.completed:
+            qty = self.purchase_kg
+        else:
+            qty = self.sale_kg + self.scrap_kg
         price_kg = amount / qty if qty > 0 else 0.0
         return qty, price_kg, amount
 
@@ -283,9 +306,35 @@ class StockLot(models.Model):
     def action_open_scrap(self):
         """Open the standard scrap wizard (same one stock.picking's own
         "Scrap" button opens), pre-filled with this lot's product and lot
-        and quantity left at 0 for the user to fill in."""
+        and quantity left at 0 for the user to fill in.
+
+        `company_id` falls back to the current company when the lot's own
+        (computed from product_id.company_id) is empty -- a product shared
+        across companies (no company set) leaves the lot without one too.
+        Passing that empty value through as `default_company_id` used to
+        leave stock.scrap's own `company_id` blank, which in turn skips its
+        `location_id`/`scrap_location_id` computes entirely (both guard on
+        `if scrap.company_id`) and, combined with `check_company=True`,
+        left the location dropdowns with nothing to offer either.
+
+        `location_id` is set explicitly from this lot's own stock instead
+        of leaving it to stock.scrap's generic default (the "first"
+        warehouse for the company, oblivious to the lot) -- with more than
+        one warehouse that default can easily point at a location where
+        this lot has no stock at all."""
         self.ensure_one()
         view = self.env.ref("stock.stock_scrap_form_view2")
+        quant = self.quant_ids.filtered(
+            lambda q: q.quantity > 0 and q.location_id.usage == "internal"
+        )[:1]
+        context = {
+            "default_product_id": self.product_id.id,
+            "default_lot_id": self.id,
+            "default_scrap_qty": 0,
+            "default_company_id": self._mercas_company().id,
+        }
+        if quant:
+            context["default_location_id"] = quant.location_id.id
         return {
             "name": _("Desechar"),
             "type": "ir.actions.act_window",
@@ -294,12 +343,7 @@ class StockLot(models.Model):
             "view_id": view.id,
             "views": [(view.id, "form")],
             "target": "new",
-            "context": {
-                "default_product_id": self.product_id.id,
-                "default_lot_id": self.id,
-                "default_scrap_qty": 0,
-                "default_company_id": self.company_id.id,
-            },
+            "context": context,
         }
 
     def _mercas_has_firm_invoicing(self):
@@ -469,6 +513,30 @@ class StockLot(models.Model):
             )
             lot.margin = lot.sale_amount - supplier_amount
 
+    def _inverse_supplier_price_kg(self):
+        """Editar el precio/kg a mano recalcula el margen equivalente --
+        `mercas_margin` sigue siendo el único campo realmente persistido, el
+        resto se deriva siempre de él (ver `_compute_supplier_fields`), así
+        que escribir aquí simplemente resuelve qué margen produciría el
+        precio introducido y lo guarda en su lugar.
+
+        Sin importe vendido (`sale_amount = 0`, típico antes de la primera
+        venta) no hay base sobre la que calcular un margen -- se ignora el
+        cambio en silencio y el campo vuelve a su valor calculado (0) al
+        recomputarse."""
+        for lot in self:
+            if not lot.sale_amount or not lot.purchase_kg:
+                continue
+            target_amount = lot.supplier_price_kg * lot.purchase_kg
+            lot.mercas_margin = (1.0 - target_amount / lot.sale_amount) * 100.0
+
+    @api.onchange("supplier_price_kg")
+    def _onchange_supplier_price_kg(self):
+        """El `inverse` de un campo compute solo se ejecuta al guardar --
+        aquí se repite la misma lógica para que el margen se recalcule en
+        pantalla mientras se edita el precio, sin esperar a guardar."""
+        self._inverse_supplier_price_kg()
+
     def _mercas_invoice_origin_suffix(self):
         """Texto '<fecha> | <pedido> | <ref.proveedor> | <lote>' para anexar al
         nombre de la línea principal de un lote."""
@@ -485,6 +553,65 @@ class StockLot(models.Model):
             parts.append(purchase_line.order_id.partner_ref)
         parts.append(self.name)
         return " | ".join(parts), purchase_line
+
+    def _mercas_sale_breakdown_text(self):
+        """Desglose acumulado, una línea de texto por movimiento de venta
+        validado de este lote: 'DD/MM/YYYY => Pedido => Cantidad uom =>
+        Precio unitario símbolo_moneda'. Siempre acumulado (todas las
+        ventas hasta ahora, no solo las nuevas desde la última factura) --
+        igual que ya son acumulados Kg vendidos/Importe vendido, así que no
+        hace falta ningún tracking nuevo de qué venta ya apareció en una
+        factura anterior. Es solo texto informativo, no afecta a ningún
+        importe."""
+        self.ensure_one()
+        sale_mls = self.stock_move_line_ids.filtered(
+            lambda ml: ml.state == "done" and ml.move_id.sale_line_id
+        ).sorted(lambda ml: ml.move_id.date or ml.create_date)
+        lines = []
+        for ml in sale_mls:
+            sale_line = ml.move_id.sale_line_id
+            price = sale_line.price_unit * (1.0 - sale_line.discount / 100.0)
+            date_str = format_date(self.env, ml.move_id.date) if ml.move_id.date else ""
+            uom = ml.product_uom_id.name or ""
+            currency_symbol = sale_line.currency_id.symbol or ""
+            lines.append(
+                "%s => %s => %.2f %s => %.2f %s"
+                % (
+                    date_str, sale_line.order_id.name, ml.quantity, uom,
+                    price, currency_symbol,
+                )
+            )
+        return "\n".join(lines)
+
+    def _mercas_scrap_breakdown_text(self):
+        """Desglose acumulado de las regularizaciones de desecho de este
+        lote, una línea de texto por movimiento: 'DD/MM/YYYY => Cantidad
+        UdM'. Mismo criterio de movimientos que `_compute_scrap_kg`
+        (desechos formales y ajustes de inventario negativos en positivo,
+        ajustes positivos en negativo -- para que la suma cuadre con el
+        neto de la propia línea de desecho). Acumulado, mismo motivo que
+        `_mercas_sale_breakdown_text`: no hace falta ningún tracking de qué
+        regularización ya apareció en una factura anterior."""
+        self.ensure_one()
+        loss_mls = self.stock_move_line_ids.filtered(
+            lambda ml: ml.state == "done"
+            and ml.location_id.usage == "internal"
+            and ml.location_dest_id.usage in ("production", "inventory")
+        )
+        gain_mls = self.stock_move_line_ids.filtered(
+            lambda ml: ml.state == "done"
+            and ml.location_id.usage == "inventory"
+            and ml.location_dest_id.usage == "internal"
+        )
+        entries = [(ml, ml.quantity) for ml in loss_mls]
+        entries += [(ml, -ml.quantity) for ml in gain_mls]
+        entries.sort(key=lambda entry: entry[0].move_id.date or entry[0].create_date)
+        lines = []
+        for ml, qty in entries:
+            date_str = format_date(self.env, ml.move_id.date) if ml.move_id.date else ""
+            uom = ml.product_uom_id.name or ""
+            lines.append("%s => %.2f %s" % (date_str, qty, uom))
+        return "\n".join(lines)
 
     def _mercas_prepare_invoice_lines(self):
         """Líneas de factura de proveedor para este lote, según régimen.
@@ -528,14 +655,42 @@ class StockLot(models.Model):
         if gross_amount - self.net_invoiced_amount <= 0.01:
             return []
 
+        company = self._mercas_company()
         label = _("Liquidación") if self.completed else _("Anticipo liquidación (estimado)")
+        name = "%s - %s\n%s" % (self.product_id.display_name or "", label, origin_suffix)
+        if company.liquidation_show_sale_breakdown:
+            breakdown = self._mercas_sale_breakdown_text()
+            if breakdown:
+                name = "%s\n%s" % (name, breakdown)
         lines = [Command.create({
             "product_id": self.product_id.id,
             "quantity": gross_qty,
             "price_unit": gross_price,
             "lot_id": self.id,
-            "name": "%s - %s\n%s" % (self.product_id.display_name or "", label, origin_suffix),
+            "name": name,
         })]
+
+        # Modo "desecho aparte": línea informativa a precio 0 con el total
+        # desechado hasta ahora -- dejar explícito en la factura que no se
+        # paga, en vez de diluirlo en el precio/kg de la línea de arriba.
+        if (
+            company.liquidation_mode == "average_price_scrap_split"
+            and self.scrap_kg > 0
+        ):
+            scrap_name = "%s - %s\n%s" % (
+                self.product_id.display_name or "", _("Desecho"), origin_suffix,
+            )
+            if company.liquidation_show_sale_breakdown:
+                scrap_breakdown = self._mercas_scrap_breakdown_text()
+                if scrap_breakdown:
+                    scrap_name = "%s\n%s" % (scrap_name, scrap_breakdown)
+            lines.append(Command.create({
+                "product_id": self.product_id.id,
+                "quantity": self.scrap_kg,
+                "price_unit": 0.0,
+                "lot_id": self.id,
+                "name": scrap_name,
+            }))
 
         prior_moves = self.supplier_invoice_line_ids.filtered(
             lambda l: l.move_id.state == "posted"
@@ -566,6 +721,21 @@ class StockLot(models.Model):
                 _("No hay lotes facturables (completados, con anticipo de "
                   "venta pendiente, o con recibido pendiente en régimen de "
                   "pago total) sin facturar y con proveedor asignado.")
+            )
+
+        # `invoiceable` solo mira facturas posteadas (net_invoiced_kg/amount),
+        # así que un lote con una factura en borrador sigue saliendo como
+        # facturable y volvería a generar líneas duplicadas si se le deja pasar.
+        with_draft = lots.filtered(
+            lambda l: l.supplier_invoice_line_ids.move_id.filtered(
+                lambda m: m.state == "draft"
+            )
+        )
+        if with_draft:
+            raise UserError(
+                _("Los siguientes lotes ya tienen facturas en borrador: %s. "
+                  "Confirma o elimina esas facturas antes de generar otras nuevas.")
+                % ", ".join(with_draft.mapped("name"))
             )
 
         by_partner = {}

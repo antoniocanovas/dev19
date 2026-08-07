@@ -78,11 +78,12 @@ class StockLotInvoiceWizard(models.TransientModel):
         ]
 
     def action_liquidar(self):
-        """Bulk, sin selección: lotes de liquidación por venta ya completados
-        (liquidación final) y lotes en negociación en firme con recibido
-        pendiente. Deja fuera los anticipos, que requieren selección explícita."""
+        """Sobre los lotes seleccionados: liquidación por venta ya completada
+        (liquidación final) y negociación en firme con recibido pendiente.
+        Deja fuera los anticipos, que requieren selección explícita."""
         lots = self.line_ids.filtered(
-            lambda l: l.invoiceable and (l.mercas_firm_negotiation or l.completed)
+            lambda l: l.selected and l.invoiceable
+            and (l.mercas_firm_negotiation or l.completed)
         ).lot_id
         return self._invoice_lots(lots)
 
@@ -184,10 +185,10 @@ class StockLotInvoiceWizardLine(models.TransientModel):
         related="lot_id.mercas_margin", string="Margen (%)", readonly=False
     )
     supplier_price_kg = fields.Float(
-        related="lot_id.supplier_price_kg", string="Precio/kg", readonly=True
+        related="lot_id.supplier_price_kg", string="Precio/kg", readonly=False
     )
     supplier_amount = fields.Float(
-        related="lot_id.supplier_amount", string="Importe", readonly=True
+        related="lot_id.supplier_amount", string="Importe", readonly=False
     )
     net_invoiced_amount = fields.Float(
         related="lot_id.net_invoiced_amount", string="Importe facturado", readonly=True
@@ -201,6 +202,37 @@ class StockLotInvoiceWizardLine(models.TransientModel):
     def _compute_create_date(self):
         for line in self:
             line.create_date = line.lot_id.create_date
+
+    @api.onchange("supplier_price_kg")
+    def _onchange_supplier_price_kg(self):
+        """`supplier_price_kg`/`mercas_margin`/`supplier_amount` son campos
+        `related` aquí -- escribir en uno propaga a `lot_id` en memoria,
+        pero el salto de vuelta (`lot_id` -> el related `supplier_amount`
+        de esta misma línea) no es fiable dentro del mismo onchange, así
+        que se recalculan explícitamente los tres en la propia línea, en
+        vez de depender de ese salto entre modelos.
+
+        Sin importe vendido (`sale_amount = 0`, típico antes de la primera
+        venta) no hay base sobre la que calcular un margen -- se ignora el
+        cambio en silencio."""
+        for line in self:
+            if not line.sale_amount or not line.purchase_kg:
+                continue
+            supplier_amount = line.supplier_price_kg * line.purchase_kg
+            line.mercas_margin = (1.0 - supplier_amount / line.sale_amount) * 100.0
+            line.supplier_amount = supplier_amount
+
+    @api.onchange("mercas_margin")
+    def _onchange_mercas_margin(self):
+        """Simétrico al de arriba: recalcula precio/kg e importe en la
+        propia línea al editar el margen a mano, por el mismo motivo (no
+        depender del salto related a través de `lot_id` y de vuelta)."""
+        for line in self:
+            supplier_amount = line.sale_amount * (1.0 - line.mercas_margin / 100.0)
+            line.supplier_amount = supplier_amount
+            line.supplier_price_kg = (
+                supplier_amount / line.purchase_kg if line.purchase_kg else 0.0
+            )
 
     @api.depends(
         "mercas_firm_negotiation",

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Calendario de facturas por fecha de vencimiento, añadido a las
+         acciones estándar de facturas/reembolsos (cliente y proveedor). Al
+         reutilizar el mismo id de acción, esto añade la pestaña Calendario
+         en cualquier menú que use estas acciones (Contabilidad/Facturación
+         y Mercas). Hacen falta las dos variantes de cada tipo porque el
+         menú nativo de Facturación (Clientes/Proveedores) y el legacy que
+         usa Mercas no siempre apuntan al mismo id de acción: solo
+         "Reembolsos" coincide en ambos sitios (action_move_in_refund_type). -->
+    <record id="view_move_calendar_due_date" model="ir.ui.view">
+        <field name="name">account.move.calendar.due.date</field>
+        <field name="model">account.move</field>
+        <field name="arch" type="xml">
+            <calendar string="Facturas" date_start="invoice_date_due" color="partner_id" quick_create="0" mode="month">
+                <field name="partner_id"/>
+                <field name="amount_residual"/>
+                <field name="payment_state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <!-- Legacy, usadas por el menú Mercas -->
+    <record id="account.action_move_out_invoice_type" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,calendar,form,activity</field>
+    </record>
+
+    <record id="account.action_move_out_refund_type" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,calendar,form,activity</field>
+    </record>
+
+    <record id="account.action_move_in_invoice_type" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,calendar,form,activity</field>
+    </record>
+
+    <record id="account.action_move_in_refund_type" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,calendar,form,activity</field>
+    </record>
+
+    <!-- "Stable", usadas por el menú nativo Facturación > Clientes/Proveedores -->
+    <record id="account.action_move_out_invoice" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,calendar,form,activity</field>
+    </record>
+
+    <record id="account.action_move_out_refund_type_non_legacy" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,calendar,form,activity</field>
+    </record>
+
+    <record id="account.action_move_in_invoice" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,calendar,form,activity</field>
+    </record>
+
+    <!-- Asientos contables (account.move sin filtrar por tipo): mismo modelo
+         y campo que las cuatro acciones de factura, así que reutiliza la
+         misma vista calendario. Los asientos que no sean factura (tipo
+         "entry") no tienen invoice_date_due relleno y simplemente no
+         aparecen en el calendario, sin dar error. -->
+    <record id="account.action_move_journal_line" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,calendar,form,activity</field>
+    </record>
+
+    <!-- Apuntes contables (account.move.line): aquí no existe invoice_date_due
+         (ese campo es de la cabecera de la factura), pero sí date_maturity,
+         el vencimiento propio de cada apunte, más fino que el de la factura
+         cuando hay varios plazos de pago (varias cuotas, cada una con su
+         propia fecha). No creable desde el calendario, igual que la lista
+         de apuntes contables estándar. -->
+    <record id="view_move_line_calendar_due_date" model="ir.ui.view">
+        <field name="name">account.move.line.calendar.due.date</field>
+        <field name="model">account.move.line</field>
+        <field name="arch" type="xml">
+            <calendar string="Apuntes contables" date_start="date_maturity" color="partner_id" quick_create="0" create="0" mode="month">
+                <field name="move_id"/>
+                <field name="partner_id"/>
+                <field name="amount_residual"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="account.action_account_moves_all" model="ir.actions.act_window">
+        <field name="view_mode">list,kanban,calendar,pivot,graph</field>
+    </record>
+
+</odoo>

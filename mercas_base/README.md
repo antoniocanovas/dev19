@@ -176,17 +176,27 @@ El campo booleano **Facturado** (`invoiced`) sustituye al antiguo M2O a una úni
 
 #### Anticipos en liquidación por venta
 
-Un lote en liquidación por venta con stock disponible puede facturarse antes de agotarse (`invoiceable = True` aunque `completed = False`), usando una estimación. El importe es siempre el de lo realmente vendido neto de margen — el desecho no se paga nunca, con o sin anticipo — y la cantidad de la línea (vendido + desechado) solo reparte ese importe fijo en un precio/kg menor, igual que hace la liquidación final con `purchase_kg`:
+Un lote en liquidación por venta con stock disponible puede facturarse antes de agotarse (`invoiceable = True` aunque `completed = False`), usando una estimación. El importe es siempre el de lo realmente vendido neto de margen — el desecho no se paga nunca, con o sin anticipo. Cómo se reparte ese importe fijo entre cantidad/precio de línea depende del ajuste de empresa **Modo de liquidación** (`liquidation_mode`, pestaña Mercas > Contabilidad):
 
-```
-importe_bruto  = Importe vendido × (1 - Margen%)            (fijo, no depende del desecho)
-resuelto_kg    = Kg vendidos + Kg desechados                (solo para mostrar cantidad/precio en la línea)
-precio_kg      = importe_bruto / resuelto_kg
-```
+- **Precio medio (una línea)**, por defecto: la cantidad de la línea (vendido + desechado) reparte el importe fijo en un precio/kg menor, sin que el desecho aparezca por separado — igual que hace la liquidación final con `purchase_kg`.
+  ```
+  importe_bruto  = Importe vendido × (1 - Margen%)            (fijo, no depende del desecho)
+  resuelto_kg    = Kg vendidos + Kg desechados                (solo para mostrar cantidad/precio en la línea)
+  precio_kg      = importe_bruto / resuelto_kg
+  ```
+- **Precio medio + desecho aparte**: el importe fijo se reparte solo entre lo vendido (`Kg vendidos`, sin diluir por el desecho), y si hay algo desechado se añade una **segunda línea a precio 0** con esa cantidad — deja explícito en la propia factura que el desecho no se paga, en vez de solo bajar el precio/kg de forma no evidente.
 
-Si está `completed`, se usa en su lugar el importe final (`supplier_amount`) y la cantidad total comprada (`purchase_kg`), como hasta ahora.
+Si está `completed`, se usa en su lugar el importe final (`supplier_amount`); la cantidad de la línea principal es `purchase_kg` en modo "Precio medio" o `Kg vendidos` en modo "desecho aparte" (con su línea a 0 igual que en el anticipo).
 
-Al generar la factura (parcial o la liquidación final), la línea principal usa ese importe bruto y, si el lote ya tiene facturas o abonos anteriores posteados, se añade **una línea de descuento por cada uno** ("(-) Anticipo ya facturado: FACT/... del DD/MM/YYYY"), igual que hace el estándar de Odoo con los anticipos de venta — así el importe neto de la nueva factura es siempre el bruto actual menos lo ya facturado, y el histórico completo de anticipos queda visible en el propio documento.
+Al generar la factura (parcial o la liquidación final), la línea principal (más la de desecho, si aplica) usa ese importe bruto y, si el lote ya tiene facturas o abonos anteriores posteados, se añade **una línea de descuento por cada uno** ("(-) Anticipo ya facturado: FACT/... del DD/MM/YYYY"), igual que hace el estándar de Odoo con los anticipos de venta — así el importe neto de la nueva factura es siempre el bruto actual menos lo ya facturado, y el histórico completo de anticipos queda visible en el propio documento.
+
+**Precio/kg proveedor editable**: además de fijar el margen (que recalcula el precio/kg), también se puede editar directamente el **Precio/kg proveedor** (en el lote y en el asistente de liquidación) — recalcula el margen equivalente (`mercas_margin` sigue siendo el único campo realmente persistido). Si el lote todavía no tiene nada vendido (`Importe vendido = 0`), no hay base sobre la que calcular un margen a partir de un precio: el cambio se ignora en silencio y el campo vuelve a mostrar su valor calculado (0).
+
+Editar **cualquiera** de los dos campos (Margen o Precio/kg) recalcula los otros dos (margen, precio/kg e importe proveedor) al momento, en pantalla, sin esperar a guardar — en el lote, vía el `compute`/`onchange` del propio campo; en el asistente de liquidación, la línea (`stock.lot.invoice.wizard.line`) recalcula explícitamente los tres valores en sí misma en vez de depender del `related` a `stock.lot` y de vuelta, para que el importe también se actualice en el acto.
+
+**Detalle de ventas en factura** (ajuste de empresa, desactivado por defecto): si está activo, la línea principal de venta de la factura incluye además, en su descripción, un desglose **acumulado** (todas las ventas del lote hasta la fecha, no solo las nuevas desde la última factura) con una línea de texto por cada movimiento de venta validado: `DD/MM/YYYY => Pedido => Cantidad UdM => Precio unitario símbolo_moneda` (p. ej. `05/08/2026 => S00012 => 100.00 kg => 3.50 €`; precio de venta al cliente de ese pedido, neto de descuento — no el precio/proveedor liquidado; UdM y moneda son las propias de la línea de venta, no las de la empresa). Es solo texto informativo: no crea líneas contables nuevas ni afecta al importe o cantidad facturados, así que no hace falta ningún control de "esta venta ya apareció en una factura anterior". No aplica a lotes en facturación firme (ahí no hay margen sobre ventas que desglosar).
+
+Con el mismo ajuste activo, la línea de desecho del modo "Precio medio + desecho aparte" (ver arriba) también incluye su propio desglose acumulado, uno por cada regularización de desecho del lote (mismo criterio que `Kg desechados`: desechos formales y ajustes de inventario negativos en positivo, ajustes positivos en negativo): `DD/MM/YYYY => Cantidad UdM` (p. ej. `06/08/2026 => 10.00 kg`).
 
 #### Paso de liquidación por venta a facturación firme
 
@@ -219,7 +229,7 @@ La columna **Seleccionado** de la lista solo es editable en los lotes `invoiceab
 | **Importe vendido** | *(solo liquidación por venta)* Calculado desde los movimientos de salida: `qty × precio_unitario × (1 - descuento%)`. |
 | **Margen (%)** | *(solo liquidación por venta)* Margen aplicable al lote: del partner si está informado, o el general de la empresa. Se asigna al crear el lote y puede modificarse manualmente (requiere grupo Gestor de Ventas). |
 | **Importe proveedor** | *(solo liquidación por venta)* `Importe vendido × (1 - Margen%)` |
-| **Precio/kg proveedor** | *(solo liquidación por venta)* `Importe proveedor / Kg comprados` |
+| **Precio/kg proveedor** | *(solo liquidación por venta)* `Importe proveedor / Kg comprados`. Editable: cambiarlo a mano recalcula el Margen (%) equivalente — ver *Anticipos en liquidación por venta*. |
 | **Margen importe** | *(solo liquidación por venta)* `Importe vendido - Importe proveedor` |
 | **Importe facturado (neto)** | *(solo liquidación por venta)* Facturas de proveedor posteadas menos abonos posteados que referencian este lote. |
 | **Kg facturados (neto)** | *(solo facturación firme)* Kg de líneas marcadas `mercas_is_firm_line` en facturas de proveedor posteadas menos en abonos posteados. |
@@ -243,7 +253,7 @@ El asistente (**Mercas > Liquidaciones**, ver *El asistente de liquidación: tre
 1. Filtra los lotes: `invoiceable = True` y con proveedor asignado.
 2. Agrupa por proveedor y crea **una factura por proveedor** (puede mezclar lotes de ambos regímenes en el mismo documento). Por cada lote:
    - **Facturación firme**: una línea con cantidad = saldo pendiente (`Kg recibidos - Kg facturados en firme`) y precio = el de la línea de compra de origen (marcada `mercas_is_firm_line`), más, si es la primera factura en firme del lote y queda algo de liquidación por venta sin reconciliar, una línea de descuento (ver *Paso de liquidación por venta a facturación firme*).
-   - **Liquidación por venta**: una línea con el importe bruto de liquidación (final si `completed`, estimado por anticipo si no — ver *Anticipos*) más, si hay facturas/abonos previos posteados de este lote, una línea de descuento por cada uno.
+   - **Liquidación por venta**: una línea con el importe bruto de liquidación (final si `completed`, estimado por anticipo si no — ver *Anticipos*), más una línea a precio 0 por el desecho si el **Modo de liquidación** de la empresa es "Precio medio + desecho aparte" y el lote tiene algo desechado, más, si hay facturas/abonos previos posteados de este lote, una línea de descuento por cada uno.
    - Todas las líneas de un lote llevan descripción compuesta por el nombre del producto y, en segunda línea, `DD/MM/YYYY | Ref.pedido | Ref.proveedor | Núm.lote` (las de descuento llevan su propia referencia).
 3. Actualiza el coste (`purchase_price`) en las líneas de venta relacionadas de los lotes de liquidación por venta ya **completados** (no en anticipos, para no propagar un coste todavía estimado), si el módulo `sale_margin` está instalado.
 4. Confirma la factura automáticamente si **Confirmar factura proveedor automáticamente** está activo en la empresa — en cuyo caso `invoiced` se recalcula de inmediato (ver arriba); si no, se recalculará cuando alguien la postee manualmente.
@@ -315,6 +325,8 @@ Ambos exigen que exista al menos un producto marcado como caja/envase (mismo gua
 | **Diario de compensación** | Diario de tipo "Operaciones varias" para los asientos de compensación. |
 | **Margen Mercas (%)** | Margen general aplicado a los lotes cuando el partner no tiene margen propio. |
 | **Confirmar factura proveedor automáticamente** | Si está activo, las facturas de liquidación de lotes se confirman al generarse. |
+| **Modo de liquidación** | "Precio medio (una línea)" o "Precio medio + desecho aparte". Solo afecta a lotes en liquidación por venta (no a facturación firme) — ver *Anticipos en liquidación por venta*. |
+| **Detalle de ventas en factura** | Si está activo, añade a la descripción de la línea de venta un desglose acumulado (fecha, pedido, cantidad, precio) de cada venta del lote, y a la línea de desecho (modo "desecho aparte") un desglose acumulado (fecha, cantidad) de cada regularización. Solo texto informativo — ver *Anticipos en liquidación por venta*. |
 
 ## Menú Mercas
 

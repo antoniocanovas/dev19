@@ -6,6 +6,14 @@
         <field name="model">stock.lot.invoice.wizard</field>
         <field name="arch" type="xml">
             <form string="Facturar lotes completados">
+                <header>
+                    <button name="action_liquidar" string="Liquidar"
+                            type="object" class="btn-primary"/>
+                    <button name="action_invoice_advance" string="Facturar adelanto"
+                            type="object" class="btn-secondary"/>
+                    <button name="action_invoice_firm" string="Factura firme"
+                            type="object" class="btn-secondary"/>
+                </header>
                 <group>
                     <field name="partner_id"/>
                     <field name="date_to"/>
@@ -33,7 +41,7 @@
                         <field name="scrap_kg" readonly="1" optional="hide" sum="Kg desechados"/>
                         <field name="sale_amount" readonly="1" optional="hide" sum="Importe vendido"/>
                         <field name="mercas_margin" readonly="mercas_firm_negotiation"/>
-                        <field name="supplier_price_kg" readonly="1" invisible="mercas_firm_negotiation"/>
+                        <field name="supplier_price_kg" readonly="mercas_firm_negotiation" invisible="mercas_firm_negotiation"/>
                         <field name="supplier_amount" readonly="1" invisible="mercas_firm_negotiation"/>
                         <field name="net_invoiced_amount" readonly="1" optional="show" invisible="mercas_firm_negotiation" string="Facturado" sum="Facturado"/>
                         <field name="amount_to_invoice" readonly="1" string="A facturar" sum="A facturar"/>
@@ -42,26 +50,18 @@
                 <group class="oe_subtotal_footer">
                     <field name="amount_total" widget="monetary"/>
                 </group>
-                <footer>
-                    <button name="action_liquidar" string="Liquidar"
-                            type="object" class="btn-primary"/>
-                    <button name="action_invoice_advance" string="Facturar adelanto"
-                            type="object" class="btn-secondary"/>
-                    <button name="action_invoice_firm" string="Factura firme"
-                            type="object" class="btn-secondary"/>
-                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
-                </footer>
             </form>
         </field>
     </record>
 
-    <record id="action_stock_lot_invoice_wizard" model="ir.actions.act_window">
-        <field name="name">Facturar lotes</field>
+    <!-- Acceso desde el menú Mercas: pantalla propia (no diálogo modal), para
+         que al terminar de facturar el breadcrumb quede en la factura creada
+         en vez de revelar lo que hubiera abierto antes de entrar aquí. -->
+    <record id="action_stock_lot_invoice_wizard_menu" model="ir.actions.act_window">
+        <field name="name">Liquidaciones</field>
         <field name="res_model">stock.lot.invoice.wizard</field>
         <field name="view_mode">form</field>
-        <field name="target">new</field>
-        <field name="binding_model_id" ref="stock.model_stock_lot"/>
-        <field name="binding_view_types">list</field>
+        <field name="target">current</field>
     </record>
 
 </odoo>

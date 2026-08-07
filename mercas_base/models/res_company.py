@@ -65,3 +65,32 @@ class ResCompany(models.Model):
             "crédito pendiente en las facturas de cliente."
         ),
     )
+    liquidation_mode = fields.Selection(
+        selection=[
+            ("average_price", "Precio medio (una línea)"),
+            ("average_price_scrap_split", "Precio medio + desecho aparte"),
+        ],
+        string="Modo de liquidación",
+        default="average_price",
+        required=True,
+        help=(
+            "Cómo se genera la línea de venta en la factura de liquidación por venta "
+            "(no afecta a lotes en facturación firme):\n"
+            "- Precio medio: una única línea con el importe bruto repartido entre "
+            "kg vendidos + desechados (el desecho diluye el precio/kg mostrado).\n"
+            "- Precio medio + desecho aparte: el importe bruto se reparte solo entre "
+            "los kg vendidos, y se añade una línea adicional a precio 0 por los kg "
+            "desechados, para que quede explícito en la factura que no se pagan."
+        ),
+    )
+    liquidation_show_sale_breakdown = fields.Boolean(
+        string="Detalle de ventas en factura",
+        default=False,
+        help=(
+            "Añade, en la descripción de la línea de venta de la factura de "
+            "liquidación por venta, un desglose acumulado (fecha, pedido, "
+            "cantidad y precio unitario) de cada venta del lote hasta la "
+            "fecha. Solo texto informativo: no afecta al importe ni a la "
+            "cantidad facturada. No aplica a lotes en facturación firme."
+        ),
+    )

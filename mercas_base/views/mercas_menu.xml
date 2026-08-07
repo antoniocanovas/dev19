@@ -91,7 +91,7 @@
         id="menu_mercas_flotes"
         name="Liquidaciones"
         parent="menu_mercas_root"
-        action="mercas_base.action_stock_lot_invoice_wizard"
+        action="mercas_base.action_stock_lot_invoice_wizard_menu"
         groups="account.group_account_manager"
         sequence="70"
     />
