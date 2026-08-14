@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="single_session_form" name="Sesión única">
+        <t t-call="web.login_layout">
+            <t t-set="disable_footer">1</t>
+            <div class="oe_login_form">
+                <h5 class="card-title">Ya tienes una sesión abierta</h5>
+                <div class="mb-3 mt-2 text-muted">
+                    Tu usuario solo puede tener una sesión activa a la vez. Cierra las
+                    sesiones abiertas en otros dispositivos o navegadores para continuar.
+                </div>
+
+                <p class="alert alert-danger" t-if="error" role="alert">
+                    <t t-esc="error"/>
+                </p>
+
+                <table class="table table-sm align-middle mb-3" t-if="devices">
+                    <tbody>
+                        <tr t-foreach="devices" t-as="device">
+                            <td>
+                                <strong>
+                                    <t t-esc="device.platform or 'Desconocido'"/> ·
+                                    <t t-esc="device.browser or 'Desconocido'"/>
+                                </strong>
+                                <br/>
+                                <span class="text-muted small">
+                                    <t t-esc="device.ip_address"/>
+                                    <t t-if="device.city">
+                                        · <t t-esc="device.city"/><t t-if="device.country">, <t t-esc="device.country"/></t>
+                                    </t>
+                                    · <t t-esc="device.last_activity"/>
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <form method="POST" action="/web/login/single_session">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="redirect" t-att-value="redirect"/>
+                                    <input type="hidden" name="revoke_device_id" t-att-value="device.id"/>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        Cerrar sesión
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <form method="POST" action="/web/login/single_session">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="redirect" t-att-value="redirect"/>
+                    <input type="hidden" name="revoke_all" value="1"/>
+                    <div class="d-grid mb-1">
+                        <button type="submit" class="btn btn-primary">
+                            Cerrar el resto de sesiones y continuar
+                        </button>
+                    </div>
+                </form>
+
+                <form method="POST" action="/web/session/logout">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <div class="w-100 text-center">
+                        <button type="submit" class="btn btn-link btn-sm mb-2">
+                            Cancelar e iniciar sesión con otro usuario
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </t>
+    </template>
+
+</odoo>

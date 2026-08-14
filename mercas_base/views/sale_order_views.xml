@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- Botón Sold & Sent junto a Confirmar -->
+            <!-- Sold & Sent button next to Confirm -->
             <button name="action_confirm" position="after">
                 <button name="button_sold_and_sent"
                         string="Sold &amp; Sent"
@@ -17,36 +17,36 @@
                         invisible="state not in ('draft', 'sent')"/>
             </button>
 
-            <!-- Botón Devolución cajas (visible en pedidos confirmados) -->
+            <!-- Return Boxes button (visible on confirmed orders) -->
             <button name="button_sold_and_sent" position="after">
                 <button name="action_open_box_return"
-                        string="Devolución cajas"
+                        string="Return Boxes"
                         type="object"
                         class="btn-secondary"
                         data-hotkey="d"
                         invisible="state not in ('sale', 'done')"/>
             </button>
 
-            <!-- Botón Recibir y facturar (solo pedidos de entrega de envases al
-                 proveedor ya confirmados: acción explícita, no automática al confirmar) -->
+            <!-- Receive & Invoice button (only for already confirmed box-delivery
+                 to supplier orders: explicit action, not automatic on confirm) -->
             <button name="action_open_box_return" position="after">
                 <button name="action_mercas_box_deliver_and_invoice"
-                        string="Recibir y facturar"
+                        string="Receive &amp; Invoice"
                         type="object"
                         class="btn-secondary"
                         invisible="not mercas_is_box_delivery or state not in ('sale', 'done')"/>
             </button>
 
-            <!-- Botón Imprimir etiquetas (visible en pedidos confirmados) -->
+            <!-- Print Labels button (visible on confirmed orders) -->
             <button name="action_mercas_box_deliver_and_invoice" position="after">
                 <button name="action_print_mercas_labels"
-                        string="Imprimir etiquetas"
+                        string="Print Labels"
                         type="object"
                         class="btn-secondary"
                         invisible="state not in ('sale', 'done')"/>
             </button>
 
-            <!-- Columnas Cajas y Caja en líneas de pedido (vista lista) -->
+            <!-- Boxes and Box columns on order lines (list view) -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_uom_id']"
                    position="after">
                 <field name="mercas_product_is_box" column_invisible="1"/>
@@ -58,7 +58,7 @@
                        optional="show"/>
             </xpath>
 
-            <!-- Cajas y Caja en el formulario de línea (vista form/kanban móvil) -->
+            <!-- Boxes and Box on the line's form (mobile form/kanban view) -->
             <xpath expr="//field[@name='order_line']/form//field[@name='product_uom_id']"
                    position="after">
                 <field name="mercas_product_is_box" invisible="1"/>
@@ -68,8 +68,8 @@
                        invisible="display_type != False or box_sale_line_id != False or mercas_product_is_box"/>
             </xpath>
 
-            <!-- Mostrar stock/disponible junto al nombre del lote en el desplegable,
-                 y ocultar lotes ya facturados a proveedor (liquidados) -->
+            <!-- Show stock/available next to the lot name in the dropdown,
+                 and hide lots already invoiced to the supplier (settled) -->
             <xpath expr="//field[@name='order_line']/list/field[@name='lot_id']"
                    position="attributes">
                 <attribute name="domain">[('product_id', '=', product_id), ('invoiced', '=', False)]</attribute>
@@ -81,13 +81,13 @@
                 <attribute name="context">{'default_product_id': product_id, 'lot_display_with_qty': 1}</attribute>
             </xpath>
 
-            <!-- Corregir lote (línea de venta con lote asignado en albarán,
-                 servido o pendiente de servir) -->
+            <!-- Correct lot (sale order line with a lot assigned on a
+                 delivery, delivered or pending delivery) -->
             <xpath expr="//field[@name='order_line']/list/field[@name='lot_id']"
                    position="after">
                 <field name="mercas_has_assigned_lot" column_invisible="1"/>
                 <button name="action_open_lot_change_wizard" type="object"
-                        icon="fa-random" title="Corregir lote" width="32px"
+                        icon="fa-random" title="Correct Lot" width="32px"
                         invisible="not mercas_has_assigned_lot"
                         groups="mercas_base.group_correct_lots"/>
             </xpath>
@@ -95,12 +95,12 @@
                    position="after">
                 <field name="mercas_has_assigned_lot" invisible="1"/>
                 <button name="action_open_lot_change_wizard" type="object"
-                        icon="fa-random" title="Corregir lote"
+                        icon="fa-random" title="Correct Lot"
                         invisible="not mercas_has_assigned_lot"
                         groups="mercas_base.group_correct_lots"/>
             </xpath>
 
-            <!-- Fecha del último cambio de cantidad, icono antes de la papelera -->
+            <!-- Date of the last quantity change, icon before the trash can -->
             <xpath expr="//field[@name='order_line']/list/field[last()]"
                    position="after">
                 <field name="product_qty_datetime" widget="mercas_product_qty_datetime_icon" string="" nolabel="1" readonly="1" width="32px"/>

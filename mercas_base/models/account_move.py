@@ -21,14 +21,14 @@ class AccountMove(models.Model):
         self.ensure_one()
 
         if self.payment_state in ("paid", "in_payment"):
-            raise UserError(_("Esta factura ya está pagada o en proceso de pago."))
+            raise UserError(_("This invoice is already paid or in the process of being paid."))
         if self.amount_residual <= 0:
-            raise UserError(_("No hay importe pendiente en esta factura."))
+            raise UserError(_("There is no outstanding amount on this invoice."))
 
         journal = self.company_id.compensation_journal_id
         if not journal:
             raise UserError(
-                _("Configure el diario de compensación en la pestaña Mercas de la empresa.")
+                _("Configure the offsetting journal on the Mercas tab of the company.")
             )
 
         bill_payable_line = self.line_ids.filtered(
@@ -37,18 +37,18 @@ class AccountMove(models.Model):
         )[:1]
         if not bill_payable_line:
             raise UserError(
-                _("No se encontró línea de cuenta a pagar pendiente en la factura.")
+                _("No outstanding payable line was found on the invoice.")
             )
 
         partner = self.partner_id.commercial_partner_id
         receivable_account = partner.property_account_receivable_id
         if not receivable_account:
             raise UserError(
-                _("El partner '%s' no tiene cuenta a cobrar configurada.") % partner.name
+                _("Partner '%s' has no receivable account configured.") % partner.name
             )
 
         amount = self.amount_residual
-        label = _("Compensación %s") % self.name
+        label = _("Offset %s") % self.name
 
         compensation = self.env["account.move"].create({
             "move_type": "entry",

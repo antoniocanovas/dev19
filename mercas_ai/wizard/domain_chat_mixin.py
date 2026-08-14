@@ -13,8 +13,8 @@ from ..prompts import BASE_BUSINESS_INSTRUCTIONS
 _logger = logging.getLogger(__name__)
 
 _OUT_OF_SCOPE_REPLY = (
-    'Sólo puedo responder preguntas de VENTAS, COMPRAS, FACTURACIÓN, STOCK, '
-    'EXISTENCIAS, CAJAS, LOTES y CONTACTOS.'
+    'I can only answer questions about SALES, PURCHASES, INVOICING, STOCK, '
+    'AVAILABILITY, BOXES, LOTS and CONTACTS.'
 )
 
 _DOMAIN_TOOL = {
@@ -141,10 +141,10 @@ _CLASSIFY_PROMPT = (
 
 
 class MercasDomainChatMixin(models.AbstractModel):
-    """Everything a ventas/compras/facturación/stock chat console needs.
+    """Everything a sales/purchases/invoicing/stock chat console needs.
 
-    Single source of truth shared by 'Chat IA' (mercas.mcp.chat.wizard,
-    always-visible menu) and 'Consultas IA' (mercas.mcp.domain.chat.wizard,
+    Single source of truth shared by 'AI Chat' (mercas.mcp.chat.wizard,
+    always-visible menu) and 'AI Queries' (mercas.mcp.domain.chat.wizard,
     debug-only menu — kept only for side-by-side comparison). Both are
     plain ``_inherit`` of this abstract model; a concrete wizard only needs
     to set ``_name``, ``_description`` and ``_conversation_prefix``. Adding
@@ -158,8 +158,8 @@ class MercasDomainChatMixin(models.AbstractModel):
     #: concrete wizard keeps its own independent conversation history.
     _conversation_prefix = 'backend'
 
-    message = fields.Text(string='Mensaje')
-    history_display = fields.Html(string='Conversación', readonly=True, sanitize=False)
+    message = fields.Text(string='Message')
+    history_display = fields.Html(string='Conversation', readonly=True, sanitize=False)
 
     @api.model
     def default_get(self, field_names):
@@ -198,7 +198,7 @@ class MercasDomainChatMixin(models.AbstractModel):
         entries += extra or []
         for entry in entries:
             is_user = entry['role'] == 'user'
-            who = _('Tú') if is_user else _('IA')
+            who = _('You') if is_user else _('AI')
             align = 'right' if is_user else 'left'
             bg = '#e7f0ff' if is_user else '#f1f1f1'
             content = entry.get('content') or ''
@@ -214,8 +214,8 @@ class MercasDomainChatMixin(models.AbstractModel):
                 f'<b>{who}</b><br/>{safe}</div></div>'
             )
         return ''.join(rows) or (
-            f'<p><i>{_("Pregunta sobre ventas, compras, facturación, stock, "
-                       "existencias, cajas, lotes o contactos.")}</i></p>'
+            f'<p><i>{_("Ask about sales, purchases, invoicing, stock, "
+                       "availability, boxes, lots or contacts.")}</i></p>'
         )
 
     def action_send(self):
@@ -254,9 +254,9 @@ class MercasDomainChatMixin(models.AbstractModel):
             # would otherwise have no way to tell from the chat itself).
             _logger.warning('mercas_ai: no active AI provider configured')
             reply = _(
-                'No hay ningún proveedor de IA activo configurado. Pide a un '
-                'administrador que configure uno en MCP Gateway → '
-                'Configuración → Proveedores.'
+                'There is no active AI provider configured. Ask an '
+                'administrator to configure one in MCP Gateway → '
+                'Configuration → Providers.'
             )
             tool_name = 'no_provider'
         except Exception:
@@ -267,7 +267,7 @@ class MercasDomainChatMixin(models.AbstractModel):
             domain_key = (parsed.get('domain') or 'otro').strip().lower()
             tool_name = _DOMAIN_TOOL.get(domain_key)
             if not tool_name:
-                reply = _OUT_OF_SCOPE_REPLY
+                reply = _(_OUT_OF_SCOPE_REPLY)
             else:
                 params = self._build_tool_params(domain_key, parsed)
                 reply = self._run_report(tool_name, domain_key, params)
@@ -374,7 +374,7 @@ class MercasDomainChatMixin(models.AbstractModel):
             [('name', '=', tool_name), ('active', '=', True)], limit=1
         )
         if not tool:
-            return _('[Error] La herramienta "%s" no está instalada.') % tool_name
+            return _('[Error] The "%s" tool is not installed.') % tool_name
         try:
             with self.env.cr.savepoint():
                 result = tool.execute(params)
@@ -390,8 +390,8 @@ class MercasDomainChatMixin(models.AbstractModel):
             # technical field/model names that mean nothing to them.
             _logger.exception('mercas_ai: %s failed unexpectedly', tool_name)
             return _(
-                '[Error] Ha ocurrido un error inesperado generando esta respuesta. '
-                'Inténtalo de nuevo o contacta con tu administrador.'
+                '[Error] An unexpected error occurred generating this reply. '
+                'Try again or contact your administrator.'
             )
         # Markup, not a plain str: _format_result already escaped every piece
         # of dynamic text itself and can contain real <a> links to Odoo
@@ -431,24 +431,24 @@ class MercasDomainChatMixin(models.AbstractModel):
 
     @staticmethod
     def _format_lot_lines(lots, uom_suffix=''):
-        """Shared lot listing for 'stock' and 'existencias': lote, proveedor,
-        caducidad, cantidad original comprada y cantidad actual en stock —
+        """Shared lot listing for 'stock' and 'existencias': lot, supplier,
+        expiration, original purchased quantity and current stock quantity —
         every quantity/lot answer must carry both, not just the current qty."""
         lines = []
         for entry in lots:
             parts = [MercasDomainChatMixin._link('stock.lot', entry.get('lot_id'), entry['lot'])]
             if entry.get('supplier'):
-                parts.append(_('proveedor: %s') % MercasDomainChatMixin._link(
+                parts.append(_('supplier: %s') % MercasDomainChatMixin._link(
                     'res.partner', entry.get('partner_id'), entry['supplier']
                 ))
             parts.append(
-                _('caduca: %s') % MercasDomainChatMixin._esc(entry['expiration'])
-                if entry.get('expiration') else _('sin fecha de caducidad')
+                _('expires: %s') % MercasDomainChatMixin._esc(entry['expiration'])
+                if entry.get('expiration') else _('no expiration date')
             )
             parts.append(_('original: %(o).2f%(u)s') % {
                 'o': entry.get('original', 0.0), 'u': uom_suffix,
             })
-            parts.append(_('en stock: %(q).2f%(u)s') % {
+            parts.append(_('in stock: %(q).2f%(u)s') % {
                 'q': entry.get('qty', 0.0), 'u': uom_suffix,
             })
             lines.append('• ' + ' — '.join(parts))
@@ -461,14 +461,14 @@ class MercasDomainChatMixin(models.AbstractModel):
 
         if domain_key == 'contacto':
             if not result.get('found'):
-                return _('No encuentro ningún contacto que coincida con "%s".') % (
+                return _('I can\'t find any contact matching "%s".') % (
                     esc(result.get('searched') or '')
                 )
             lines = [
-                _('Contacto: %s') % link('res.partner', result.get('id'), result['name']),
+                _('Contact: %s') % link('res.partner', result.get('id'), result['name']),
             ]
             if result.get('phone'):
-                lines.append(_('Teléfono: %s') % esc(result['phone']))
+                lines.append(_('Phone: %s') % esc(result['phone']))
             address = ', '.join(
                 esc(part) for part in (
                     result.get('street'), result.get('street2'), result.get('city'),
@@ -477,34 +477,34 @@ class MercasDomainChatMixin(models.AbstractModel):
                 if part
             )
             if address:
-                lines.append(_('Dirección: %s') % address)
+                lines.append(_('Address: %s') % address)
             if result.get('state'):
-                lines.append(_('Provincia: %s') % esc(result['state']))
+                lines.append(_('State: %s') % esc(result['state']))
             if result.get('country'):
-                lines.append(_('País: %s') % esc(result['country']))
+                lines.append(_('Country: %s') % esc(result['country']))
             if result.get('vat'):
-                lines.append(_('NIF: %s') % esc(result['vat']))
+                lines.append(_('Tax ID: %s') % esc(result['vat']))
             if result.get('parent_id'):
-                lines.append(_('Empresa: %s') % link(
+                lines.append(_('Company: %s') % link(
                     'res.partner', result['parent_id'], result['parent_name']
                 ))
             return '\n'.join(lines)
 
         if domain_key == 'cajas':
             if not result.get('found'):
-                return _('No encuentro ningún cliente/proveedor que coincida con "%s".') % (
+                return _('I can\'t find any customer/supplier matching "%s".') % (
                     esc(result.get('searched') or '')
                 )
             qty = result.get('box_qty', 0.0)
             qty_str = str(int(qty)) if qty == int(qty) else '%.2f' % qty
-            return _('%(partner)s tiene %(qty)s cajas en su almacén.') % {
+            return _('%(partner)s has %(qty)s boxes in their warehouse.') % {
                 'partner': link('res.partner', result.get('partner_id'), result['partner']),
                 'qty': qty_str,
             }
 
         if domain_key == 'existencias':
             if not result.get('found'):
-                return _('No encuentro ningún producto que coincida con "%s".') % (
+                return _('I can\'t find any product matching "%s".') % (
                     esc(result.get('searched') or '')
                 )
             rows = result.get('rows') or []
@@ -519,27 +519,27 @@ class MercasDomainChatMixin(models.AbstractModel):
 
             if result.get('general'):
                 if not shown:
-                    return _('No hay ningún producto con existencias ahora mismo.')
+                    return _('There is no product with stock right now.')
                 blocks = []
                 for row in shown:
                     block_lines = [
-                        _('Producto: %s') % link('product.product', row.get('id'), row['name']),
+                        _('Product: %s') % link('product.product', row.get('id'), row['name']),
                     ]
                     if row.get('variant'):
-                        block_lines.append(_('Variante: %s') % link(
+                        block_lines.append(_('Variant: %s') % link(
                             'product.product', row.get('id'), row['variant']
                         ))
-                    block_lines.append(_('Stock disponible: %(qty).2f %(uom)s') % {
+                    block_lines.append(_('Available stock: %(qty).2f %(uom)s') % {
                         'qty': row['qty'], 'uom': esc(row['uom']),
                     })
                     blocks.append('\n'.join(block_lines))
-                return _('Productos con existencias (los que más stock tienen primero):') \
+                return _('Products with stock (the ones with the most stock first):') \
                     + '\n\n' + separator.join(blocks)
 
-            # Un producto concreto puede tener varios lotes en stock a la vez
-            # (distintas entradas de compra) -- agrupados aquí por su propio
-            # product_id, cada lote sigue el mismo estilo de ficha (un dato
-            # por línea) que usa el dominio 'lote'.
+            # A specific product can have several lots in stock at the same
+            # time (different purchase entries) -- grouped here by its own
+            # product_id, each lot follows the same field-per-line card
+            # style used by the 'lote' domain.
             lots_by_product = {}
             for lot_entry in (result.get('lots') or []):
                 lots_by_product.setdefault(lot_entry.get('product_id'), []).append(lot_entry)
@@ -547,30 +547,30 @@ class MercasDomainChatMixin(models.AbstractModel):
             blocks = []
             for row in shown:
                 lines = [
-                    _('Producto: %s') % link('product.product', row.get('id'), row['name']),
+                    _('Product: %s') % link('product.product', row.get('id'), row['name']),
                 ]
                 if row.get('variant'):
-                    lines.append(_('Variante: %s') % link(
+                    lines.append(_('Variant: %s') % link(
                         'product.product', row.get('id'), row['variant']
                     ))
-                lines.append(_('Stock disponible: %(qty).2f %(uom)s') % {
+                lines.append(_('Available stock: %(qty).2f %(uom)s') % {
                     'qty': row['qty'], 'uom': esc(row['uom']),
                 })
                 for lot_entry in lots_by_product.get(row.get('id'), []):
                     lines.append('')
-                    lines.append(_('Lote: %s') % link(
+                    lines.append(_('Lot: %s') % link(
                         'stock.lot', lot_entry.get('lot_id'), lot_entry['lot']
                     ))
                     if lot_entry.get('supplier'):
-                        lines.append(_('Proveedor: %s') % link(
+                        lines.append(_('Supplier: %s') % link(
                             'res.partner', lot_entry.get('partner_id'), lot_entry['supplier']
                         ))
                     if lot_entry.get('expiration'):
-                        lines.append(_('Caducidad: %s') % esc(lot_entry['expiration']))
+                        lines.append(_('Expiration: %s') % esc(lot_entry['expiration']))
                     lines.append(_('Original: %(o).2f %(uom)s') % {
                         'o': lot_entry.get('original', 0.0), 'uom': esc(row['uom']),
                     })
-                    lines.append(_('En almacén: %(q).2f %(uom)s') % {
+                    lines.append(_('In stock: %(q).2f %(uom)s') % {
                         'q': lot_entry.get('qty', 0.0), 'uom': esc(row['uom']),
                     })
                 blocks.append('\n'.join(lines))
@@ -587,7 +587,7 @@ class MercasDomainChatMixin(models.AbstractModel):
 
         if domain_key == 'lote':
             if not result.get('found'):
-                return _('No encuentro ningún lote/producto que coincida con "%s".') % (
+                return _('I can\'t find any lot/product matching "%s".') % (
                     esc(result.get('searched') or '')
                 )
             details = sorted(
@@ -602,29 +602,29 @@ class MercasDomainChatMixin(models.AbstractModel):
                 uom = d.get('uom') or ''
                 product = d.get('product_id')
                 lines = [
-                    _('Lote: %s') % link('stock.lot', d.get('id'), d['name']),
-                    _('Producto: %s') % (
+                    _('Lot: %s') % link('stock.lot', d.get('id'), d['name']),
+                    _('Product: %s') % (
                         link('product.product', product[0], product[1]) if product else ''
                     ),
-                    _('En almacén: %(qty).2f %(uom)s') % {
+                    _('In stock: %(qty).2f %(uom)s') % {
                         'qty': d.get('product_qty', 0.0), 'uom': esc(uom),
                     },
                 ]
                 if d.get('origin_country_id'):
-                    lines.append(_('País: %s') % esc(d['origin_country_id'][1]))
+                    lines.append(_('Country: %s') % esc(d['origin_country_id'][1]))
                 if d.get('origin_state_id'):
-                    lines.append(_('Provincia: %s') % esc(d['origin_state_id'][1]))
+                    lines.append(_('State: %s') % esc(d['origin_state_id'][1]))
                 if d.get('partner_id'):
-                    lines.append(_('Proveedor: %s') % link(
+                    lines.append(_('Supplier: %s') % link(
                         'res.partner', d['partner_id'][0], d['partner_id'][1]
                     ))
                 if d.get('entry'):
-                    lines.append(_('Entrada: %s') % d['entry'])
+                    lines.append(_('Entry: %s') % d['entry'])
                 if d.get('expiration_date'):
-                    lines.append(_('Caducidad: %s') % d['expiration_date'].strftime('%Y-%m-%d'))
+                    lines.append(_('Expiration: %s') % d['expiration_date'].strftime('%Y-%m-%d'))
                 sales = d.get('sales') or []
                 if sales:
-                    lines.append(_('Ventas:'))
+                    lines.append(_('Sales:'))
                     for s in sales:
                         lines.append(
                             '  • %(partner)s: %(qty).2f %(uom)s (%(order)s, %(date)s)' % {
@@ -641,7 +641,7 @@ class MercasDomainChatMixin(models.AbstractModel):
         if domain_key == 'stock':
             rows = sorted(result.get('rows') or [], key=lambda r: r.get('qty', 0), reverse=True)
             uom = (' ' + result['uom'].strip()) if result.get('uom') else ''
-            summary = _('Total: %(qty).2f%(uom)s (%(count)s movimientos)') % {
+            summary = _('Total: %(qty).2f%(uom)s (%(count)s moves)') % {
                 'qty': result.get('grand_qty', 0.0), 'uom': esc(uom), 'count': result.get('count', 0),
             }
             lines = []
@@ -650,7 +650,7 @@ class MercasDomainChatMixin(models.AbstractModel):
                     part for part in (esc(row['product']) if row.get('product') else None, row.get('day'))
                     if part
                 ) or _('Total')
-                lines.append('• %(label)s: %(qty).2f%(uom)s (%(count)s movimientos)' % {
+                lines.append('• %(label)s: %(qty).2f%(uom)s (%(count)s moves)' % {
                     'label': label, 'qty': row.get('qty', 0.0), 'uom': esc(uom),
                     'count': row.get('count', 0),
                 })
@@ -659,29 +659,30 @@ class MercasDomainChatMixin(models.AbstractModel):
             lots = result.get('lots')
             if lots:
                 lot_lines = MercasDomainChatMixin._format_lot_lines(lots, uom)
-                text += '\n\n' + _('Lotes en stock (por caducidad):') + '\n' + '\n'.join(lot_lines)
+                text += '\n\n' + _('Lots in stock (by expiration):') + '\n' + '\n'.join(lot_lines)
 
             return text
 
         if result.get('product_detail'):
             rows = sorted(result.get('rows') or [], key=lambda r: r.get('amount', 0), reverse=True)
             currency = esc(result.get('currency') or '')
-            summary = _('Total: %(total).2f %(currency)s (%(count)s líneas)') % {
+            summary = _('Total: %(total).2f %(currency)s (%(count)s lines)') % {
                 'total': result.get('grand_amount', 0.0), 'currency': currency,
                 'count': result.get('count', 0),
             }
 
-            # Misma ficha campo-por-línea que existencias/lote, para los tres
-            # dominios que dan detalle por producto. "En almacén"/"Original"
-            # (lo que queda del lote) solo aporta en compras y en facturas de
-            # proveedor -- es lo comprado, tiene sentido preguntarse cuánto
-            # queda. En ventas, o en facturas estrictamente de cliente, es
-            # ya vendido: ese dato no pinta nada en un informe de eso.
+            # Same field-per-line card as existencias/lote, for the three
+            # domains that give a per-product detail. "In stock"/"Original"
+            # (what's left of the lot) only makes sense for purchases and
+            # supplier invoices -- it's what was purchased, so it's
+            # meaningful to ask how much is left. In sales, or in strictly
+            # customer invoices, it's already sold: that data adds nothing
+            # to a report about that.
             qty_label = {
-                'ventas': _('Cantidad vendida'),
-                'compras': _('Cantidad comprada'),
-                'facturacion': _('Cantidad facturada'),
-            }.get(domain_key, _('Cantidad'))
+                'ventas': _('Quantity sold'),
+                'compras': _('Quantity purchased'),
+                'facturacion': _('Quantity invoiced'),
+            }.get(domain_key, _('Quantity'))
             show_stock_fields = (
                 domain_key == 'compras'
                 or (domain_key == 'facturacion' and result.get('move_type') != 'customer')
@@ -692,28 +693,28 @@ class MercasDomainChatMixin(models.AbstractModel):
                 uom = esc(row.get('uom') or '')
                 lines = []
                 if row.get('product'):
-                    lines.append(_('Producto: %s') % link(
+                    lines.append(_('Product: %s') % link(
                         'product.product', row.get('product_id'), row['product']
                     ))
                 if row.get('day'):
-                    lines.append(_('Día: %s') % row['day'])
+                    lines.append(_('Day: %s') % row['day'])
                 lines.append(_('%(label)s: %(qty).2f %(uom)s') % {
                     'label': qty_label, 'qty': row.get('qty', 0.0), 'uom': uom,
                 })
                 if row.get('unit_price') and uom:
-                    lines.append(_('Precio/%(uom)s: %(price).2f %(currency)s') % {
+                    lines.append(_('Price/%(uom)s: %(price).2f %(currency)s') % {
                         'uom': uom, 'price': row['unit_price'], 'currency': currency,
                     })
-                lines.append(_('Importe: %(amount).2f %(currency)s') % {
+                lines.append(_('Amount: %(amount).2f %(currency)s') % {
                     'amount': row.get('amount', 0.0), 'currency': currency,
                 })
                 if row.get('lot'):
-                    lines.append(_('Lote: %s') % link('stock.lot', row.get('lot_id'), row['lot']))
+                    lines.append(_('Lot: %s') % link('stock.lot', row.get('lot_id'), row['lot']))
                     if show_stock_fields:
                         lines.append(_('Original: %(o).2f %(uom)s') % {
                             'o': row.get('lot_original', 0.0), 'uom': uom,
                         })
-                        lines.append(_('En almacén: %(s).2f %(uom)s') % {
+                        lines.append(_('In stock: %(s).2f %(uom)s') % {
                             's': row.get('lot_stock', 0.0), 'uom': uom,
                         })
                 blocks.append('\n'.join(lines))
@@ -723,12 +724,12 @@ class MercasDomainChatMixin(models.AbstractModel):
             rows = result.get('rows') or []
             currency = esc(result.get('currency') or '')
             if not rows:
-                return _('No hay facturas que coincidan con esa búsqueda.')
+                return _('There are no invoices matching that search.')
             lines = []
             for row in rows:
                 lines.append(_(
                     '• %(name)s — %(partner)s — %(date)s — %(total).2f %(currency)s '
-                    '(pendiente: %(residual).2f %(currency)s, %(state)s)'
+                    '(outstanding: %(residual).2f %(currency)s, %(state)s)'
                 ) % {
                     'name': link('account.move', row.get('id'), row['name']),
                     'partner': link('res.partner', row.get('partner_id'), row['partner']),
@@ -737,8 +738,8 @@ class MercasDomainChatMixin(models.AbstractModel):
                 })
             return '\n'.join(lines)
 
-        unit = _('facturas') if domain_key == 'facturacion' else _('pedidos')
-        label_total = _('Pendiente') if result.get('pending') else _('Total')
+        unit = _('invoices') if domain_key == 'facturacion' else _('orders')
+        label_total = _('Outstanding') if result.get('pending') else _('Total')
         rows = sorted(result.get('rows') or [], key=lambda r: r.get('amount', 0), reverse=True)
         currency = esc(result.get('currency') or '')
         summary = _('%(label)s: %(total).2f %(currency)s (%(count)s %(unit)s)') % {

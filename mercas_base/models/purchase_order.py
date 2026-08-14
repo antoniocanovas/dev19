@@ -12,7 +12,7 @@ class PurchaseOrder(models.Model):
         """Open a new sale order to deliver boxes back to this purchase's supplier."""
         self.ensure_one()
         if not self.env["product.template"]._mercas_any_box_product_exists():
-            raise UserError(_("No hay ningún producto marcado como caja/envase."))
+            raise UserError(_("There is no product marked as a box/container."))
         new_so = self.env["sale.order"].create({
             "partner_id": self.partner_id.id,
             "origin": self.name,
@@ -31,7 +31,7 @@ class PurchaseOrder(models.Model):
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",
-            "name": _("Imprimir etiquetas"),
+            "name": _("Print Labels"),
             "res_model": "mercas.label.print.wizard",
             "view_mode": "form",
             "target": "new",
@@ -41,7 +41,7 @@ class PurchaseOrder(models.Model):
     mercas_is_box_return = fields.Boolean(
         compute="_compute_mercas_is_box_return",
         store=True,
-        string="Es devolución de envases",
+        string="Is Box Return",
     )
 
     @api.depends("order_line.display_type", "order_line.product_id.is_box")
@@ -239,7 +239,7 @@ class PurchaseOrder(models.Model):
 
     def button_purchase_and_receive(self):
         """Confirm the PO and validate receipts. For box-return orders this also
-        runs the automated receive+invoice flow (same as the "Recibir y facturar"
+        runs the automated receive+invoice flow (same as the "Receive & Invoice"
         button) since this shortcut is itself an explicit "do it all now" action.
         For regular orders the invoice is created manually by the user."""
         self.button_confirm()
@@ -266,17 +266,17 @@ class PurchaseOrder(models.Model):
 class PurchaseOrderLine(models.Model):
     _inherit = "purchase.order.line"
 
-    box_qty = fields.Integer(string="Cajas", default=0)
+    box_qty = fields.Integer(string="Boxes", default=0)
     box_purchase_line_id = fields.Many2one(
         comodel_name="purchase.order.line",
-        string="Línea de producto",
+        string="Product Line",
         ondelete="cascade",
         copy=False,
         index=True,
     )
     box_product_id = fields.Many2one(
         comodel_name="product.product",
-        string="Caja",
+        string="Box",
         compute="_compute_box_product_id",
         store=True,
         readonly=False,
@@ -284,23 +284,23 @@ class PurchaseOrderLine(models.Model):
     )
     origin_country_id = fields.Many2one(
         comodel_name="res.country",
-        string="País origen",
+        string="Country of Origin",
     )
     origin_state_id = fields.Many2one(
         comodel_name="res.country.state",
-        string="Provincia origen",
+        string="State of Origin",
         domain="[('country_id', '=', origin_country_id)]",
     )
     mercas_firm_negotiation = fields.Boolean(
-        string="Facturación firme",
+        string="Firm Negotiation",
         compute="_compute_mercas_firm_negotiation",
         store=True,
         readonly=False,
         help=(
-            "Se paga al proveedor la totalidad de lo recibido en esta línea, "
-            "con independencia de lo vendido. Por defecto toma el valor "
-            "configurado en el proveedor, pero se puede cambiar aquí. Se "
-            "traslada al lote al confirmar la compra."
+            "The supplier is paid in full for what was received on this "
+            "line, regardless of what was sold. Defaults to the value "
+            "configured on the supplier, but can be changed here. It is "
+            "carried over to the lot when the purchase is confirmed."
         ),
     )
 

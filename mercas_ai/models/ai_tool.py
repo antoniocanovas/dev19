@@ -130,7 +130,7 @@ class AiTool(models.Model):
 
     def _line_product_detail(self, model_name, domain, group_by, qty_field, date_path,
                               amount_field='price_subtotal'):
-        """Product(+lot)-level breakdown shared by ventas/compras/facturación
+        """Product(+lot)-level breakdown shared by sales/purchases/invoicing
         detail modes: which products, how much of each (with UoM), and — per
         the business requirement that any product/quantity detail must carry
         its lot with original vs. current stock — which lot(s), how much was
@@ -268,7 +268,7 @@ class AiTool(models.Model):
             qty_field='product_qty', date_path='order_id.date_order',
         )
 
-    # ── Facturación ─────────────────────────────────────────────────────────
+    # ── Invoicing ────────────────────────────────────────────────────────────
 
     _INVOICE_TYPES = {
         'customer': ['out_invoice', 'out_refund'],
@@ -442,9 +442,9 @@ class AiTool(models.Model):
         return result
 
     def _stock_lots_detail(self, products, limit=15):
-        """On-hand lots for *products*: lote, proveedor, caducidad, cantidad
-        original comprada (`purchase_kg`) y cantidad actual en stock — más
-        próximos a caducar primero (criterio FEFO)."""
+        """On-hand lots for *products*: lot, supplier, expiration, original
+        purchased quantity (`purchase_kg`) and current stock quantity —
+        soonest to expire first (FEFO criterion)."""
         quants = self._user_model('stock.quant').search([
             ('product_id', 'in', products.ids),
             ('location_id.usage', '=', 'internal'),
@@ -556,13 +556,13 @@ class AiTool(models.Model):
         return product.product_template_attribute_value_ids._get_combination_name()
 
     def _builtin_stock_lookup_general(self, limit=20):
-        """No hay producto que buscar por nombre, así que no se puede acotar
-        por domain -- se trae un lote razonable de candidatos con stock y se
-        ordena/recorta en Python (qty_available no es un campo almacenado,
-        no fiable para 'order' en el propio search). Sin desglose por lote
-        aquí a propósito: con hasta `limit` productos, un desglose de lotes
-        por cada uno enterraría la vista general que se pide -- para eso
-        está preguntar por un producto concreto."""
+        """There's no product to search by name, so it can't be narrowed
+        down by domain -- a reasonable batch of candidates with stock is
+        fetched and sorted/trimmed in Python (qty_available isn't a stored
+        field, not reliable for 'order' in the search itself). No lot
+        breakdown here on purpose: with up to `limit` products, a lot
+        breakdown for each one would bury the general overview being
+        requested -- that's what asking about a specific product is for."""
         candidates = self._user_model('product.product').search(
             [('qty_available', '>', 0)], limit=200
         )
@@ -591,7 +591,7 @@ class AiTool(models.Model):
         """Lot ficha (where it's from, how much is on hand, when it came in,
         expiry, who it's been sold to) — or, with no lot/product given, the
         same ficha for every lot currently in stock. Never includes billing/
-        invoicing figures (régimen, facturado, pendiente) — that belongs to
+        invoicing figures (regime, invoiced, pending) — that belongs to
         the internal back-office, not to a business question about a lot.
         Box/crate products (product_id.is_box) are never real goods lots and
         are always excluded."""

@@ -2,11 +2,11 @@ from odoo import models
 
 
 class AiChatWizard(models.TransientModel):
-    """Backend console covering ventas/compras/facturación/stock ('Chat IA').
+    """Backend console covering sales/purchases/invoicing/stock ('AI Chat').
 
     Always-visible menu entry. All logic (classification prompt, business
     rules, deterministic formatting) lives in MercasDomainChatMixin
-    (domain_chat_mixin.py), shared with the debug-only 'Consultas IA'
+    (domain_chat_mixin.py), shared with the debug-only 'AI Queries'
     wizard (ai_domain_chat_wizard.py) — see that mixin's docstring.
 
     Was previously a general-purpose assistant that used LLMRouter to pick
@@ -23,5 +23,5 @@ class AiChatWizard(models.TransientModel):
 
     _name = 'mercas.mcp.chat.wizard'
     _inherit = ['mercas.mcp.domain.chat.mixin']
-    _description = 'Chat IA (Ventas / Compras / Facturación / Stock)'
+    _description = 'AI Chat (Sales / Purchases / Invoicing / Stock)'
     _conversation_prefix = 'backend'

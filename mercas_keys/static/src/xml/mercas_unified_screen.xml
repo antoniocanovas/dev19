@@ -16,7 +16,7 @@
                 <div role="separator" class="dropdown-divider"/>
                 <DropdownItem onSelected="() => this.addLine()">
                     <span class="o_mercas_item_fkey">Ins</span>
-                    <span class="o_mercas_item_label">Nueva línea</span>
+                    <span class="o_mercas_item_label">New Line</span>
                 </DropdownItem>
             </t>
         </Dropdown>

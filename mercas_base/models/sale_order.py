@@ -7,14 +7,14 @@ class SaleOrder(models.Model):
 
     box_delivery_purchase_id = fields.Many2one(
         comodel_name="purchase.order",
-        string="Compra origen (entrega cajas)",
+        string="Source Purchase (Box Delivery)",
         copy=False,
         readonly=True,
     )
     mercas_is_box_delivery = fields.Boolean(
         compute="_compute_mercas_is_box_delivery",
         store=True,
-        string="Es entrega de cajas a proveedor",
+        string="Is Box Delivery to Supplier",
     )
 
     @api.depends(
@@ -197,7 +197,7 @@ class SaleOrder(models.Model):
         if tracked_without_lot:
             names = ", ".join(tracked_without_lot.mapped("product_id.name"))
             raise UserError(
-                _("Asigna lote a los siguientes productos antes de enviar: %s") % names
+                _("Assign a lot to the following products before sending: %s") % names
             )
 
         # 2. Financial risk check (sale_financial_risk / account_financial_risk)
@@ -225,7 +225,7 @@ class SaleOrder(models.Model):
     def _mercas_sold_and_sent_execute(self):
         """Confirm and auto-deliver. Called directly or via the risk wizard continue.
         For box-delivery orders this also runs the automated deliver+invoice flow
-        (same as the "Recibir y facturar" button) since this shortcut is itself
+        (same as the "Receive & Invoice" button) since this shortcut is itself
         an explicit "do it all now" action."""
         self.with_context(bypass_risk=True).action_confirm()
         if self.mercas_is_box_delivery:
@@ -237,7 +237,7 @@ class SaleOrder(models.Model):
         """Open a new purchase order pre-filled for box return from this sale's customer."""
         self.ensure_one()
         if not self.env["product.template"]._mercas_any_box_product_exists():
-            raise UserError(_("No hay ningún producto marcado como caja/envase."))
+            raise UserError(_("There is no product marked as a box/container."))
         new_po = self.env["purchase.order"].create({
             "partner_id": self.partner_id.id,
             "origin": self.name,
@@ -255,7 +255,7 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",
-            "name": _("Imprimir etiquetas"),
+            "name": _("Print Labels"),
             "res_model": "mercas.label.print.wizard",
             "view_mode": "form",
             "target": "new",

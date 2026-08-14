@@ -7,26 +7,26 @@
         <field name="inherit_id" ref="stock.view_production_lot_form"/>
         <field name="arch" type="xml">
 
-            <!-- Botón de acción en el header -->
+            <!-- Action button in the header -->
             <xpath expr="//sheet" position="before">
                 <header>
                     <button
                         name="action_create_supplier_invoices"
-                        string="Facturar lote"
+                        string="Invoice Lot"
                         type="object"
                         class="btn-primary"
                         invisible="not invoiceable"
                     />
                     <button
                         name="action_open_scrap"
-                        string="Desechar"
+                        string="Scrap"
                         type="object"
                         class="btn-secondary"
                     />
                 </header>
             </xpath>
 
-            <!-- Campos de origen en el header del formulario estándar -->
+            <!-- Origin fields in the standard form header -->
             <xpath expr="//field[@name='product_id']" position="after">
                 <field name="partner_id"/>
             </xpath>
@@ -35,26 +35,26 @@
                 <field name="origin_state_id"/>
             </xpath>
 
-            <!-- Notebook de trazabilidad al final del sheet -->
+            <!-- Traceability notebook at the end of the sheet -->
             <xpath expr="//sheet" position="inside">
                 <notebook>
                     <page string="General" name="mercas_general">
                         <field name="can_edit_margin" invisible="1"/>
                         <field name="can_edit_firm_negotiation" invisible="1"/>
                         <group>
-                            <group string="Negociación">
+                            <group string="Negotiation">
                                 <field name="mercas_firm_negotiation"
                                        widget="boolean_toggle"
                                        readonly="not can_edit_firm_negotiation"/>
                             </group>
-                            <group string="Cantidades">
+                            <group string="Quantities">
                                 <field name="purchase_kg" readonly="1"/>
                                 <field name="received_kg" readonly="1" invisible="not mercas_firm_negotiation"/>
                                 <field name="sale_kg" readonly="1"/>
                                 <field name="scrap_kg" readonly="1"/>
                                 <field name="product_qty" readonly="1"/>
                             </group>
-                            <group string="Liquidación">
+                            <group string="Settlement">
                                 <field name="sale_amount" readonly="1" invisible="mercas_firm_negotiation"/>
                                 <field name="mercas_margin" readonly="not can_edit_margin" invisible="mercas_firm_negotiation"/>
                                 <field name="supplier_amount" readonly="1" invisible="mercas_firm_negotiation"/>
@@ -66,70 +66,70 @@
                             </group>
                         </group>
                     </page>
-                    <page string="Compras" name="purchase_lines">
+                    <page string="Purchases" name="purchase_lines">
                         <field name="purchase_line_ids" readonly="1" no_open="0">
                             <list>
-                                <field name="order_id" string="Pedido"/>
+                                <field name="order_id" string="Order"/>
                                 <field name="product_id"/>
-                                <field name="product_qty" string="Cantidad" sum="Cantidad"/>
-                                <field name="price_unit" string="Precio propuesto"/>
+                                <field name="product_qty" string="Quantity" sum="Quantity"/>
+                                <field name="price_unit" string="Proposed Price"/>
                                 <field name="price_subtotal" string="Subtotal" sum="Subtotal"/>
                                 <field name="currency_id" column_invisible="1"/>
                             </list>
                         </field>
                     </page>
-                    <page string="Ventas" name="sale_lines">
+                    <page string="Sales" name="sale_lines">
                         <field name="sale_line_ids" readonly="1" no_open="0">
                             <list>
-                                <field name="order_id" string="Pedido"/>
+                                <field name="order_id" string="Order"/>
                                 <field name="product_id"/>
-                                <field name="product_uom_qty" string="Cantidad" sum="Cantidad"/>
-                                <field name="price_unit" string="Precio conseguido"/>
+                                <field name="product_uom_qty" string="Quantity" sum="Quantity"/>
+                                <field name="price_unit" string="Achieved Price"/>
                                 <field name="price_subtotal" string="Subtotal" sum="Subtotal"/>
                                 <field name="currency_id" column_invisible="1"/>
                                 <field name="mercas_has_assigned_lot" column_invisible="1"/>
                                 <button name="action_open_lot_change_wizard" type="object"
-                                        string="Corregir lote" icon="fa-random"
+                                        string="Correct Lot" icon="fa-random"
                                         invisible="not mercas_has_assigned_lot"
                                         groups="mercas_base.group_correct_lots"/>
                             </list>
                         </field>
                     </page>
-                    <page string="F.Proveedor" name="supplier_invoice_lines">
+                    <page string="Supplier Inv." name="supplier_invoice_lines">
                         <field name="supplier_invoice_line_ids" readonly="1" no_open="0">
                             <list>
-                                <field name="move_id" string="Factura"/>
+                                <field name="move_id" string="Invoice"/>
                                 <field name="partner_id"/>
-                                <field name="name" string="Descripción"/>
-                                <field name="quantity" sum="Cantidad"/>
+                                <field name="name" string="Description"/>
+                                <field name="quantity" sum="Quantity"/>
                                 <field name="price_unit"/>
                                 <field name="price_subtotal" sum="Subtotal"/>
                                 <field name="currency_id" column_invisible="1"/>
                             </list>
                         </field>
                     </page>
-                    <page string="F.Cliente" name="customer_invoice_lines">
+                    <page string="Customer Inv." name="customer_invoice_lines">
                         <field name="customer_invoice_line_ids" readonly="1" no_open="0">
                             <list>
-                                <field name="move_id" string="Factura"/>
+                                <field name="move_id" string="Invoice"/>
                                 <field name="partner_id"/>
-                                <field name="name" string="Descripción"/>
-                                <field name="quantity" sum="Cantidad"/>
+                                <field name="name" string="Description"/>
+                                <field name="quantity" sum="Quantity"/>
                                 <field name="price_unit"/>
                                 <field name="price_subtotal" sum="Subtotal"/>
                                 <field name="currency_id" column_invisible="1"/>
                             </list>
                         </field>
                     </page>
-                    <page string="Desecho" name="scrap_lines">
+                    <page string="Scrap" name="scrap_lines">
                         <field name="scrap_line_ids" readonly="1" no_open="0">
                             <list>
-                                <field name="name" string="Referencia"/>
+                                <field name="name" string="Reference"/>
                                 <field name="product_id"/>
-                                <field name="scrap_qty" string="Cantidad" sum="Cantidad"/>
-                                <field name="product_uom_id" string="UdM"/>
+                                <field name="scrap_qty" string="Quantity" sum="Quantity"/>
+                                <field name="product_uom_id" string="UoM"/>
                                 <field name="location_id"/>
-                                <field name="date_done" string="Fecha"/>
+                                <field name="date_done" string="Date"/>
                             </list>
                         </field>
                     </page>
@@ -151,15 +151,15 @@
             </xpath>
             <xpath expr="//list/field[last()]" position="after">
                 <field name="completed" optional="show"/>
-                <field name="sale_kg" optional="show" sum="Kg vendidos"/>
-                <field name="purchase_kg" optional="show" sum="Kg comprados"/>
-                <field name="received_kg" optional="hide" sum="Kg recibidos"/>
-                <field name="scrap_kg" optional="show" sum="Kg desechados"/>
-                <field name="sale_amount" optional="show" sum="Importe vendido"/>
+                <field name="sale_kg" optional="show" sum="Sold Kg"/>
+                <field name="purchase_kg" optional="show" sum="Purchased Kg"/>
+                <field name="received_kg" optional="hide" sum="Received Kg"/>
+                <field name="scrap_kg" optional="show" sum="Scrapped Kg"/>
+                <field name="sale_amount" optional="show" sum="Sold Amount"/>
                 <field name="supplier_amount" optional="hide"/>
                 <field name="supplier_price_kg" optional="hide"/>
-                <field name="net_invoiced_kg" optional="hide" sum="Kg facturados"/>
-                <field name="net_invoiced_amount" optional="hide" sum="Importe facturado"/>
+                <field name="net_invoiced_kg" optional="hide" sum="Invoiced Kg"/>
+                <field name="net_invoiced_amount" optional="hide" sum="Invoiced Amount"/>
                 <field name="invoiceable" optional="show"/>
                 <field name="invoiced" optional="show"/>
             </xpath>
@@ -177,28 +177,28 @@
             <xpath expr="//search" position="inside">
                 <separator/>
                 <filter
-                    string="No facturados"
+                    string="Not Invoiced"
                     name="not_invoiced"
                     domain="[('invoiced', '=', False)]"
                 />
                 <filter
-                    string="Facturables"
+                    string="Invoiceable"
                     name="invoiceable"
                     domain="[('invoiceable', '=', True)]"
                 />
                 <filter
-                    string="Completado"
+                    string="Completed"
                     name="completed"
                     domain="[('completed', '=', True)]"
                 />
                 <filter
-                    string="Facturación firme"
+                    string="Firm Negotiation"
                     name="firm_negotiation"
                     domain="[('mercas_firm_negotiation', '=', True)]"
                 />
                 <separator/>
                 <filter
-                    string="Proveedor"
+                    string="Supplier"
                     name="group_partner_id"
                     context="{'group_by': 'partner_id'}"
                 />
@@ -208,7 +208,7 @@
 
 
     <record id="action_mercas_lotes" model="ir.actions.act_window">
-        <field name="name">Lotes</field>
+        <field name="name">Lots</field>
         <field name="res_model">stock.lot</field>
         <field name="view_mode">list,form</field>
         <field name="context">{"search_default_not_invoiced": 1}</field>

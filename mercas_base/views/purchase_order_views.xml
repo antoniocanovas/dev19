@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="purchase.purchase_order_form"/>
         <field name="arch" type="xml">
 
-            <!-- Botón Purchase & Receive junto a Confirmar -->
+            <!-- Purchase & Receive button next to Confirm -->
             <button name="button_confirm" position="after">
                 <button name="button_purchase_and_receive"
                         string="Purchase &amp; Receive"
@@ -17,43 +17,43 @@
                         invisible="state not in ('draft', 'sent')"/>
             </button>
 
-            <!-- Botón Entrega cajas (visible en pedidos confirmados) -->
+            <!-- Deliver Boxes button (visible on confirmed orders) -->
             <button name="button_purchase_and_receive" position="after">
                 <button name="action_open_box_delivery"
-                        string="Entrega cajas"
+                        string="Deliver Boxes"
                         type="object"
                         class="btn-secondary"
                         data-hotkey="e"
                         invisible="state != 'purchase'"/>
             </button>
 
-            <!-- Botón Recibir y facturar (solo pedidos de devolución de envases
-                 ya confirmados: acción explícita, no automática al confirmar) -->
+            <!-- Receive & Invoice button (only for already confirmed box-return
+                 orders: explicit action, not automatic on confirm) -->
             <button name="action_open_box_delivery" position="after">
                 <button name="action_mercas_box_receive_and_invoice"
-                        string="Recibir y facturar"
+                        string="Receive &amp; Invoice"
                         type="object"
                         class="btn-secondary"
                         invisible="not mercas_is_box_return or state not in ('purchase', 'done')"/>
             </button>
 
-            <!-- Botón Imprimir etiquetas (visible en pedidos confirmados) -->
+            <!-- Print Labels button (visible on confirmed orders) -->
             <button name="action_mercas_box_receive_and_invoice" position="after">
                 <button name="action_print_mercas_labels"
-                        string="Imprimir etiquetas"
+                        string="Print Labels"
                         type="object"
                         class="btn-secondary"
                         invisible="state not in ('purchase', 'done')"/>
             </button>
 
-            <!-- Campos auxiliares para dominio y visibilidad de columnas -->
+            <!-- Auxiliary fields for domain and column visibility -->
             <xpath expr="//field[@name='order_line']" position="before">
                 <field name="mercas_is_box_return" invisible="1"/>
                 <field name="mercas_origin_country" invisible="1"/>
                 <field name="mercas_origin_state" invisible="1"/>
             </xpath>
 
-            <!-- Dominio en lot_id: solo lotes sin proveedor o del mismo proveedor y mismo producto -->
+            <!-- lot_id domain: only lots without a supplier or with the same supplier and product -->
             <xpath expr="//field[@name='order_line']/list/field[@name='lot_id']"
                    position="attributes">
                 <attribute name="domain">
@@ -61,16 +61,16 @@
                 </attribute>
             </xpath>
 
-            <!-- Columnas Cajas y Caja después de la cantidad -->
+            <!-- Boxes and Box columns after the quantity -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_qty']"
                    position="after">
                 <field name="box_qty" optional="show"/>
                 <field name="box_product_id" optional="show"/>
-                <field name="mercas_firm_negotiation" string="FF" optional="show"
-                       help="FF: Facturación firme. Se paga al proveedor la totalidad de lo recibido en esta línea, con independencia de lo vendido. Por defecto toma el valor configurado en el proveedor, pero se puede cambiar aquí. Se traslada al lote al confirmar la compra."/>
+                <field name="mercas_firm_negotiation" string="FN" optional="show"
+                       help="FN: Firm Negotiation. The supplier is paid in full for what was received on this line, regardless of what was sold. Defaults to the value configured on the supplier, but can be changed here. It is carried over to the lot when the purchase is confirmed."/>
             </xpath>
 
-            <!-- Columnas país y provincia de origen -->
+            <!-- Country and state of origin columns -->
             <xpath expr="//field[@name='order_line']/list/field[@name='product_id']"
                    position="after">
                 <field name="origin_country_id"

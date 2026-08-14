@@ -49,7 +49,7 @@
         </field>
     </record>
 
-    <!-- Columna mercas_origin en el One2many de estados dentro del formulario de país -->
+    <!-- mercas_origin column on the states One2many inside the country form -->
     <record id="view_country_form_states_mercas" model="ir.ui.view">
         <field name="name">res.country.form.states.mercas</field>
         <field name="model">res.country</field>

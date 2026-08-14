@@ -5,30 +5,30 @@ from odoo.tests import TransactionCase, tagged
 
 @tagged("post_install", "-at_install")
 class TestMercasBoxOrders(TransactionCase):
-    """Un pedido de compra/venta se detecta como devolución/entrega de cajas
-    por su contenido (todas las líneas de producto son productos marcados como
-    caja/envase, `product.template.is_box`), sin necesidad de un tipo de
-    pedido dedicado. El flujo automático de recibir/entregar y facturar ya no
-    salta solo al confirmar: requiere pulsar el botón "Recibir y facturar"
-    explícitamente, salvo en los atajos que ya son en sí mismos una acción de
-    "hazlo todo ahora" (Purchase & Receive, Sold & Sent)."""
+    """A purchase/sale order is detected as a box return/delivery by its
+    content (every product line is a product marked as box/container,
+    `product.template.is_box`), without needing a dedicated order type. The
+    automated receive/deliver-and-invoice flow no longer triggers on
+    confirm alone: it requires explicitly pressing the "Receive & Invoice"
+    button, except in the shortcuts that are themselves already a
+    "do it all now" action (Purchase & Receive, Sold & Sent)."""
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.company = cls.env.company
-        cls.supplier = cls.env["res.partner"].create({"name": "Proveedor Cajas"})
-        cls.customer = cls.env["res.partner"].create({"name": "Cliente Cajas"})
+        cls.supplier = cls.env["res.partner"].create({"name": "Box Supplier"})
+        cls.customer = cls.env["res.partner"].create({"name": "Box Customer"})
 
         cls.box_product = cls.env["product.product"].create({
-            "name": "Caja test",
+            "name": "Test Box",
             "type": "consu",
             "is_box": True,
             "taxes_id": [Command.clear()],
             "supplier_taxes_id": [Command.clear()],
         })
         cls.produce = cls.env["product.product"].create({
-            "name": "Manzana test",
+            "name": "Test Apple",
             "type": "consu",
             "is_storable": True,
             "taxes_id": [Command.clear()],
@@ -55,7 +55,7 @@ class TestMercasBoxOrders(TransactionCase):
             })],
         })
 
-    # --- Detección por contenido ---
+    # --- Detection by content ---
 
     def test_purchase_is_box_return_when_all_lines_are_box_products(self):
         po = self._box_purchase()
@@ -87,7 +87,7 @@ class TestMercasBoxOrders(TransactionCase):
         })]
         self.assertFalse(so.mercas_is_box_delivery)
 
-    # --- Confirmar ya no factura automáticamente ---
+    # --- Confirming no longer auto-invoices ---
 
     def test_purchase_button_confirm_does_not_auto_invoice_box_order(self):
         po = self._box_purchase()
@@ -105,7 +105,7 @@ class TestMercasBoxOrders(TransactionCase):
         pending = so.picking_ids.filtered(lambda p: p.state not in ("done", "cancel"))
         self.assertTrue(pending)
 
-    # --- Botón explícito "Recibir y facturar" ---
+    # --- Explicit "Receive & Invoice" button ---
 
     def test_purchase_action_receive_and_invoice(self):
         po = self._box_purchase()
@@ -125,7 +125,7 @@ class TestMercasBoxOrders(TransactionCase):
         posted_invoices = so.invoice_ids.filtered(lambda i: i.state == "posted")
         self.assertTrue(posted_invoices)
 
-    # --- Atajos "hazlo todo ahora" siguen procesando de punta a punta ---
+    # --- "Do it all now" shortcuts still process end to end ---
 
     def test_purchase_button_purchase_and_receive_still_processes_box_order(self):
         po = self._box_purchase()
@@ -143,14 +143,13 @@ class TestMercasBoxOrders(TransactionCase):
         posted_invoices = so.invoice_ids.filtered(lambda i: i.state == "posted")
         self.assertTrue(posted_invoices)
 
-    # --- Los botones "Entrega cajas"/"Devolución cajas" requieren que exista
-    #     al menos un producto marcado como caja ---
+    # --- The "Deliver Boxes"/"Return Boxes" buttons require at least one
+    #     product marked as a box ---
 
     def test_action_open_box_delivery_requires_a_box_product_configured(self):
-        # Desmarca cualquier producto de caja existente (no solo el propio de
-        # este test), para que la comprobación sea válida aunque haya otros
-        # box products creados por otro módulo instalado a la vez (p. ej. datos
-        # de demo).
+        # Unmark any existing box product (not just this test's own), so
+        # the check remains valid even if other box products were created
+        # by another module installed at the same time (e.g. demo data).
         self.env["product.template"].search([("is_box", "=", True)]).is_box = False
         po = self.env["purchase.order"].create({"partner_id": self.supplier.id})
         with self.assertRaises(UserError):
@@ -162,8 +161,8 @@ class TestMercasBoxOrders(TransactionCase):
         with self.assertRaises(UserError):
             so.action_open_box_return()
 
-    # --- mercas_is_box_return/mercas_is_box_delivery son realmente buscables
-    #     (campos store=True, no solo legibles) ---
+    # --- mercas_is_box_return/mercas_is_box_delivery are actually
+    #     searchable (store=True fields, not just readable) ---
 
     def test_purchase_mercas_is_box_return_is_searchable(self):
         box_po = self._box_purchase()
@@ -193,7 +192,7 @@ class TestMercasBoxOrders(TransactionCase):
         self.assertIn(box_so, found)
         self.assertNotIn(regular_so, found)
 
-    # --- Botones "Entregar cajas"/"Devolver cajas" en la ficha de contacto ---
+    # --- "Deliver Boxes"/"Return Boxes" buttons on the contact form ---
 
     def test_partner_action_open_box_delivery_creates_sale_order(self):
         action = self.supplier.action_mercas_open_box_delivery()

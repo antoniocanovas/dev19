@@ -1,8 +1,10 @@
+import { _t } from "@web/core/l10n/translation";
+
 export const MODES = [
-    { fkey: "F1", label: "Ventas",   resModel: "sale.order",      domain: [["state", "not in", ["cancel"]]] },
-    { fkey: "F2", label: "Compras",  resModel: "purchase.order",  domain: [["state", "not in", ["cancel"]]] },
-    { fkey: "F3", label: "Facturas", resModel: "account.move",    domain: [["move_type", "in", ["out_invoice", "in_invoice", "out_refund"]]] },
-    { fkey: "F4", label: "Pagos",    resModel: "account.payment", domain: [["state", "!=", "cancel"]] },
+    { fkey: "F1", label: _t("Sales"),    resModel: "sale.order",      domain: [["state", "not in", ["cancel"]]] },
+    { fkey: "F2", label: _t("Purchases"), resModel: "purchase.order",  domain: [["state", "not in", ["cancel"]]] },
+    { fkey: "F3", label: _t("Invoices"), resModel: "account.move",    domain: [["move_type", "in", ["out_invoice", "in_invoice", "out_refund"]]] },
+    { fkey: "F4", label: _t("Payments"), resModel: "account.payment", domain: [["state", "!=", "cancel"]] },
 ];
 
 export function addLineAndFocusProduct() {

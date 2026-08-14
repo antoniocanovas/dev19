@@ -4,11 +4,11 @@ from odoo.exceptions import UserError
 
 class StockLotChangeWizard(models.TransientModel):
     _name = "stock.lot.change.wizard"
-    _description = "Corregir lote de una línea de venta, servida o pendiente"
+    _description = "Correct the Lot of a Sale Order Line, Delivered or Pending"
 
     sale_line_id = fields.Many2one(
         comodel_name="sale.order.line",
-        string="Línea de venta",
+        string="Sale Order Line",
         required=True,
         readonly=True,
     )
@@ -17,7 +17,7 @@ class StockLotChangeWizard(models.TransientModel):
     line_ids = fields.One2many(
         comodel_name="stock.lot.change.wizard.line",
         inverse_name="wizard_id",
-        string="Entregas",
+        string="Deliveries",
     )
 
     @api.model
@@ -43,28 +43,28 @@ class StockLotChangeWizard(models.TransientModel):
         self.ensure_one()
         changed = self.line_ids.filtered(lambda l: l.new_lot_id != l.current_lot_id)
         if not changed:
-            raise UserError(_("No has cambiado ningún lote."))
+            raise UserError(_("You haven't changed any lot."))
 
         wrong_product = changed.filtered(
             lambda l: l.new_lot_id.product_id != self.product_id
         )
         if wrong_product:
             raise UserError(
-                _("El lote de destino debe ser del mismo producto que la línea de venta.")
+                _("The destination lot must be of the same product as the sale order line.")
             )
 
-        # Un anticipo (importe/kg facturado sin `invoiced=True`) no bloquea: la
-        # liquidación final aún no está fijada. La facturación firme tampoco
-        # bloquea aunque esté completa, porque es responsabilidad nuestra frente
-        # al proveedor y no depende de a qué venta se atribuya el lote.
+        # An advance (amount/kg invoiced without `invoiced=True`) doesn't
+        # block: the final settlement isn't fixed yet. Firm invoicing also
+        # doesn't block even if complete, because it's our responsibility to
+        # the supplier and doesn't depend on which sale the lot is attributed to.
         lots_involved = changed.current_lot_id | changed.new_lot_id
         blocked = lots_involved.filtered(
             lambda lot: lot.invoiced and not lot.mercas_firm_negotiation
         )
         if blocked:
             raise UserError(
-                _("No se puede corregir: los siguientes lotes ya tienen la "
-                  "liquidación por venta facturada por completo al proveedor: %s")
+                _("Cannot correct: the following lots already have their "
+                  "sale settlement fully invoiced to the supplier: %s")
                 % ", ".join(blocked.mapped("name"))
             )
 
@@ -72,25 +72,25 @@ class StockLotChangeWizard(models.TransientModel):
             lambda l: l.parent_state == "draft"
         )
 
-        # Campo opcional de stock_restrict_lot (OCA stock-logistics-workflow):
-        # si está instalado, la restricción de lote del movimiento debe seguir
-        # a la corrección para no quedar apuntando al lote equivocado.
+        # Optional field from stock_restrict_lot (OCA stock-logistics-workflow):
+        # if installed, the move's lot restriction must follow the
+        # correction so it doesn't end up pointing at the wrong lot.
         has_restrict_lot_id = "restrict_lot_id" in self.env["stock.move"]._fields
 
-        # El grupo "Corregir lotes" no implica por sí mismo poder escribir en
-        # pedidos de venta o facturas ajenos; el control de acceso real ya lo
-        # impone el ACL de este asistente, así que las escrituras concretas
-        # (todas sobre un campo de trazabilidad, no financiero) se hacen con
-        # sudo para no obligar a dar permisos de Ventas/Contabilidad aparte.
+        # The "Correct Lots" group doesn't by itself grant write access to
+        # other users' sale orders or invoices; the actual access control is
+        # already enforced by this wizard's ACL, so the actual writes (all on
+        # a traceability field, not a financial one) are done with sudo so as
+        # not to require separate Sales/Accounting permissions.
         for line in changed:
             old_lot = line.current_lot_id
             new_lot = line.new_lot_id
-            # Escribir lot_id en una línea de albarán ya validada (`done`) ya
-            # corrige las existencias físicas (stock.quant) en origen y
-            # destino de esa línea: es comportamiento nativo de
-            # stock.move.line.write() (deshace el efecto del lote antiguo y
-            # aplica el del nuevo antes/después de super().write()), no hace
-            # falta ningún ajuste manual aparte.
+            # Writing lot_id on an already validated (`done`) move line
+            # already corrects the physical stock (stock.quant) at the
+            # source and destination of that line: this is native
+            # stock.move.line.write() behavior (it undoes the effect of the
+            # old lot and applies the new one's before/after super().write()),
+            # no separate manual adjustment is needed.
             line.move_line_id.sudo().lot_id = new_lot.id
             if has_restrict_lot_id:
                 line.move_line_id.move_id.sudo().restrict_lot_id = new_lot.id
@@ -98,8 +98,8 @@ class StockLotChangeWizard(models.TransientModel):
                 {"lot_id": new_lot.id}
             )
             note = _(
-                "Corrección de lote: %(qty)s %(uom)s del pedido %(order)s "
-                "(%(product)s) trasladados de %(old)s a %(new)s por %(user)s."
+                "Lot correction: %(qty)s %(uom)s from order %(order)s "
+                "(%(product)s) moved from %(old)s to %(new)s by %(user)s."
             ) % {
                 "qty": line.quantity,
                 "uom": line.move_line_id.product_uom_id.name,
@@ -112,9 +112,9 @@ class StockLotChangeWizard(models.TransientModel):
             old_lot.message_post(body=note)
             new_lot.message_post(body=note)
 
-        # El campo lote de la propia línea de venta es un único valor: si la
-        # corrección reparte cantidad entre varios lotes de destino, se queda
-        # con el de mayor cantidad corregida como referencia principal.
+        # The sale order line's own lot field holds a single value: if the
+        # correction spreads quantity across several destination lots, it
+        # keeps the one with the largest corrected quantity as the main reference.
         self.sale_line_id.sudo().lot_id = max(changed, key=lambda l: l.quantity).new_lot_id
 
         return {"type": "ir.actions.act_window_close"}
@@ -122,7 +122,7 @@ class StockLotChangeWizard(models.TransientModel):
 
 class StockLotChangeWizardLine(models.TransientModel):
     _name = "stock.lot.change.wizard.line"
-    _description = "Entrega a corregir"
+    _description = "Delivery to Correct"
 
     wizard_id = fields.Many2one(
         comodel_name="stock.lot.change.wizard",
@@ -131,17 +131,17 @@ class StockLotChangeWizardLine(models.TransientModel):
     )
     move_line_id = fields.Many2one(
         comodel_name="stock.move.line",
-        string="Línea de albarán",
+        string="Move Line",
         required=True,
         readonly=True,
     )
     current_lot_id = fields.Many2one(
         comodel_name="stock.lot",
-        string="Lote actual",
+        string="Current Lot",
         readonly=True,
     )
-    quantity = fields.Float(string="Cantidad", readonly=True)
+    quantity = fields.Float(string="Quantity", readonly=True)
     new_lot_id = fields.Many2one(
         comodel_name="stock.lot",
-        string="Lote correcto",
+        string="Correct Lot",
     )

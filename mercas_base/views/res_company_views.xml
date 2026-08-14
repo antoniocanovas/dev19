@@ -9,17 +9,17 @@
             <notebook position="inside">
                 <page string="Mercas" name="mercas">
                     <group>
-                        <group string="Almacén">
+                        <group string="Warehouse">
                             <field name="mercas_customer_location_id"/>
                             <field name="mercas_supplier_location_id"/>
                         </group>
-                        <group string="Compras">
+                        <group string="Purchases">
                             <field name="purchase_lot_autocomplete" widget="toggle"/>
                             <field name="origin_country" widget="toggle"/>
                             <field name="origin_state" widget="toggle"/>
                             <field name="origin_filter" widget="toggle"/>
                         </group>
-                        <group string="Contabilidad">
+                        <group string="Accounting">
                             <field name="compensation_journal_id"/>
                             <field name="mercas_margin"/>
                             <field name="auto_confirm_supplier_invoice" widget="toggle"/>

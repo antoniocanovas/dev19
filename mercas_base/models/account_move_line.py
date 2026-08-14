@@ -6,17 +6,17 @@ class AccountMoveLine(models.Model):
 
     lot_id = fields.Many2one(
         comodel_name="stock.lot",
-        string="Lote",
+        string="Lot",
         index=True,
         ondelete="set null",
     )
     mercas_is_firm_line = fields.Boolean(
-        string="Línea de suministro firme",
+        string="Firm Supply Line",
         copy=False,
         help=(
-            "Marca las líneas de factura de proveedor que representan kg "
-            "recibidos facturados en régimen de negociación en firme, para "
-            "poder llevar la cuenta de kilos pendientes sin mezclarlas con "
-            "anticipos o liquidaciones por venta."
+            "Marks vendor bill lines that represent received kg invoiced "
+            "under the firm negotiation regime, so pending kg can be "
+            "tracked without mixing them with sale settlement advances or "
+            "settlements."
         ),
     )

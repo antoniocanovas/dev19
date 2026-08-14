@@ -5,19 +5,19 @@ from odoo.tests import TransactionCase, tagged
 
 @tagged("post_install", "-at_install")
 class TestStockLotChangeWizard(TransactionCase):
-    """Un usuario asigna por error el lote A a una línea de venta; se
-    corrige a mano al lote B correcto con el asistente, tanto si ya se ha
-    servido como si el albarán sigue pendiente de validar."""
+    """A user mistakenly assigns lot A to a sale order line; it's corrected
+    by hand to the correct lot B with the wizard, whether it has already
+    been delivered or the delivery is still pending validation."""
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.company = cls.env.company
-        cls.supplier = cls.env["res.partner"].create({"name": "Proveedor Corrección Lote"})
-        cls.customer = cls.env["res.partner"].create({"name": "Cliente Corrección Lote"})
+        cls.supplier = cls.env["res.partner"].create({"name": "Lot Correction Supplier"})
+        cls.customer = cls.env["res.partner"].create({"name": "Lot Correction Customer"})
         cls.uom_kg = cls.env.ref("uom.product_uom_kgm")
         cls.product = cls.env["product.product"].create({
-            "name": "Producto Corrección Lote",
+            "name": "Lot Correction Product",
             "type": "consu",
             "is_storable": True,
             "tracking": "lot",
@@ -54,7 +54,7 @@ class TestStockLotChangeWizard(TransactionCase):
             purchase.button_purchase_and_receive()
 
         cls.manager_user = cls.env["res.users"].create({
-            "name": "Corrector de lotes",
+            "name": "Lot Corrector",
             "login": "mercas_test_lot_corrector",
             "email": "mercas_test_lot_corrector@example.com",
             "group_ids": [
@@ -132,18 +132,19 @@ class TestStockLotChangeWizard(TransactionCase):
         wizard.line_ids.new_lot_id = self.lot_b.id
         wizard.action_apply()
 
-        # En destino (ubicación del cliente): sale el lote A, entra el B.
+        # At destination (customer location): lot A goes out, B comes in.
         self.assertAlmostEqual(qty_at(dest_location, self.lot_a), dest_a_before - 500.0, places=2)
         self.assertAlmostEqual(qty_at(dest_location, self.lot_b), dest_b_before + 500.0, places=2)
-        # En origen (almacén): se devuelve la cantidad al lote A, se descuenta del B.
+        # At source (warehouse): the quantity is returned to lot A, deducted from B.
         self.assertAlmostEqual(qty_at(src_location, self.lot_a), src_a_before + 500.0, places=2)
         self.assertAlmostEqual(qty_at(src_location, self.lot_b), src_b_before - 500.0, places=2)
 
     def test_wizard_corrects_reserved_lot_before_delivery(self):
-        # A diferencia de _sell (que confirma y entrega en el mismo paso),
-        # aquí solo se confirma: la reserva ya asigna un lote concreto a la
-        # línea de albarán (gracias a sale_order_lot_selection), pero el
-        # albarán sigue sin validar. El icono/asistente debe funcionar igual.
+        # Unlike _sell (which confirms and delivers in the same step),
+        # here only confirmation happens: the reservation already assigns a
+        # specific lot to the delivery line (thanks to
+        # sale_order_lot_selection), but the delivery is still not
+        # validated. The icon/wizard must work the same way.
         sale = self.env["sale.order"].create({
             "partner_id": self.customer.id,
             "order_line": [Command.create({
@@ -170,8 +171,8 @@ class TestStockLotChangeWizard(TransactionCase):
         self.assertEqual(move_line.lot_id, self.lot_b)
         self.assertEqual(line.lot_id, self.lot_b)
 
-        # Validar el albarán después de corregir debe entregar del lote
-        # correcto, sin dejar cantidades huérfanas reservadas del lote A.
+        # Validating the delivery after correcting must deliver from the
+        # correct lot, without leaving orphaned quantities reserved from lot A.
         move_line.quantity = 500.0
         sale.picking_ids.with_context(skip_immediate=True, skip_backorder=True).button_validate()
         self.assertEqual(move_line.state, "done")
@@ -194,7 +195,7 @@ class TestStockLotChangeWizard(TransactionCase):
 
     def test_wizard_updates_restrict_lot_id_if_installed(self):
         if "restrict_lot_id" not in self.env["stock.move"]._fields:
-            self.skipTest("stock_restrict_lot no está instalado")
+            self.skipTest("stock_restrict_lot is not installed")
 
         sale = self._sell(self.lot_a, 500.0, 2.0)
         line = sale.order_line
@@ -251,7 +252,7 @@ class TestStockLotChangeWizard(TransactionCase):
         sale = self._sell(self.lot_a, 500.0, 2.0)
         line = sale.order_line
         other_user = self.env["res.users"].create({
-            "name": "Sin permiso corrección",
+            "name": "No Correct Lots Permission",
             "login": "mercas_test_no_correct_lots",
             "email": "mercas_test_no_correct_lots@example.com",
             "group_ids": [

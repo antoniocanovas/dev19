@@ -6,91 +6,95 @@ class ResCompany(models.Model):
 
     mercas_customer_location_id = fields.Many2one(
         comodel_name="stock.location",
-        string="Almacén clientes",
+        string="Customer Warehouse",
         default=lambda self: self.env.ref(
             "stock.stock_location_customers", raise_if_not_found=False
         ),
         help=(
-            "Ubicación padre sobre la que se creará automáticamente una ubicación "
-            "por cliente al confirmar la venta, si no existe previamente."
+            "Parent location under which a per-customer location will be "
+            "automatically created when the sale is confirmed, if it doesn't "
+            "already exist."
         ),
     )
     mercas_supplier_location_id = fields.Many2one(
         comodel_name="stock.location",
-        string="Almacén proveedores",
+        string="Supplier Warehouse",
         default=lambda self: self.env.ref(
             "stock.stock_location_suppliers", raise_if_not_found=False
         ),
         help=(
-            "Ubicación padre sobre la que se creará automáticamente una ubicación "
-            "por proveedor al confirmar la compra, si no existe previamente."
+            "Parent location under which a per-supplier location will be "
+            "automatically created when the purchase is confirmed, if it "
+            "doesn't already exist."
         ),
     )
     purchase_lot_autocomplete = fields.Boolean(
-        string="Purchase lot auto",
+        string="Auto Purchase Lot",
         default=True,
-        help="Creación automática de lotes de compra al confirmar si no están establecidos.",
+        help="Automatically create purchase lots on confirm if not already set.",
     )
     origin_country = fields.Boolean(
-        string="Columna país origen",
+        string="Country of Origin Column",
         default=True,
-        help="Muestra la columna de país de origen en las líneas de pedido de compra.",
+        help="Shows the country of origin column on purchase order lines.",
     )
     origin_state = fields.Boolean(
-        string="Columna provincia origen",
+        string="State of Origin Column",
         default=True,
-        help="Muestra la columna de provincia de origen en las líneas de pedido de compra.",
+        help="Shows the state of origin column on purchase order lines.",
     )
     origin_filter = fields.Boolean(
-        string="Filtro origen",
+        string="Origin Filter",
         default=False,
-        help="Restringe la selección de país/provincia a los marcados como Origen Mercas.",
+        help="Restricts the country/state selection to those marked as Merca Origin.",
     )
     mercas_margin = fields.Float(
-        string="Merca margin (%)",
+        string="Merca Margin (%)",
         digits=(10, 2),
         help="General margin when not in partner.",
     )
     auto_confirm_supplier_invoice = fields.Boolean(
-        string="Confirmar factura proveedor automáticamente",
+        string="Auto-Confirm Supplier Invoice",
         default=False,
     )
     compensation_journal_id = fields.Many2one(
         comodel_name="account.journal",
-        string="Diario de compensación",
+        string="Offsetting Journal",
         domain=[("type", "=", "general")],
         help=(
-            "Diario de operaciones diversas para compensar facturas de compra con "
-            "facturas de venta del mismo partner. El asiento resultante aparece como "
-            "crédito pendiente en las facturas de cliente."
+            "Miscellaneous operations journal used to offset purchase "
+            "invoices against sale invoices of the same partner. The "
+            "resulting entry appears as an outstanding credit on the "
+            "customer invoices."
         ),
     )
     liquidation_mode = fields.Selection(
         selection=[
-            ("average_price", "Precio medio (una línea)"),
-            ("average_price_scrap_split", "Precio medio + desecho aparte"),
+            ("average_price", "Average price (single line)"),
+            ("average_price_scrap_split", "Average price + scrap separate"),
         ],
-        string="Modo de liquidación",
+        string="Settlement Mode",
         default="average_price",
         required=True,
         help=(
-            "Cómo se genera la línea de venta en la factura de liquidación por venta "
-            "(no afecta a lotes en facturación firme):\n"
-            "- Precio medio: una única línea con el importe bruto repartido entre "
-            "kg vendidos + desechados (el desecho diluye el precio/kg mostrado).\n"
-            "- Precio medio + desecho aparte: el importe bruto se reparte solo entre "
-            "los kg vendidos, y se añade una línea adicional a precio 0 por los kg "
-            "desechados, para que quede explícito en la factura que no se pagan."
+            "How the sale line is generated on the sale-settlement invoice "
+            "(does not affect lots under firm negotiation):\n"
+            "- Average price: a single line with the gross amount spread "
+            "over sold + scrapped kg (scrap dilutes the displayed price/kg).\n"
+            "- Average price + scrap separate: the gross amount is spread "
+            "only over sold kg, and an extra line at price 0 is added for "
+            "the scrapped kg, so the invoice makes explicit that it isn't "
+            "paid."
         ),
     )
     liquidation_show_sale_breakdown = fields.Boolean(
-        string="Detalle de ventas en factura",
+        string="Sale Breakdown on Invoice",
         default=False,
         help=(
-            "Añade, en la descripción de la línea de venta de la factura de "
-            "liquidación por venta, un desglose acumulado (fecha, pedido, "
-            "cantidad y precio unitario) de cada venta del lote hasta la "
-            "fecha. Solo texto informativo: no afecta al importe ni a la "
-            "cantidad facturada. No aplica a lotes en facturación firme."
+            "Adds, in the description of the sale-settlement invoice line, "
+            "an accumulated breakdown (date, order, quantity and unit "
+            "price) of every sale of the lot up to that date. Informational "
+            "text only: it does not affect the invoiced amount or quantity. "
+            "Does not apply to lots under firm negotiation."
         ),
     )

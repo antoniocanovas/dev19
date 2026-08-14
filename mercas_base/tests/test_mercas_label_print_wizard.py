@@ -5,36 +5,36 @@ from odoo.tests import TransactionCase, tagged
 
 @tagged("post_install", "-at_install")
 class TestMercasLabelPrintWizard(TransactionCase):
-    """Comprar 100 kg de plátano (10 cajas) y 200 kg de pera (15 cajas):
-    el asistente debe proponer 10 etiquetas de plátano y 15 de pera, sin
-    incluir la línea de envases ni productos de tipo servicio."""
+    """Purchase 100 kg of banana (10 boxes) and 200 kg of pear (15 boxes):
+    the wizard must propose 10 banana labels and 15 pear labels, without
+    including the container line or service-type products."""
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.company = cls.env.company
-        cls.supplier = cls.env["res.partner"].create({"name": "Proveedor Etiquetas"})
+        cls.supplier = cls.env["res.partner"].create({"name": "Label Supplier"})
         cls.uom_kg = cls.env.ref("uom.product_uom_kgm")
 
         cls.box_product = cls.env["product.product"].create({
-            "name": "Caja test",
+            "name": "Test Box",
             "type": "consu",
             "is_box": True,
         })
         cls.platano = cls.env["product.product"].create({
-            "name": "Plátano",
+            "name": "Banana",
             "type": "consu",
             "is_storable": True,
             "uom_id": cls.uom_kg.id,
         })
         cls.pera = cls.env["product.product"].create({
-            "name": "Pera",
+            "name": "Pear",
             "type": "consu",
             "is_storable": True,
             "uom_id": cls.uom_kg.id,
         })
         cls.service_product = cls.env["product.product"].create({
-            "name": "Transporte",
+            "name": "Transport",
             "type": "service",
         })
 
@@ -87,7 +87,7 @@ class TestMercasLabelPrintWizard(TransactionCase):
     def test_print_uses_edited_quantities(self):
         wizard = self._create_wizard()
         platano_line = wizard.line_ids.filtered(lambda l: l.product_id == self.platano)
-        platano_line.quantity = 3  # solo reponer 3 etiquetas rotas
+        platano_line.quantity = 3  # only replace 3 broken labels
 
         action = wizard.action_print()
         self.assertEqual(action["type"], "ir.actions.report")
@@ -102,7 +102,7 @@ class TestMercasLabelPrintWizard(TransactionCase):
             wizard.action_print()
 
     def test_proposes_boxes_from_sale_lines(self):
-        customer = self.env["res.partner"].create({"name": "Cliente Etiquetas"})
+        customer = self.env["res.partner"].create({"name": "Label Customer"})
         sale = self.env["sale.order"].create({
             "partner_id": customer.id,
             "order_line": [

@@ -8,160 +8,160 @@ class StockLot(models.Model):
 
     partner_id = fields.Many2one(
         comodel_name="res.partner",
-        string="Proveedor",
+        string="Supplier",
         index=True,
     )
     origin_country_id = fields.Many2one(
         comodel_name="res.country",
-        string="País origen",
+        string="Country of Origin",
     )
     origin_state_id = fields.Many2one(
         comodel_name="res.country.state",
-        string="Provincia origen",
+        string="State of Origin",
         domain="[('country_id', '=', origin_country_id)]",
     )
     purchase_line_ids = fields.One2many(
         comodel_name="purchase.order.line",
         inverse_name="lot_id",
-        string="Líneas de compra",
+        string="Purchase Lines",
     )
     sale_line_ids = fields.One2many(
         comodel_name="sale.order.line",
         inverse_name="lot_id",
-        string="Líneas de venta",
+        string="Sale Lines",
     )
     supplier_invoice_line_ids = fields.One2many(
         comodel_name="account.move.line",
         inverse_name="lot_id",
-        string="Líneas factura proveedor",
+        string="Supplier Invoice Lines",
         domain=[("move_id.move_type", "in", ["in_invoice", "in_refund"])],
     )
     customer_invoice_line_ids = fields.One2many(
         comodel_name="account.move.line",
         inverse_name="lot_id",
-        string="Líneas factura cliente",
+        string="Customer Invoice Lines",
         domain=[("move_id.move_type", "in", ["out_invoice", "out_refund"])],
     )
     scrap_line_ids = fields.One2many(
         comodel_name="stock.scrap",
         inverse_name="lot_id",
-        string="Desechos",
+        string="Scraps",
     )
     stock_move_line_ids = fields.One2many(
         comodel_name="stock.move.line",
         inverse_name="lot_id",
-        string="Movimientos de stock",
+        string="Stock Moves",
     )
 
-    # ── Liquidación ────────────────────────────────────────────────────────────
+    # ── Settlement ─────────────────────────────────────────────────────────────
 
     purchase_kg = fields.Float(
-        string="Kg comprados",
+        string="Purchased Kg",
         compute="_compute_purchase_kg",
         digits=(16, 3),
     )
     sale_kg = fields.Float(
-        string="Kg vendidos",
+        string="Sold Kg",
         compute="_compute_sale_fields",
         digits=(16, 3),
     )
     sale_amount = fields.Float(
-        string="Importe vendido",
+        string="Sold Amount",
         compute="_compute_sale_fields",
         digits=(16, 2),
     )
     scrap_kg = fields.Float(
-        string="Kg desechados",
+        string="Scrapped Kg",
         compute="_compute_scrap_kg",
         digits=(16, 3),
     )
     completed = fields.Boolean(
-        string="Completado",
+        string="Completed",
         compute="_compute_completed",
         store=True,
     )
     mercas_firm_negotiation = fields.Boolean(
-        string="Facturación firme",
+        string="Firm Negotiation",
         copy=False,
         tracking=True,
         help=(
-            "Se paga al proveedor la totalidad de lo recibido de este lote, "
-            "con independencia de lo vendido, en vez de liquidar por venta. "
-            "Toma su valor inicial de la línea de compra de origen. Solo lo "
-            "puede cambiar un Gestor de contabilidad, y solo mientras el "
-            "lote no tenga facturación en firme registrada."
+            "The supplier is paid in full for what was received of this "
+            "lot, regardless of what was sold, instead of settling by sale. "
+            "Takes its initial value from the source purchase line. Only an "
+            "Accounting Manager can change it, and only while the lot has "
+            "no firm invoicing recorded."
         ),
     )
     can_edit_firm_negotiation = fields.Boolean(
         compute="_compute_can_edit_firm_negotiation",
     )
     received_kg = fields.Float(
-        string="Kg recibidos",
+        string="Received Kg",
         compute="_compute_received_kg",
         store=True,
         digits=(16, 3),
-        help="Kg recibidos físicamente del proveedor (albaranes de entrada validados).",
+        help="Kg physically received from the supplier (validated incoming transfers).",
     )
     net_invoiced_kg = fields.Float(
-        string="Kg facturados (neto)",
+        string="Net Invoiced Kg",
         compute="_compute_net_invoiced_kg",
         store=True,
         digits=(16, 3),
-        help="Kg de facturas de proveedor validadas menos kg de abonos validados.",
+        help="Kg of validated supplier invoices minus kg of validated credit notes.",
     )
     net_invoiced_amount = fields.Float(
-        string="Importe facturado (neto)",
+        string="Net Invoiced Amount",
         compute="_compute_net_invoiced_amount",
         store=True,
         digits=(16, 2),
-        help="Importe de facturas de proveedor posteadas menos abonos posteados de este lote.",
+        help="Amount of posted supplier invoices minus posted credit notes of this lot.",
     )
     invoiced = fields.Boolean(
-        string="Facturado",
+        string="Invoiced",
         copy=False,
         help=(
-            "Indica si el lote se considera completamente facturado al "
-            "proveedor. Se actualiza automáticamente, pero puede forzarse "
-            "manualmente; una vez editado a mano deja de recalcularse solo."
+            "Indicates whether the lot is considered fully invoiced to the "
+            "supplier. Updated automatically, but can be forced manually; "
+            "once edited by hand it stops being recalculated on its own."
         ),
     )
     invoiced_locked = fields.Boolean(
-        string="Facturado fijado manualmente",
+        string="Invoiced Manually Locked",
         copy=False,
     )
     invoiceable = fields.Boolean(
-        string="Facturable",
+        string="Invoiceable",
         compute="_compute_invoiceable",
         store=True,
         help=(
-            "Candidato a facturar al proveedor: en régimen de pago total, "
-            "tiene kg recibidos pendientes de facturar; en régimen de "
-            "liquidación por venta, hay importe pendiente sobre lo vendido "
-            "(y desechado) hasta ahora, ya esté completado (liquidación "
-            "final) o con stock todavía disponible (anticipo)."
+            "Candidate to invoice to the supplier: under the full-payment "
+            "regime, it has received kg pending invoicing; under the "
+            "sale-settlement regime, there is a pending amount on what has "
+            "been sold (and scrapped) so far, whether it is completed "
+            "(final settlement) or still has stock available (advance)."
         ),
     )
 
     mercas_margin = fields.Float(
-        string="Margen (%)",
+        string="Margin (%)",
         digits=(10, 2),
     )
     can_edit_margin = fields.Boolean(
         compute="_compute_can_edit_margin",
     )
     supplier_amount = fields.Float(
-        string="Importe proveedor",
+        string="Supplier Amount",
         compute="_compute_supplier_fields",
         digits=(16, 2),
     )
     supplier_price_kg = fields.Float(
-        string="Precio/kg proveedor",
+        string="Supplier Price/Kg",
         compute="_compute_supplier_fields",
         inverse="_inverse_supplier_price_kg",
         digits=(16, 4),
     )
     margin = fields.Float(
-        string="Margen importe",
+        string="Margin Amount",
         compute="_compute_supplier_fields",
         digits=(16, 2),
     )
@@ -194,9 +194,9 @@ class StockLot(models.Model):
         "supplier_invoice_line_ids.mercas_is_firm_line",
     )
     def _compute_net_invoiced_kg(self):
-        """Kg facturados en régimen de negociación en firme (líneas marcadas
-        `mercas_is_firm_line`). Los anticipos/liquidaciones por venta no
-        cuentan aquí: no representan kg de recibido al precio de compra."""
+        """Kg invoiced under the firm negotiation regime (lines marked
+        `mercas_is_firm_line`). Sale advances/settlements don't count here:
+        they don't represent received kg at the purchase price."""
         for lot in self:
             posted = lot.supplier_invoice_line_ids.filtered(
                 lambda l: l.move_id.state == "posted" and l.mercas_is_firm_line
@@ -239,17 +239,17 @@ class StockLot(models.Model):
         return self.company_id or self.env.company
 
     def _mercas_liquidation_gross(self):
-        """Valor bruto de liquidación por venta de este lote: el definitivo
-        (sale_amount neto de margen) si está completado (sin stock), o una
-        estimación de anticipo si todavía queda stock -- en ambos casos es
-        siempre el importe de lo realmente vendido neto de margen (el
-        desecho no se paga nunca). La cantidad/precio que se reparte ese
-        importe depende de `company.liquidation_mode`:
-        - "average_price": vendido + desechado (el desecho diluye el
-          precio/kg de la única línea, sin aparecer aparte).
-        - "average_price_scrap_split": solo lo vendido (el desecho se
-          factura aparte a precio 0, ver `_mercas_prepare_invoice_lines`).
-        Devuelve (cantidad, precio, importe)."""
+        """Gross sale-settlement value of this lot: the final one
+        (sale_amount net of margin) if completed (no stock left), or an
+        advance estimate if there is still stock -- in both cases it is
+        always the amount of what was actually sold, net of margin (scrap
+        is never paid). The quantity/price that this amount is spread over
+        depends on `company.liquidation_mode`:
+        - "average_price": sold + scrapped (scrap dilutes the price/kg of
+          the single line, without appearing separately).
+        - "average_price_scrap_split": sold only (scrap is invoiced
+          separately at price 0, see `_mercas_prepare_invoice_lines`).
+        Returns (quantity, price, amount)."""
         self.ensure_one()
         if self.completed:
             amount = self.supplier_amount
@@ -283,8 +283,8 @@ class StockLot(models.Model):
                 lot.invoiceable = gross - lot.net_invoiced_amount > 0.01
 
     def _mercas_recompute_invoiced_status(self):
-        """Reevalúa `invoiced` tras postear una factura o abono de proveedor
-        con líneas de lote. No toca lotes bloqueados a mano (invoiced_locked)."""
+        """Reevaluate `invoiced` after posting a supplier invoice or credit
+        note with lot lines. Does not touch manually locked lots (invoiced_locked)."""
         for lot in self:
             if lot.invoiced_locked:
                 continue
@@ -294,7 +294,7 @@ class StockLot(models.Model):
                 new_value = lot.net_invoiced_kg >= lot.received_kg
             else:
                 if not lot.completed:
-                    # Los anticipos con stock pendiente nunca cierran el lote.
+                    # Advances with pending stock never close the lot.
                     continue
                 _, _, gross = lot._mercas_liquidation_gross()
                 if gross <= 0:
@@ -336,7 +336,7 @@ class StockLot(models.Model):
         if quant:
             context["default_location_id"] = quant.location_id.id
         return {
-            "name": _("Desechar"),
+            "name": _("Scrap"),
             "type": "ir.actions.act_window",
             "res_model": "stock.scrap",
             "view_mode": "form",
@@ -353,10 +353,10 @@ class StockLot(models.Model):
         ))
 
     def _mercas_unreconciled_settlement_amount(self):
-        """Importe neto ya facturado por liquidación por venta (anticipos u
-        otras liquidaciones), pendiente de descontar en la primera factura en
-        firme de este lote. Una vez descontado, la propia línea de descuento
-        (no marcada como firme) lo cancela a cero para siempre."""
+        """Net amount already invoiced by sale settlement (advances or other
+        settlements), pending to be deducted on the first firm invoice of
+        this lot. Once deducted, the deduction line itself (not marked as
+        firm) cancels it to zero forever."""
         self.ensure_one()
         non_firm = self.supplier_invoice_line_ids.filtered(
             lambda l: l.move_id.state == "posted" and not l.mercas_is_firm_line
@@ -379,16 +379,16 @@ class StockLot(models.Model):
                     continue
                 if lot._mercas_has_firm_invoicing():
                     raise UserError(
-                        _("No se puede cambiar la negociación en firme del lote "
-                          "'%s': ya tiene facturación en firme registrada.")
+                        _("The firm negotiation of lot '%s' cannot be "
+                          "changed: it already has firm invoicing recorded.")
                         % lot.name
                     )
                 if not propagating and not self.env.user.has_group(
                     "account.group_account_manager"
                 ):
                     raise UserError(
-                        _("Solo un Gestor de contabilidad puede cambiar la "
-                          "negociación en firme de un lote.")
+                        _("Only an Accounting Manager can change the firm "
+                          "negotiation of a lot.")
                     )
         return super().write(vals)
 
@@ -399,9 +399,9 @@ class StockLot(models.Model):
             if len(partners) > 1:
                 raise ValidationError(
                     _(
-                        "El lote '%(lot)s' tiene líneas de compra de distintos "
-                        "proveedores (%(partners)s). Por trazabilidad, un lote "
-                        "solo puede estar asociado a un único proveedor."
+                        "Lot '%(lot)s' has purchase lines from different "
+                        "suppliers (%(partners)s). For traceability, a lot "
+                        "can only be associated with a single supplier."
                     )
                     % {
                         "lot": lot.name,
@@ -514,16 +514,16 @@ class StockLot(models.Model):
             lot.margin = lot.sale_amount - supplier_amount
 
     def _inverse_supplier_price_kg(self):
-        """Editar el precio/kg a mano recalcula el margen equivalente --
-        `mercas_margin` sigue siendo el único campo realmente persistido, el
-        resto se deriva siempre de él (ver `_compute_supplier_fields`), así
-        que escribir aquí simplemente resuelve qué margen produciría el
-        precio introducido y lo guarda en su lugar.
+        """Editing the price/kg by hand recalculates the equivalent margin --
+        `mercas_margin` remains the only field that is actually persisted,
+        everything else is always derived from it (see
+        `_compute_supplier_fields`), so writing here simply works out which
+        margin would produce the entered price and stores that instead.
 
-        Sin importe vendido (`sale_amount = 0`, típico antes de la primera
-        venta) no hay base sobre la que calcular un margen -- se ignora el
-        cambio en silencio y el campo vuelve a su valor calculado (0) al
-        recomputarse."""
+        Without a sold amount (`sale_amount = 0`, typical before the first
+        sale) there is no basis to compute a margin -- the change is
+        silently ignored and the field reverts to its computed value (0)
+        on recompute."""
         for lot in self:
             if not lot.sale_amount or not lot.purchase_kg:
                 continue
@@ -532,14 +532,14 @@ class StockLot(models.Model):
 
     @api.onchange("supplier_price_kg")
     def _onchange_supplier_price_kg(self):
-        """El `inverse` de un campo compute solo se ejecuta al guardar --
-        aquí se repite la misma lógica para que el margen se recalcule en
-        pantalla mientras se edita el precio, sin esperar a guardar."""
+        """The `inverse` of a compute field only runs on save -- here the
+        same logic is repeated so the margin recalculates on screen while
+        the price is being edited, without waiting for save."""
         self._inverse_supplier_price_kg()
 
     def _mercas_invoice_origin_suffix(self):
-        """Texto '<fecha> | <pedido> | <ref.proveedor> | <lote>' para anexar al
-        nombre de la línea principal de un lote."""
+        """Text '<date> | <order> | <supplier ref> | <lot>' to append to the
+        name of a lot's main line."""
         self.ensure_one()
         purchase_line = self.purchase_line_ids.filtered(
             lambda l: l.order_id.state in ("purchase", "done")
@@ -555,14 +555,13 @@ class StockLot(models.Model):
         return " | ".join(parts), purchase_line
 
     def _mercas_sale_breakdown_text(self):
-        """Desglose acumulado, una línea de texto por movimiento de venta
-        validado de este lote: 'DD/MM/YYYY => Pedido => Cantidad uom =>
-        Precio unitario símbolo_moneda'. Siempre acumulado (todas las
-        ventas hasta ahora, no solo las nuevas desde la última factura) --
-        igual que ya son acumulados Kg vendidos/Importe vendido, así que no
-        hace falta ningún tracking nuevo de qué venta ya apareció en una
-        factura anterior. Es solo texto informativo, no afecta a ningún
-        importe."""
+        """Accumulated breakdown, one line of text per validated sale move of
+        this lot: 'DD/MM/YYYY => Order => Quantity uom => Unit price
+        currency_symbol'. Always accumulated (every sale so far, not only
+        the new ones since the last invoice) -- same as Sold Kg/Sold Amount
+        are already accumulated, so no new tracking is needed of which sale
+        already appeared on a previous invoice. Informational text only, it
+        does not affect any amount."""
         self.ensure_one()
         sale_mls = self.stock_move_line_ids.filtered(
             lambda ml: ml.state == "done" and ml.move_id.sale_line_id
@@ -584,14 +583,13 @@ class StockLot(models.Model):
         return "\n".join(lines)
 
     def _mercas_scrap_breakdown_text(self):
-        """Desglose acumulado de las regularizaciones de desecho de este
-        lote, una línea de texto por movimiento: 'DD/MM/YYYY => Cantidad
-        UdM'. Mismo criterio de movimientos que `_compute_scrap_kg`
-        (desechos formales y ajustes de inventario negativos en positivo,
-        ajustes positivos en negativo -- para que la suma cuadre con el
-        neto de la propia línea de desecho). Acumulado, mismo motivo que
-        `_mercas_sale_breakdown_text`: no hace falta ningún tracking de qué
-        regularización ya apareció en una factura anterior."""
+        """Accumulated breakdown of this lot's scrap adjustments, one line of
+        text per move: 'DD/MM/YYYY => Quantity UoM'. Same move criteria as
+        `_compute_scrap_kg` (formal scraps and negative inventory
+        adjustments as positive, positive adjustments as negative -- so the
+        sum matches the net of the scrap line itself). Accumulated, same
+        reason as `_mercas_sale_breakdown_text`: no tracking is needed of
+        which adjustment already appeared on a previous invoice."""
         self.ensure_one()
         loss_mls = self.stock_move_line_ids.filtered(
             lambda ml: ml.state == "done"
@@ -614,10 +612,10 @@ class StockLot(models.Model):
         return "\n".join(lines)
 
     def _mercas_prepare_invoice_lines(self):
-        """Líneas de factura de proveedor para este lote, según régimen.
-        Para el régimen de liquidación por venta, si ya hay anticipos previos
-        posteados, añade una línea de descuento por cada uno (igual que el
-        estándar de Odoo con los anticipos de venta)."""
+        """Supplier invoice lines for this lot, depending on the regime. For
+        the sale-settlement regime, if there are previous posted advances,
+        adds one deduction line per advance (same as the Odoo standard for
+        sale down payments)."""
         self.ensure_one()
         origin_suffix, purchase_line = self._mercas_invoice_origin_suffix()
 
@@ -638,16 +636,16 @@ class StockLot(models.Model):
                     "name": "%s\n%s" % (self.product_id.display_name or "", origin_suffix),
                 }))
             if unreconciled > 0.01:
-                # Solo puede haber importe pendiente de anticipos/liquidación
-                # por venta en la primera factura en firme del lote: a partir
-                # de ahí la negociación queda fijada en firme y ese camino se
-                # bloquea, así que nunca vuelve a hacer falta esta línea.
+                # There can only be a pending amount from sale advances/
+                # settlement on the lot's first firm invoice: from then on
+                # the negotiation is locked as firm and that path is
+                # blocked, so this line is never needed again.
                 lines.append(Command.create({
                     "product_id": self.product_id.id,
                     "quantity": 1,
                     "price_unit": -unreconciled,
                     "lot_id": self.id,
-                    "name": _("(-) Anticipos pendientes de descontar"),
+                    "name": _("(-) Advances pending to deduct"),
                 }))
             return lines
 
@@ -656,7 +654,7 @@ class StockLot(models.Model):
             return []
 
         company = self._mercas_company()
-        label = _("Liquidación") if self.completed else _("Anticipo liquidación (estimado)")
+        label = _("Settlement") if self.completed else _("Settlement advance (estimated)")
         name = "%s - %s\n%s" % (self.product_id.display_name or "", label, origin_suffix)
         if company.liquidation_show_sale_breakdown:
             breakdown = self._mercas_sale_breakdown_text()
@@ -670,15 +668,15 @@ class StockLot(models.Model):
             "name": name,
         })]
 
-        # Modo "desecho aparte": línea informativa a precio 0 con el total
-        # desechado hasta ahora -- dejar explícito en la factura que no se
-        # paga, en vez de diluirlo en el precio/kg de la línea de arriba.
+        # "Scrap separate" mode: informational line at price 0 with the
+        # total scrapped so far -- make it explicit on the invoice that it
+        # isn't paid, instead of diluting it into the price/kg of the line above.
         if (
             company.liquidation_mode == "average_price_scrap_split"
             and self.scrap_kg > 0
         ):
             scrap_name = "%s - %s\n%s" % (
-                self.product_id.display_name or "", _("Desecho"), origin_suffix,
+                self.product_id.display_name or "", _("Scrap"), origin_suffix,
             )
             if company.liquidation_show_sale_breakdown:
                 scrap_breakdown = self._mercas_scrap_breakdown_text()
@@ -707,7 +705,7 @@ class StockLot(models.Model):
                 "quantity": 1,
                 "price_unit": -contribution,
                 "lot_id": self.id,
-                "name": _("(-) Anticipo ya facturado: %(invoice)s del %(date)s") % {
+                "name": _("(-) Advance already invoiced: %(invoice)s on %(date)s") % {
                     "invoice": move.name,
                     "date": format_date(self.env, move.invoice_date) if move.invoice_date else "",
                 },
@@ -718,14 +716,15 @@ class StockLot(models.Model):
         lots = self.filtered(lambda l: l.invoiceable and l.partner_id)
         if not lots:
             raise UserError(
-                _("No hay lotes facturables (completados, con anticipo de "
-                  "venta pendiente, o con recibido pendiente en régimen de "
-                  "pago total) sin facturar y con proveedor asignado.")
+                _("There are no invoiceable lots (completed, with a "
+                  "pending sale advance, or with pending received quantity "
+                  "under the full-payment regime) that are unbilled and "
+                  "have a supplier assigned.")
             )
 
-        # `invoiceable` solo mira facturas posteadas (net_invoiced_kg/amount),
-        # así que un lote con una factura en borrador sigue saliendo como
-        # facturable y volvería a generar líneas duplicadas si se le deja pasar.
+        # `invoiceable` only looks at posted invoices (net_invoiced_kg/amount),
+        # so a lot with a draft invoice still shows up as invoiceable and
+        # would generate duplicate lines again if allowed through.
         with_draft = lots.filtered(
             lambda l: l.supplier_invoice_line_ids.move_id.filtered(
                 lambda m: m.state == "draft"
@@ -733,8 +732,8 @@ class StockLot(models.Model):
         )
         if with_draft:
             raise UserError(
-                _("Los siguientes lotes ya tienen facturas en borrador: %s. "
-                  "Confirma o elimina esas facturas antes de generar otras nuevas.")
+                _("The following lots already have draft invoices: %s. "
+                  "Confirm or delete those invoices before generating new ones.")
                 % ", ".join(with_draft.mapped("name"))
             )
 
@@ -758,12 +757,12 @@ class StockLot(models.Model):
                 "invoice_line_ids": lines,
             })
 
-            # `invoiced` se recalcula al postear (ver account_move.py): en régimen
-            # de pago total, cuando lo facturado cubre lo recibido; en régimen de
-            # liquidación por venta, solo cuando además el lote está completado
-            # (un anticipo con stock pendiente nunca cierra el lote por sí solo).
-            # El coste de las líneas de venta solo se sincroniza en la
-            # liquidación final: en un anticipo el precio es una estimación.
+            # `invoiced` is recalculated on posting (see account_move.py): under
+            # the full-payment regime, when invoiced covers received; under
+            # the sale-settlement regime, only when the lot is also completed
+            # (an advance with pending stock never closes the lot on its own).
+            # The cost of sale lines is only synced on the final settlement:
+            # on an advance the price is an estimate.
             for lot in partner_lots.filtered(
                 lambda l: not l.mercas_firm_negotiation and l.completed
             ):
@@ -794,7 +793,7 @@ class StockLot(models.Model):
         }
 
     def _sync_sale_lines_cost(self):
-        """Actualiza purchase_price en las líneas de venta si sale_margin está instalado."""
+        """Updates purchase_price on sale lines if sale_margin is installed."""
         if "purchase_price" not in self.env["sale.order.line"]._fields:
             return
         for lot in self:

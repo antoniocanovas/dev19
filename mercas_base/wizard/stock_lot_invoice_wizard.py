@@ -6,17 +6,17 @@ from odoo.exceptions import UserError
 
 class StockLotInvoiceWizard(models.TransientModel):
     _name = "stock.lot.invoice.wizard"
-    _description = "Facturación de lotes completados"
+    _description = "Invoicing of Completed Lots"
 
     partner_id = fields.Many2one(
         comodel_name="res.partner",
-        string="Proveedor",
+        string="Supplier",
     )
-    date_to = fields.Date(string="Fecha hasta")
+    date_to = fields.Date(string="Date To")
     show_all = fields.Boolean(
-        string="Mostrar todos",
-        help="Muestra también los lotes no facturables todavía, "
-             "aunque no se pueden seleccionar para facturar.",
+        string="Show All",
+        help="Also shows lots that aren't invoiceable yet, although they "
+             "can't be selected for invoicing.",
     )
     currency_id = fields.Many2one(
         comodel_name="res.currency",
@@ -25,13 +25,13 @@ class StockLotInvoiceWizard(models.TransientModel):
     line_ids = fields.One2many(
         comodel_name="stock.lot.invoice.wizard.line",
         inverse_name="wizard_id",
-        string="Lotes",
+        string="Lots",
     )
     amount_total = fields.Monetary(
-        string="Importe total",
+        string="Total Amount",
         compute="_compute_amount_total",
         currency_field="currency_id",
-        help="Importe de los lotes actualmente seleccionados en la lista.",
+        help="Amount of the lots currently selected in the list.",
     )
 
     @api.depends("line_ids.selected", "line_ids.amount_to_invoice")
@@ -69,18 +69,18 @@ class StockLotInvoiceWizard(models.TransientModel):
         return [Command.clear()] + [
             Command.create({
                 "lot_id": lot.id,
-                # Los anticipos (lotes con stock pendiente en liquidación por
-                # venta) no se preseleccionan: son una acción explícita, no
-                # se incluyen por defecto en "Liquidar".
+                # Advances (lots with pending stock under sale settlement)
+                # aren't preselected: they're an explicit action, not
+                # included by default in "Settle".
                 "selected": lot.invoiceable and (lot.mercas_firm_negotiation or lot.completed),
             })
             for lot in lots
         ]
 
     def action_liquidar(self):
-        """Sobre los lotes seleccionados: liquidación por venta ya completada
-        (liquidación final) y negociación en firme con recibido pendiente.
-        Deja fuera los anticipos, que requieren selección explícita."""
+        """On the selected lots: sale settlement already completed (final
+        settlement) and firm negotiation with pending received quantity.
+        Leaves out advances, which require explicit selection."""
         lots = self.line_ids.filtered(
             lambda l: l.selected and l.invoiceable
             and (l.mercas_firm_negotiation or l.completed)
@@ -88,27 +88,27 @@ class StockLotInvoiceWizard(models.TransientModel):
         return self._invoice_lots(lots)
 
     def action_invoice_advance(self):
-        """Adelanto de liquidación por venta, solo sobre lotes seleccionados."""
+        """Sale settlement advance, on selected lots only."""
         selected = self.line_ids.filtered("selected")
         wrong_mode = selected.filtered("mercas_firm_negotiation")
         if wrong_mode:
             raise UserError(
-                _("Los siguientes lotes están en negociación en firme: %s. "
-                  "Usa el botón 'Factura firme' para facturarlos.")
+                _("The following lots are under firm negotiation: %s. "
+                  "Use the 'Firm Invoice' button to invoice them.")
                 % ", ".join(wrong_mode.mapped("lot_id.name"))
             )
         return self._invoice_lots(selected.filtered("invoiceable").lot_id)
 
     def action_invoice_firm(self):
-        """Factura firme (total de lo recibido pendiente), solo sobre lotes
-        seleccionados marcados con negociación en firme."""
+        """Firm invoice (total of pending received quantity), on selected
+        lots marked with firm negotiation only."""
         selected = self.line_ids.filtered("selected")
         wrong_mode = selected.filtered(lambda l: not l.mercas_firm_negotiation)
         if wrong_mode:
             raise UserError(
-                _("Los siguientes lotes no tienen activada la negociación en "
-                  "firme: %s. Actívala en el lote (requiere Gestor de "
-                  "contabilidad) antes de usar este botón.")
+                _("The following lots don't have firm negotiation enabled: "
+                  "%s. Enable it on the lot (requires an Accounting "
+                  "Manager) before using this button.")
                 % ", ".join(wrong_mode.mapped("lot_id.name"))
             )
         return self._invoice_lots(selected.filtered("invoiceable").lot_id)
@@ -116,13 +116,13 @@ class StockLotInvoiceWizard(models.TransientModel):
     def _invoice_lots(self, lots):
         self.ensure_one()
         if not lots:
-            raise UserError(_("No hay lotes para facturar."))
+            raise UserError(_("There are no lots to invoice."))
         return lots.action_create_supplier_invoices()
 
 
 class StockLotInvoiceWizardLine(models.TransientModel):
     _name = "stock.lot.invoice.wizard.line"
-    _description = "Línea de facturación de lotes"
+    _description = "Lot Invoicing Line"
 
     wizard_id = fields.Many2one(
         comodel_name="stock.lot.invoice.wizard",
@@ -130,71 +130,71 @@ class StockLotInvoiceWizardLine(models.TransientModel):
         ondelete="cascade",
     )
     selected = fields.Boolean(
-        string="Seleccionado",
+        string="Selected",
         default=True,
-        help="Solo se puede editar si se ha vendido/desechado parte del "
-        "material (liquidación) o el lote está marcado como facturación "
-        "firme con kg pendientes de facturar.",
+        help="Can only be edited if part of the material has been "
+        "sold/scrapped (settlement) or the lot is marked as firm invoicing "
+        "with pending kg to invoice.",
     )
     lot_id = fields.Many2one(
-        comodel_name="stock.lot", string="Lote", required=True, readonly=True
+        comodel_name="stock.lot", string="Lot", required=True, readonly=True
     )
     create_date = fields.Date(
-        string="Fecha creación", compute="_compute_create_date", readonly=True
+        string="Creation Date", compute="_compute_create_date", readonly=True
     )
     ref = fields.Char(related="lot_id.ref", readonly=True)
     company_id = fields.Many2one(
-        related="lot_id.company_id", string="Compañía", readonly=True
+        related="lot_id.company_id", string="Company", readonly=True
     )
     partner_ids = fields.Many2many(
         related="lot_id.partner_ids", string="Transfer to", readonly=True
     )
     product_qty = fields.Float(
-        related="lot_id.product_qty", string="Cantidad", readonly=True
+        related="lot_id.product_qty", string="Quantity", readonly=True
     )
     completed = fields.Boolean(related="lot_id.completed", readonly=True)
     partner_id = fields.Many2one(
-        related="lot_id.partner_id", string="Proveedor", readonly=True
+        related="lot_id.partner_id", string="Supplier", readonly=True
     )
     product_id = fields.Many2one(
-        related="lot_id.product_id", string="Producto", readonly=True
+        related="lot_id.product_id", string="Product", readonly=True
     )
     mercas_firm_negotiation = fields.Boolean(
         related="lot_id.mercas_firm_negotiation",
-        string="Facturación firme",
+        string="Firm Negotiation",
         readonly=True,
     )
     invoiceable = fields.Boolean(related="lot_id.invoiceable", readonly=True)
     purchase_kg = fields.Float(
-        related="lot_id.purchase_kg", string="Kg comprados", readonly=True
+        related="lot_id.purchase_kg", string="Purchased Kg", readonly=True
     )
     received_kg = fields.Float(
-        related="lot_id.received_kg", string="Kg recibidos", readonly=True
+        related="lot_id.received_kg", string="Received Kg", readonly=True
     )
     net_invoiced_kg = fields.Float(
-        related="lot_id.net_invoiced_kg", string="Kg facturados", readonly=True
+        related="lot_id.net_invoiced_kg", string="Invoiced Kg", readonly=True
     )
-    sale_kg = fields.Float(related="lot_id.sale_kg", string="Kg vendidos", readonly=True)
+    sale_kg = fields.Float(related="lot_id.sale_kg", string="Sold Kg", readonly=True)
     scrap_kg = fields.Float(
-        related="lot_id.scrap_kg", string="Kg desechados", readonly=True
+        related="lot_id.scrap_kg", string="Scrapped Kg", readonly=True
     )
     sale_amount = fields.Float(
-        related="lot_id.sale_amount", string="Importe vendido", readonly=True
+        related="lot_id.sale_amount", string="Sold Amount", readonly=True
     )
     mercas_margin = fields.Float(
-        related="lot_id.mercas_margin", string="Margen (%)", readonly=False
+        related="lot_id.mercas_margin", string="Margin (%)", readonly=False
     )
     supplier_price_kg = fields.Float(
-        related="lot_id.supplier_price_kg", string="Precio/kg", readonly=False
+        related="lot_id.supplier_price_kg", string="Price/Kg", readonly=False
     )
     supplier_amount = fields.Float(
-        related="lot_id.supplier_amount", string="Importe", readonly=False
+        related="lot_id.supplier_amount", string="Amount", readonly=False
     )
     net_invoiced_amount = fields.Float(
-        related="lot_id.net_invoiced_amount", string="Importe facturado", readonly=True
+        related="lot_id.net_invoiced_amount", string="Invoiced Amount", readonly=True
     )
     amount_to_invoice = fields.Float(
-        string="Importe a facturar",
+        string="Amount to Invoice",
         compute="_compute_amount_to_invoice",
     )
 
@@ -205,16 +205,16 @@ class StockLotInvoiceWizardLine(models.TransientModel):
 
     @api.onchange("supplier_price_kg")
     def _onchange_supplier_price_kg(self):
-        """`supplier_price_kg`/`mercas_margin`/`supplier_amount` son campos
-        `related` aquí -- escribir en uno propaga a `lot_id` en memoria,
-        pero el salto de vuelta (`lot_id` -> el related `supplier_amount`
-        de esta misma línea) no es fiable dentro del mismo onchange, así
-        que se recalculan explícitamente los tres en la propia línea, en
-        vez de depender de ese salto entre modelos.
+        """`supplier_price_kg`/`mercas_margin`/`supplier_amount` are
+        `related` fields here -- writing to one propagates to `lot_id` in
+        memory, but the round trip back (`lot_id` -> this same line's
+        related `supplier_amount`) isn't reliable within the same onchange,
+        so all three are explicitly recalculated on the line itself,
+        instead of relying on that round trip between models.
 
-        Sin importe vendido (`sale_amount = 0`, típico antes de la primera
-        venta) no hay base sobre la que calcular un margen -- se ignora el
-        cambio en silencio."""
+        Without a sold amount (`sale_amount = 0`, typical before the first
+        sale) there is no basis to compute a margin -- the change is
+        silently ignored."""
         for line in self:
             if not line.sale_amount or not line.purchase_kg:
                 continue
@@ -224,9 +224,10 @@ class StockLotInvoiceWizardLine(models.TransientModel):
 
     @api.onchange("mercas_margin")
     def _onchange_mercas_margin(self):
-        """Simétrico al de arriba: recalcula precio/kg e importe en la
-        propia línea al editar el margen a mano, por el mismo motivo (no
-        depender del salto related a través de `lot_id` y de vuelta)."""
+        """Symmetric to the one above: recalculates price/kg and amount on
+        the line itself when the margin is edited by hand, for the same
+        reason (not relying on the related round trip through `lot_id`
+        and back)."""
         for line in self:
             supplier_amount = line.sale_amount * (1.0 - line.mercas_margin / 100.0)
             line.supplier_amount = supplier_amount

@@ -1,4 +1,4 @@
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 MERCAS_LINES_BUS_NOTIFICATION_TYPE = "mercas_sale_order_lines_updated"
 
@@ -7,21 +7,21 @@ class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
     box_qty = fields.Integer(
-        string="Cajas",
+        string="Boxes",
         compute="_compute_box_qty",
         store=True,
         readonly=False,
     )
     box_sale_line_id = fields.Many2one(
         comodel_name="sale.order.line",
-        string="Línea de producto",
+        string="Product Line",
         ondelete="cascade",
         copy=False,
         index=True,
     )
     box_product_id = fields.Many2one(
         comodel_name="product.product",
-        string="Caja",
+        string="Box",
         compute="_compute_box_product_id",
         store=True,
         readonly=False,
@@ -30,15 +30,15 @@ class SaleOrderLine(models.Model):
     mercas_product_is_box = fields.Boolean(related="product_id.is_box")
     mercas_has_assigned_lot = fields.Boolean(
         compute="_compute_mercas_has_assigned_lot",
-        help="Tiene al menos una línea de albarán (validada o pendiente) con "
-             "lote asignado: se puede corregir el lote, antes o después de "
-             "servir el pedido.",
+        help="Has at least one delivery move line (done or pending) with a "
+             "lot assigned: the lot can be corrected, before or after the "
+             "order is delivered.",
     )
     product_qty_datetime = fields.Datetime(
-        string="Cantidad actualizada el",
+        string="Quantity Updated On",
         copy=False,
-        help="Fecha y hora en que se creó la línea (con la cantidad inicial) o, si "
-             "es posterior, en que se modificó la cantidad por última vez.",
+        help="Date and time the line was created (with its initial "
+             "quantity) or, if later, when the quantity was last modified.",
     )
 
     @api.depends("move_ids.move_line_ids.state", "move_ids.move_line_ids.lot_id")
@@ -54,7 +54,7 @@ class SaleOrderLine(models.Model):
         self.ensure_one()
         return {
             "type": "ir.actions.act_window",
-            "name": "Corregir lote de venta",
+            "name": _("Correct Sale Lot"),
             "res_model": "stock.lot.change.wizard",
             "view_mode": "form",
             "target": "new",
@@ -189,9 +189,9 @@ class SaleOrderLine(models.Model):
         return result
 
     def _mercas_notify_lines_changed(self, orders):
-        """Avisa por el bus a quien tenga abierto alguno de estos pedidos de
-        que sus líneas han cambiado, para que pueda ofrecer recargar la vista
-        (ver static/src/js/sale_order_lines_bus_notification.js)."""
+        """Notify over the bus anyone who has one of these orders open that
+        its lines have changed, so it can offer to reload the view (see
+        static/src/js/sale_order_lines_bus_notification.js)."""
         for order in orders:
             self.env["bus.bus"]._sendone(
                 self._mercas_lines_bus_channel(order.id),

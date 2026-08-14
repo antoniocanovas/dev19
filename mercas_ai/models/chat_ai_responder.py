@@ -21,7 +21,7 @@ class ChatAiResponder(models.AbstractModel):
 
     Reuses mercas.mcp.domain.chat.mixin's classification/dispatch methods
     directly (they don't touch any wizard-only field), so there is exactly
-    one place that knows how to answer a ventas/compras/facturación/stock
+    one place that knows how to answer a sales/purchases/invoicing/stock
     question — the wizard, the debug wizard and Discuss all share it.
     """
 
@@ -37,9 +37,9 @@ class ChatAiResponder(models.AbstractModel):
             # guard in domain_chat_mixin.py's action_send).
             _logger.warning("mercas_ai: no active AI provider configured")
             return self.env._(
-                "No hay ningún proveedor de IA activo configurado. Pide a un "
-                "administrador que configure uno en MCP Gateway → "
-                "Configuración → Proveedores."
+                "There is no active AI provider configured. Ask an "
+                "administrator to configure one in MCP Gateway → "
+                "Configuration → Providers."
             )
         except Exception:
             _logger.exception("mercas_ai: domain classification failed")
@@ -48,7 +48,7 @@ class ChatAiResponder(models.AbstractModel):
         domain_key = (parsed.get("domain") or "otro").strip().lower()
         tool_name = _DOMAIN_TOOL.get(domain_key)
         if not tool_name:
-            return _OUT_OF_SCOPE_REPLY
+            return self.env._(_OUT_OF_SCOPE_REPLY)
 
         params = mixin._build_tool_params(domain_key, parsed)
         return mixin._run_report(tool_name, domain_key, params)

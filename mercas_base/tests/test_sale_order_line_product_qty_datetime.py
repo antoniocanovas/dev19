@@ -34,7 +34,7 @@ class TestSaleOrderLineProductQtyDatetime(TransactionCase):
             "order_line": [
                 Command.create({
                     "display_type": "line_section",
-                    "name": "Sección",
+                    "name": "Section",
                 }),
             ],
         })

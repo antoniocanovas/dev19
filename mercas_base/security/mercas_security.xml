@@ -2,11 +2,11 @@
 <odoo>
 
     <record id="group_correct_lots" model="res.groups">
-        <field name="name">Mercas: Corregir lotes</field>
-        <field name="comment">Puede corregir el lote de una línea de venta, servida o pendiente de
-            servir (línea/s de albarán, validadas o no, factura de cliente en borrador y campo
-            lote de la línea de venta). No permite el cambio si alguno de los lotes implicados ya
-            tiene facturación al proveedor registrada.</field>
+        <field name="name">Mercas: Correct Lots</field>
+        <field name="comment">Can correct the lot of a sale order line, delivered or pending
+            delivery (delivery move line(s), validated or not, draft customer invoice, and the
+            sale order line's lot field). Does not allow the change if any of the lots involved
+            already has supplier invoicing recorded.</field>
     </record>
 
 </odoo>

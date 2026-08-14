@@ -20,7 +20,7 @@
                     icon="fa-cubes"
                     invisible="not mercas_has_box_location"
                 >
-                    <field name="mercas_box_qty" widget="statinfo" string="Cajas"/>
+                    <field name="mercas_box_qty" widget="statinfo" string="Boxes"/>
                 </button>
                 <button
                     name="action_mercas_open_box_delivery"
@@ -29,7 +29,7 @@
                     icon="fa-truck"
                 >
                     <div class="o_stat_info">
-                        <span class="o_stat_text">Entregar cajas</span>
+                        <span class="o_stat_text">Deliver Boxes</span>
                     </div>
                 </button>
                 <button
@@ -39,7 +39,7 @@
                     icon="fa-undo"
                 >
                     <div class="o_stat_info">
-                        <span class="o_stat_text">Devolver cajas</span>
+                        <span class="o_stat_text">Return Boxes</span>
                     </div>
                 </button>
             </div>

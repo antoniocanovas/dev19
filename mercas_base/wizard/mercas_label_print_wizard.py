@@ -4,26 +4,26 @@ from odoo.exceptions import UserError
 
 class MercasLabelPrintWizard(models.TransientModel):
     _name = "mercas.label.print.wizard"
-    _description = "Imprimir etiquetas de producto por caja"
+    _description = "Print Product Labels by Box"
 
-    purchase_id = fields.Many2one(comodel_name="purchase.order", string="Pedido de compra")
-    sale_id = fields.Many2one(comodel_name="sale.order", string="Pedido de venta")
+    purchase_id = fields.Many2one(comodel_name="purchase.order", string="Purchase Order")
+    sale_id = fields.Many2one(comodel_name="sale.order", string="Sale Order")
     print_format = fields.Selection(
         [
             ("dymo", "Dymo"),
-            ("2x7xprice", "2 x 7 con precio"),
-            ("4x7xprice", "4 x 7 con precio"),
+            ("2x7xprice", "2 x 7 with price"),
+            ("4x7xprice", "4 x 7 with price"),
             ("4x12", "4 x 12"),
-            ("4x12xprice", "4 x 12 con precio"),
+            ("4x12xprice", "4 x 12 with price"),
         ],
-        string="Formato",
+        string="Format",
         default="2x7xprice",
         required=True,
     )
     line_ids = fields.One2many(
         comodel_name="mercas.label.print.wizard.line",
         inverse_name="wizard_id",
-        string="Etiquetas",
+        string="Labels",
     )
 
     @api.model
@@ -60,7 +60,7 @@ class MercasLabelPrintWizard(models.TransientModel):
         printable = self.line_ids.filtered(lambda l: l.product_id and l.quantity > 0)
         if not printable:
             raise UserError(
-                _("Indica una cantidad de etiquetas mayor que cero en al menos una línea.")
+                _("Enter a label quantity greater than zero on at least one line.")
             )
 
         quantity_by_product = {}
@@ -82,12 +82,12 @@ class MercasLabelPrintWizard(models.TransientModel):
 
 class MercasLabelPrintWizardLine(models.TransientModel):
     _name = "mercas.label.print.wizard.line"
-    _description = "Línea de impresión de etiquetas"
+    _description = "Label Print Line"
 
     wizard_id = fields.Many2one(
         comodel_name="mercas.label.print.wizard",
         required=True,
         ondelete="cascade",
     )
-    product_id = fields.Many2one(comodel_name="product.product", string="Producto", readonly=True)
-    quantity = fields.Integer(string="Etiquetas", default=1)
+    product_id = fields.Many2one(comodel_name="product.product", string="Product", readonly=True)
+    quantity = fields.Integer(string="Labels", default=1)

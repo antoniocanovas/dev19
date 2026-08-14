@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_users_form_inherit_single_session" model="ir.ui.view">
+        <field name="name">res.users.form.inherit.user.single.session</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='page_security']/div[@name='auth']" position="after">
+                <div name="single_session" class="d-flex mt-3" groups="base.group_system">
+                    <div class="col-7 col-sm-6 col-lg-3 d-flex flex-column">
+                        <span class="o_form_label">
+                            Sesión única
+                        </span>
+                        <span class="text-muted">
+                            Excepción a la política de sesión única.
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <field name="allow_multi_session" class="me-2"/>
+                        <label for="allow_multi_session" string="Permitir varias sesiones para este usuario"/>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

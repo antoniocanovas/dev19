@@ -6,7 +6,7 @@ _CUSTOM_INSTRUCTIONS_PARAM = 'mercas_ai.custom_instructions'
 
 
 class ResConfigSettings(models.TransientModel):
-    """Two-tier prompt configuration for 'Chat IA':
+    """Two-tier prompt configuration for 'AI Chat':
 
     - mercas_ai_base_instructions: fixed business glossary owned by the
       module (readonly in the UI, sourced from prompts.py) -- not meant to be
@@ -22,11 +22,11 @@ class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     mercas_ai_base_instructions = fields.Text(
-        string='Instrucciones generales (fijas)',
+        string='General Instructions (fixed)',
         default=BASE_BUSINESS_INSTRUCTIONS,
         readonly=True,
     )
-    mercas_ai_custom_instructions = fields.Text(string='Instrucciones personalizadas')
+    mercas_ai_custom_instructions = fields.Text(string='Custom Instructions')
 
     @api.model
     def get_values(self):

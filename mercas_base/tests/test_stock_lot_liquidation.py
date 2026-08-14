@@ -5,24 +5,24 @@ from odoo.tests import TransactionCase, tagged
 
 @tagged("post_install", "-at_install")
 class TestStockLotLiquidation(TransactionCase):
-    """Escenario:
+    """Scenario:
 
-    Compra estimada de 2000 kg a 1 $/kg. Se venden 1000 kg a 2 $/kg y se
-    desechan 200 kg (margen del 10%). Con 800 kg todavía en stock se factura
-    un anticipo al proveedor sobre lo vendido + desechado hasta ese momento.
-    Se vende el resto (800 kg a 1.4 $/kg), el lote queda completado y se
-    liquida el total, descontando el anticipo ya facturado.
+    Estimated purchase of 2000 kg at 1 $/kg. 1000 kg are sold at 2 $/kg and
+    200 kg are scrapped (10% margin). With 800 kg still in stock, an advance
+    is invoiced to the supplier on what was sold + scrapped so far. The rest
+    is sold (800 kg at 1.4 $/kg), the lot is completed, and the total is
+    settled, deducting the advance already invoiced.
     """
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.company = cls.env.company
-        cls.supplier = cls.env["res.partner"].create({"name": "Proveedor Liquidación"})
-        cls.customer = cls.env["res.partner"].create({"name": "Cliente Liquidación"})
+        cls.supplier = cls.env["res.partner"].create({"name": "Settlement Supplier"})
+        cls.customer = cls.env["res.partner"].create({"name": "Settlement Customer"})
         cls.uom_kg = cls.env.ref("uom.product_uom_kgm")
         cls.product = cls.env["product.product"].create({
-            "name": "Producto Liquidación",
+            "name": "Settlement Product",
             "type": "consu",
             "is_storable": True,
             "tracking": "lot",
@@ -52,7 +52,7 @@ class TestStockLotLiquidation(TransactionCase):
         cls.purchase = purchase
 
         cls.manager_user = cls.env["res.users"].create({
-            "name": "Gestor contabilidad",
+            "name": "Accounting Manager",
             "login": "mercas_test_account_manager",
             "email": "mercas_test_account_manager@example.com",
             "group_ids": [
@@ -62,7 +62,7 @@ class TestStockLotLiquidation(TransactionCase):
             ],
         })
         cls.regular_user = cls.env["res.users"].create({
-            "name": "Usuario sin permiso",
+            "name": "User Without Permission",
             "login": "mercas_test_regular_user",
             "email": "mercas_test_regular_user@example.com",
             "group_ids": [
@@ -124,8 +124,8 @@ class TestStockLotLiquidation(TransactionCase):
         advance_invoice.action_post()
         self.assertAlmostEqual(lot.net_invoiced_amount, 1800.0, places=2)
         self.assertFalse(lot.invoiced)
-        # Lo resuelto hasta ahora (1000 vendido + 200 desechado) ya está
-        # cubierto por el anticipo: no hay nada más que facturar todavía.
+        # What's resolved so far (1000 sold + 200 scrapped) is already
+        # covered by the advance: there's nothing else to invoice yet.
         self.assertFalse(lot.invoiceable)
 
         self._sell(800.0, 1.4)
@@ -159,10 +159,10 @@ class TestStockLotLiquidation(TransactionCase):
         self.assertAlmostEqual(total_paid, 2808.0, places=2)
 
     def test_liquidation_advance_amount_independent_of_scrap(self):
-        """El importe de un anticipo depende solo de lo vendido (neto de
-        margen), nunca del desecho: sobre el mismo lote y las mismas ventas,
-        aumentar el desecho no debe cambiar el importe bruto, solo repartirlo
-        en un precio/kg menor."""
+        """An advance's amount depends only on what was sold (net of
+        margin), never on scrap: on the same lot and the same sales,
+        increasing scrap must not change the gross amount, only spread it
+        over a lower price/kg."""
         lot = self.lot
         self._sell(1000.0, 2.0)
 
@@ -180,9 +180,8 @@ class TestStockLotLiquidation(TransactionCase):
         self.assertLess(price_2, price_1)
 
     def test_firm_negotiation_access_control(self):
-        """Solo un Gestor de contabilidad puede cambiar la negociación en
-        firme, y nadie puede hacerlo una vez el lote tiene facturación en
-        firme registrada."""
+        """Only an Accounting Manager can change the firm negotiation, and
+        nobody can do it once the lot has firm invoicing recorded."""
         lot = self.lot
         with self.assertRaises(UserError):
             lot.with_user(self.regular_user).write({"mercas_firm_negotiation": True})
@@ -194,11 +193,11 @@ class TestStockLotLiquidation(TransactionCase):
         self.assertFalse(lot.mercas_firm_negotiation)
 
     def test_firm_negotiation_after_advance_deducts_prior_settlement(self):
-        """Se puede pasar a negociación en firme aunque el lote ya tenga un
-        anticipo de liquidación por venta facturado: la primera factura firme
-        descuenta ese anticipo con una línea de descuento, sin tocar el
-        precio de compra de la línea principal. Una vez hay facturación en
-        firme, ya no se puede volver a liquidación por venta."""
+        """It's possible to switch to firm negotiation even if the lot
+        already has a sale-settlement advance invoiced: the first firm
+        invoice deducts that advance with a deduction line, without
+        touching the main line's purchase price. Once there is firm
+        invoicing, it's no longer possible to go back to sale settlement."""
         lot = self.lot
         self._sell(1000.0, 2.0)
 
@@ -236,8 +235,8 @@ class TestStockLotLiquidation(TransactionCase):
             lot.with_user(self.manager_user).write({"mercas_firm_negotiation": False})
 
     def test_wizard_blocks_wrong_button_for_mode(self):
-        """El wizard rechaza facturar un lote en negociación en firme con el
-        botón de adelanto, y viceversa."""
+        """The wizard rejects invoicing a lot under firm negotiation with
+        the advance button, and vice versa."""
         lot = self.lot
         lot.with_user(self.manager_user).write({"mercas_firm_negotiation": True})
 

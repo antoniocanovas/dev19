@@ -6,33 +6,34 @@ class ResPartner(models.Model):
     _inherit = "res.partner"
 
     mercas_margin = fields.Float(
-        string="Mercas margin (%)",
+        string="Merca Margin (%)",
         digits=(10, 2),
         help="Partner mercas margin used when not null.",
     )
     mercas_firm_negotiation = fields.Boolean(
-        string="Facturación firme",
+        string="Firm Negotiation",
         help=(
-            "Valor por defecto del campo 'Facturación firme' en las nuevas "
-            "líneas de pedido de compra a este proveedor. Se puede cambiar "
-            "manualmente en cada línea."
+            "Default value of the 'Firm Negotiation' field on new purchase "
+            "order lines for this supplier. It can be changed manually on "
+            "each line."
         ),
     )
     mercas_box_qty = fields.Float(
-        string="Cajas",
+        string="Boxes",
         compute="_compute_mercas_box_qty",
         help=(
-            "Cantidad de cajas (productos marcados como caja/envase) presentes "
-            "en las ubicaciones propias de cliente y proveedor de este contacto."
+            "Number of boxes (products marked as box/container) present in "
+            "this contact's own customer and supplier locations."
         ),
     )
     mercas_has_box_location = fields.Boolean(
-        string="Tiene ubicación de cajas",
+        string="Has Box Location",
         compute="_compute_mercas_box_qty",
         help=(
-            "El contacto tiene ubicación propia de cliente o proveedor y hay "
-            "algún producto marcado como caja/envase, aunque ahora mismo no "
-            "haya existencias. Controla la visibilidad del botón de cajas."
+            "The contact has its own customer or supplier location and "
+            "there is at least one product marked as box/container, even if "
+            "there is no stock right now. Controls the visibility of the "
+            "boxes button."
         ),
     )
 
@@ -98,7 +99,7 @@ class ResPartner(models.Model):
         domain = self._mercas_box_quants_domain(self.env.company) or [("id", "=", 0)]
         return {
             "type": "ir.actions.act_window",
-            "name": _("Resumen de cajas"),
+            "name": _("Box Summary"),
             "res_model": "stock.quant",
             "view_mode": "list",
             "domain": domain,
@@ -111,7 +112,7 @@ class ResPartner(models.Model):
         button on a purchase order but without a specific origin purchase."""
         self.ensure_one()
         if not self.env["product.template"]._mercas_any_box_product_exists():
-            raise UserError(_("No hay ningún producto marcado como caja/envase."))
+            raise UserError(_("There is no product marked as a box/container."))
         new_so = self.env["sale.order"].create({"partner_id": self.id})
         return {
             "type": "ir.actions.act_window",
@@ -124,11 +125,11 @@ class ResPartner(models.Model):
     def action_mercas_open_box_return(self):
         """Open a new purchase order to receive boxes back from this partner
         (acting as our customer for this box exchange), same as the
-        "Devolución cajas" button on a sale order but without a specific
+        "Return Boxes" button on a sale order but without a specific
         origin sale."""
         self.ensure_one()
         if not self.env["product.template"]._mercas_any_box_product_exists():
-            raise UserError(_("No hay ningún producto marcado como caja/envase."))
+            raise UserError(_("There is no product marked as a box/container."))
         new_po = self.env["purchase.order"].create({"partner_id": self.id})
         return {
             "type": "ir.actions.act_window",
