@@ -166,17 +166,17 @@ class StockLotInvoiceWizardLine(models.TransientModel):
     )
     invoiceable = fields.Boolean(related="lot_id.invoiceable", readonly=True)
     purchase_kg = fields.Float(
-        related="lot_id.purchase_kg", string="Purchased Kg", readonly=True
+        related="lot_id.purchase_kg", string="Purchased", readonly=True
     )
     received_kg = fields.Float(
-        related="lot_id.received_kg", string="Received Kg", readonly=True
+        related="lot_id.received_kg", string="Received", readonly=True
     )
     net_invoiced_kg = fields.Float(
-        related="lot_id.net_invoiced_kg", string="Invoiced Kg", readonly=True
+        related="lot_id.net_invoiced_kg", string="Net Invoiced", readonly=True
     )
-    sale_kg = fields.Float(related="lot_id.sale_kg", string="Sold Kg", readonly=True)
+    sale_kg = fields.Float(related="lot_id.sale_kg", string="Sold", readonly=True)
     scrap_kg = fields.Float(
-        related="lot_id.scrap_kg", string="Scrapped Kg", readonly=True
+        related="lot_id.scrap_kg", string="Scrapped", readonly=True
     )
     sale_amount = fields.Float(
         related="lot_id.sale_amount", string="Sold Amount", readonly=True

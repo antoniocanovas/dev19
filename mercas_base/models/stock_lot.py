@@ -56,12 +56,12 @@ class StockLot(models.Model):
     # ── Settlement ─────────────────────────────────────────────────────────────
 
     purchase_kg = fields.Float(
-        string="Purchased Kg",
+        string="Purchased",
         compute="_compute_purchase_kg",
         digits=(16, 3),
     )
     sale_kg = fields.Float(
-        string="Sold Kg",
+        string="Sold",
         compute="_compute_sale_fields",
         digits=(16, 3),
     )
@@ -71,7 +71,7 @@ class StockLot(models.Model):
         digits=(16, 2),
     )
     scrap_kg = fields.Float(
-        string="Scrapped Kg",
+        string="Scrapped",
         compute="_compute_scrap_kg",
         digits=(16, 3),
     )
@@ -96,14 +96,14 @@ class StockLot(models.Model):
         compute="_compute_can_edit_firm_negotiation",
     )
     received_kg = fields.Float(
-        string="Received Kg",
+        string="Received",
         compute="_compute_received_kg",
         store=True,
         digits=(16, 3),
         help="Kg physically received from the supplier (validated incoming transfers).",
     )
     net_invoiced_kg = fields.Float(
-        string="Net Invoiced Kg",
+        string="Net Invoiced",
         compute="_compute_net_invoiced_kg",
         store=True,
         digits=(16, 3),

@@ -195,39 +195,40 @@ msgstr "Facturación firme"
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__purchase_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Purchased Kg"
-msgstr "Kg comprados"
+msgid "Purchased"
+msgstr "Comprado"
 
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__received_kg
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__received_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Received Kg"
-msgstr "Kg recibidos"
+msgid "Received"
+msgstr "Recibido"
 
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__net_invoiced_kg
+#: model:ir.model.fields,field_description:mercas_base.field_stock_lot__net_invoiced_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Invoiced Kg"
-msgstr "Kg facturados"
+msgid "Net Invoiced"
+msgstr "Facturados"
 
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__sale_kg
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__sale_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Sold Kg"
-msgstr "Kg vendidos"
+msgid "Sold"
+msgstr "Vendido"
 
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__scrap_kg
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__scrap_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Scrapped Kg"
-msgstr "Kg desechados"
+msgid "Scrapped"
+msgstr "Desechado"
 
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__sale_amount
@@ -673,11 +674,6 @@ msgstr "Se paga al proveedor la totalidad de lo recibido de este lote, con indep
 #: model:ir.model.fields,field_help:mercas_base.field_stock_lot__received_kg
 msgid "Kg physically received from the supplier (validated incoming transfers)."
 msgstr "Kg recibidos físicamente del proveedor (albaranes de entrada validados)."
-
-#. module: mercas_base
-#: model:ir.model.fields,field_description:mercas_base.field_stock_lot__net_invoiced_kg
-msgid "Net Invoiced Kg"
-msgstr "Kg facturados (neto)"
 
 #. module: mercas_base
 #: model:ir.model.fields,field_help:mercas_base.field_stock_lot__net_invoiced_kg

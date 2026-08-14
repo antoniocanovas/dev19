@@ -151,14 +151,14 @@
             </xpath>
             <xpath expr="//list/field[last()]" position="after">
                 <field name="completed" optional="show"/>
-                <field name="sale_kg" optional="show" sum="Sold Kg"/>
-                <field name="purchase_kg" optional="show" sum="Purchased Kg"/>
-                <field name="received_kg" optional="hide" sum="Received Kg"/>
-                <field name="scrap_kg" optional="show" sum="Scrapped Kg"/>
+                <field name="sale_kg" optional="show" sum="Sold"/>
+                <field name="purchase_kg" optional="show" sum="Purchased"/>
+                <field name="received_kg" optional="hide" sum="Received"/>
+                <field name="scrap_kg" optional="show" sum="Scrapped"/>
                 <field name="sale_amount" optional="show" sum="Sold Amount"/>
                 <field name="supplier_amount" optional="hide"/>
                 <field name="supplier_price_kg" optional="hide"/>
-                <field name="net_invoiced_kg" optional="hide" sum="Invoiced Kg"/>
+                <field name="net_invoiced_kg" optional="hide" sum="Net Invoiced"/>
                 <field name="net_invoiced_amount" optional="hide" sum="Invoiced Amount"/>
                 <field name="invoiceable" optional="show"/>
                 <field name="invoiced" optional="show"/>

@@ -175,12 +175,17 @@ class MercasDomainChatMixin(models.AbstractModel):
             platform_user_name=self.env.user.name,
         )
 
-    @staticmethod
-    def _render_history(conversation, extra=None):
+    def _render_history(self, conversation, extra=None):
         """Render *conversation*'s persisted messages, optionally followed by
         *extra* ad-hoc {'role', 'content'} dicts that are shown but never
         saved — used for the "not authorized" reply, which (same as in
-        Discuss) must never touch ai.bot.conversation or cost an LLM call."""
+        Discuss) must never touch ai.bot.conversation or cost an LLM call.
+
+        Not a @staticmethod: needs `self.env._()` (not the bare `_()`) so the
+        reply is translated into the current user's language even when
+        called from contexts without a bound HTTP request (e.g. from
+        chat_ai_responder.py for Discuss/bot channels), where `_()`'s
+        call-stack language lookup has nothing to find."""
         rows = []
         # message_ids arrives pre-sorted 'create_date desc, id desc' (ai.bot.message._order).
         # Two messages created back-to-back in the same request can land on the exact same
@@ -198,7 +203,7 @@ class MercasDomainChatMixin(models.AbstractModel):
         entries += extra or []
         for entry in entries:
             is_user = entry['role'] == 'user'
-            who = _('You') if is_user else _('AI')
+            who = self.env._('You') if is_user else self.env._('AI')
             align = 'right' if is_user else 'left'
             bg = '#e7f0ff' if is_user else '#f1f1f1'
             content = entry.get('content') or ''
@@ -214,8 +219,8 @@ class MercasDomainChatMixin(models.AbstractModel):
                 f'<b>{who}</b><br/>{safe}</div></div>'
             )
         return ''.join(rows) or (
-            f'<p><i>{_("Ask about sales, purchases, invoicing, stock, "
-                       "availability, boxes, lots or contacts.")}</i></p>'
+            f'<p><i>{self.env._("Ask about sales, purchases, invoicing, stock, "
+                                 "availability, boxes, lots or contacts.")}</i></p>'
         )
 
     def action_send(self):
@@ -253,7 +258,7 @@ class MercasDomainChatMixin(models.AbstractModel):
             # be shown as one (an admin with a broken/missing provider
             # would otherwise have no way to tell from the chat itself).
             _logger.warning('mercas_ai: no active AI provider configured')
-            reply = _(
+            reply = self.env._(
                 'There is no active AI provider configured. Ask an '
                 'administrator to configure one in MCP Gateway → '
                 'Configuration → Providers.'
@@ -267,7 +272,7 @@ class MercasDomainChatMixin(models.AbstractModel):
             domain_key = (parsed.get('domain') or 'otro').strip().lower()
             tool_name = _DOMAIN_TOOL.get(domain_key)
             if not tool_name:
-                reply = _(_OUT_OF_SCOPE_REPLY)
+                reply = self.env._(_OUT_OF_SCOPE_REPLY)
             else:
                 params = self._build_tool_params(domain_key, parsed)
                 reply = self._run_report(tool_name, domain_key, params)
@@ -374,7 +379,7 @@ class MercasDomainChatMixin(models.AbstractModel):
             [('name', '=', tool_name), ('active', '=', True)], limit=1
         )
         if not tool:
-            return _('[Error] The "%s" tool is not installed.') % tool_name
+            return self.env._('[Error] The "%s" tool is not installed.') % tool_name
         try:
             with self.env.cr.savepoint():
                 result = tool.execute(params)
@@ -382,14 +387,14 @@ class MercasDomainChatMixin(models.AbstractModel):
             # These are Odoo's own user-facing messages (a real permission
             # denial, a business rule) -- safe and meant to be shown as-is.
             _logger.warning('mercas_ai: %s failed: %s', tool_name, exc)
-            return _('[Error] %s') % exc
+            return self.env._('[Error] %s') % exc
         except Exception:
             # Anything else is an internal/unexpected failure (ORM error,
             # bad field name...) -- log it in full for debugging, but never
             # show its raw message to a business user: it can contain
             # technical field/model names that mean nothing to them.
             _logger.exception('mercas_ai: %s failed unexpectedly', tool_name)
-            return _(
+            return self.env._(
                 '[Error] An unexpected error occurred generating this reply. '
                 'Try again or contact your administrator.'
             )
@@ -429,11 +434,13 @@ class MercasDomainChatMixin(models.AbstractModel):
             % (model, record_id, text)
         )
 
-    @staticmethod
-    def _format_lot_lines(lots, uom_suffix=''):
+    def _format_lot_lines(self, lots, uom_suffix=''):
         """Shared lot listing for 'stock' and 'existencias': lot, supplier,
         expiration, original purchased quantity and current stock quantity —
-        every quantity/lot answer must carry both, not just the current qty."""
+        every quantity/lot answer must carry both, not just the current qty.
+
+        Not a @staticmethod: needs `self.env._()`, see `_render_history`."""
+        _ = self.env._
         lines = []
         for entry in lots:
             parts = [MercasDomainChatMixin._link('stock.lot', entry.get('lot_id'), entry['lot'])]
@@ -454,8 +461,9 @@ class MercasDomainChatMixin(models.AbstractModel):
             lines.append('• ' + ' — '.join(parts))
         return lines
 
-    @staticmethod
-    def _format_result(domain_key, result):
+    def _format_result(self, domain_key, result):
+        """Not a @staticmethod: needs `self.env._()`, see `_render_history`."""
+        _ = self.env._
         esc = MercasDomainChatMixin._esc
         link = MercasDomainChatMixin._link
 
@@ -658,7 +666,7 @@ class MercasDomainChatMixin(models.AbstractModel):
 
             lots = result.get('lots')
             if lots:
-                lot_lines = MercasDomainChatMixin._format_lot_lines(lots, uom)
+                lot_lines = self._format_lot_lines(lots, uom)
                 text += '\n\n' + _('Lots in stock (by expiration):') + '\n' + '\n'.join(lot_lines)
 
             return text

@@ -194,7 +194,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__purchase_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Purchased Kg"
+msgid "Purchased"
 msgstr ""
 
 #. module: mercas_base
@@ -202,14 +202,15 @@ msgstr ""
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__received_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Received Kg"
+msgid "Received"
 msgstr ""
 
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__net_invoiced_kg
+#: model:ir.model.fields,field_description:mercas_base.field_stock_lot__net_invoiced_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Invoiced Kg"
+msgid "Net Invoiced"
 msgstr ""
 
 #. module: mercas_base
@@ -217,7 +218,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__sale_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Sold Kg"
+msgid "Sold"
 msgstr ""
 
 #. module: mercas_base
@@ -225,7 +226,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__scrap_kg
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_list_mercas
-msgid "Scrapped Kg"
+msgid "Scrapped"
 msgstr ""
 
 #. module: mercas_base
@@ -671,11 +672,6 @@ msgstr ""
 #. module: mercas_base
 #: model:ir.model.fields,field_help:mercas_base.field_stock_lot__received_kg
 msgid "Kg physically received from the supplier (validated incoming transfers)."
-msgstr ""
-
-#. module: mercas_base
-#: model:ir.model.fields,field_description:mercas_base.field_stock_lot__net_invoiced_kg
-msgid "Net Invoiced Kg"
 msgstr ""
 
 #. module: mercas_base

@@ -30,16 +30,16 @@
                         <field name="create_date" readonly="1" string="Created"/>
                         <field name="company_id" readonly="1" optional="hide" groups="base.group_multi_company"/>
                         <field name="partner_ids" readonly="1" optional="hide" widget="many2many_tags"/>
-                        <field name="product_qty" readonly="1" optional="hide"/>
                         <field name="completed" readonly="1" optional="show"/>
                         <field name="partner_id" readonly="1"/>
                         <field name="product_id" readonly="1"/>
-                        <field name="purchase_kg" readonly="1" optional="show" sum="Purchased Kg"/>
-                        <field name="received_kg" readonly="1" optional="hide" sum="Received Kg"/>
-                        <field name="sale_kg" readonly="1" optional="hide" sum="Sold Kg"/>
-                        <field name="scrap_kg" readonly="1" optional="hide" sum="Scrapped Kg"/>
+                        <field name="purchase_kg" readonly="1" optional="show" sum="Purchased"/>
+                        <field name="received_kg" readonly="1" optional="hide" sum="Received"/>
+                        <field name="sale_kg" readonly="1" optional="hide" sum="Sold"/>
+                        <field name="scrap_kg" readonly="1" optional="hide" sum="Scrapped"/>
+                        <field name="product_qty" readonly="1" optional="show"/>
                         <field name="sale_amount" readonly="1" optional="hide" sum="Sold Amount"/>
-                        <field name="net_invoiced_kg" readonly="1" optional="show" sum="Invoiced Kg"/>
+                        <field name="net_invoiced_kg" readonly="1" optional="show" sum="Net Invoiced"/>
                         <field name="mercas_margin" readonly="mercas_firm_negotiation"/>
                         <field name="supplier_price_kg" readonly="mercas_firm_negotiation" invisible="mercas_firm_negotiation"/>
                         <field name="supplier_amount" readonly="1" invisible="mercas_firm_negotiation"/>
