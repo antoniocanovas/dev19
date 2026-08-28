@@ -51,6 +51,7 @@
                 <field name="mercas_is_box_return" invisible="1"/>
                 <field name="mercas_origin_country" invisible="1"/>
                 <field name="mercas_origin_state" invisible="1"/>
+                <field name="mercas_origin_filter" invisible="1"/>
             </xpath>
 
             <!-- lot_id domain: only lots without a supplier or with the same supplier and product -->
@@ -75,6 +76,7 @@
                    position="after">
                 <field name="origin_country_id"
                        column_invisible="not parent.mercas_origin_country"
+                       domain="[('mercas_origin', '=', True)] if parent.mercas_origin_filter else []"
                        optional="show"/>
                 <field name="origin_state_id"
                        column_invisible="not parent.mercas_origin_state"

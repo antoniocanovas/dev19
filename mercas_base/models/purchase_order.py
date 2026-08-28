@@ -7,6 +7,7 @@ class PurchaseOrder(models.Model):
 
     mercas_origin_country = fields.Boolean(related="company_id.origin_country")
     mercas_origin_state = fields.Boolean(related="company_id.origin_state")
+    mercas_origin_filter = fields.Boolean(related="company_id.origin_filter")
 
     def action_open_box_delivery(self):
         """Open a new sale order to deliver boxes back to this purchase's supplier."""
