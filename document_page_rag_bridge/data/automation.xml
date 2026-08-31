@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="automation_rag_ingest_raw_attachment" model="base.automation">
+        <field name="name">RAG: ingerir adjunto subido a Raw</field>
+        <field name="model_id" ref="base.model_ir_attachment"/>
+        <field name="trigger">on_create_or_write</field>
+        <field name="trigger_field_ids" eval="[(6, 0, [ref('base.field_ir_attachment__datas')])]"/>
+        <field name="filter_domain">[('res_model', '=', 'document.page')]</field>
+        <field name="active">True</field>
+    </record>
+
+    <record id="action_rag_ingest_raw_attachment" model="ir.actions.server">
+        <field name="name">RAG: ingerir adjunto subido a Raw</field>
+        <field name="model_id" ref="base.model_ir_attachment"/>
+        <field name="base_automation_id" ref="automation_rag_ingest_raw_attachment"/>
+        <field name="usage">base_automation</field>
+        <field name="state">code</field>
+        <field name="code">records._rag_maybe_ingest()</field>
+    </record>
+</odoo>

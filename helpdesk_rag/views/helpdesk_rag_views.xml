@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="helpdesk_rag_view_form" model="ir.ui.view">
+        <field name="name">helpdesk.rag.form</field>
+        <field name="model">helpdesk.rag</field>
+        <field name="arch" type="xml">
+            <form string="Documento RAG">
+                <header>
+                    <button
+                        name="action_rag_process"
+                        type="object"
+                        string="RAG.- Leer documento anexo"
+                        class="btn-primary"
+                        invisible="rag_status in ('sent', 'indexed') or (not file and not body)"
+                    />
+                    <field
+                        name="rag_status"
+                        widget="statusbar"
+                        statusbar_visible="draft,sent,indexed"
+                    />
+                </header>
+                <sheet>
+                    <field name="file" widget="binary" filename="file_name" class="oe_avatar" />
+                    <field name="file_name" invisible="1" />
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Nombre del documento" />
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="rag_chunk_count" readonly="1" invisible="not rag_chunk_count" />
+                        <field name="rag_error" readonly="1" invisible="rag_status != 'error'" />
+                    </group>
+                    <notebook>
+                        <page name="content" string="Contenido">
+                            <field name="body" readonly="file" />
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter />
+            </form>
+        </field>
+    </record>
+
+    <record id="helpdesk_rag_view_list" model="ir.ui.view">
+        <field name="name">helpdesk.rag.list</field>
+        <field name="model">helpdesk.rag</field>
+        <field name="arch" type="xml">
+            <list string="Documentos RAG">
+                <field name="name" />
+                <field name="file_name" />
+                <field name="rag_status" />
+                <field name="rag_chunk_count" />
+            </list>
+        </field>
+    </record>
+
+    <record id="helpdesk_rag_action" model="ir.actions.act_window">
+        <field name="name">Catálogo</field>
+        <field name="res_model">helpdesk.rag</field>
+        <field name="view_mode">list,form</field>
+        <field name="path">helpdesk-rag-catalog</field>
+    </record>
+
+    <menuitem
+        id="helpdesk_rag_menu"
+        name="Catálogo"
+        parent="helpdesk_mgmt.helpdesk_ticket_main_menu"
+        action="helpdesk_rag_action"
+        sequence="30"
+    />
+</odoo>

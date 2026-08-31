@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- document_page_reference's own form view (priority 10, the one Odoo
+         picks by default outside the per-page menu navigation) shows both
+         content_parsed (rendered, links resolved) AND the raw content
+         (unresolved {{reference}}) stacked on top of each other. For our
+         large manuals (~16MB/272 images each) showing both at once nearly
+         doubles the DOM and load time with no visual separator between
+         them, and content is otherwise impossible to edit (content_parsed
+         is always readonly, and hiding content outright — as
+         document.page.menu.form does — removes editing entirely). A
+         toggle button switches between the two instead, so only one is on
+         screen at a time. The toggle lives in a <header> (not inline
+         before content_parsed) because .o_form_statusbar is
+         position:sticky — for a 130+ page manual, a button placed inside
+         the sheet is only reachable by scrolling back to the top. -->
+    <record id="document_page_form_view_hide_raw_content" model="ir.ui.view">
+        <field name="name">document.page.form (toggle rendered/raw content, rag_bridge)</field>
+        <field name="model">document.page</field>
+        <field name="inherit_id" ref="document_page_reference.document_page_form_view" />
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <field name="rag_editing_html" invisible="1" />
+                    <button
+                        name="action_toggle_rag_editing_html"
+                        type="object"
+                        string="Editar HTML"
+                        class="btn-secondary"
+                        invisible="type == 'category' or rag_editing_html"
+                    />
+                    <button
+                        name="action_toggle_rag_editing_html"
+                        type="object"
+                        string="Ver renderizado"
+                        class="btn-secondary"
+                        invisible="type == 'category' or not rag_editing_html"
+                    />
+                </header>
+            </xpath>
+            <field name="content_parsed" position="attributes">
+                <attribute name="invisible">type == 'category' or rag_editing_html</attribute>
+            </field>
+            <field name="content" position="attributes">
+                <attribute name="invisible">type == 'category' or not rag_editing_html</attribute>
+            </field>
+        </field>
+    </record>
+</odoo>
