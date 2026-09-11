@@ -28,8 +28,26 @@
                         </h1>
                     </div>
                     <group>
-                        <field name="rag_chunk_count" readonly="1" invisible="not rag_chunk_count" />
-                        <field name="rag_error" readonly="1" invisible="rag_status != 'error'" />
+                        <group string="Clasificación">
+                            <field name="scope" />
+                            <field name="manufacturer_id" />
+                            <!-- '=?' ignora la condición cuando el valor es
+                                 falso: con fabricante puesto salen solo sus
+                                 modelos, sin él salen todos. Un domain normal
+                                 habría buscado los modelos sin fabricante, que
+                                 no existen. -->
+                            <field
+                                name="model_ids"
+                                widget="many2many_tags"
+                                domain="[('manufacturer_id', '=?', manufacturer_id)]"
+                            />
+                            <field name="category" />
+                            <field name="document_type" />
+                        </group>
+                        <group string="Indexación">
+                            <field name="rag_chunk_count" readonly="1" invisible="not rag_chunk_count" />
+                            <field name="rag_error" readonly="1" invisible="rag_status != 'error'" />
+                        </group>
                     </group>
                     <notebook>
                         <page name="content" string="Contenido">
@@ -48,12 +66,70 @@
         <field name="arch" type="xml">
             <list string="Documentos RAG">
                 <field name="name" />
-                <field name="file_name" />
+                <field name="manufacturer_id" />
+                <field name="model_ids" widget="many2many_tags" />
+                <field name="scope" />
+                <field name="document_type" />
                 <field name="rag_status" />
                 <field name="rag_chunk_count" />
             </list>
         </field>
     </record>
+
+    <record id="helpdesk_rag_view_search" model="ir.ui.view">
+        <field name="name">helpdesk.rag.search</field>
+        <field name="model">helpdesk.rag</field>
+        <field name="arch" type="xml">
+            <search string="Documentos RAG">
+                <field name="name" />
+                <field name="manufacturer_id" />
+                <field name="model_ids" />
+                <!-- Sin fabricante la búsqueda no puede acotar el documento -->
+                <filter name="unclassified" string="Sin clasificar" domain="[('manufacturer_id', '=', False)]" />
+                <filter name="internal" string="Internos" domain="[('scope', '=', 'internal')]" />
+                <separator />
+                <filter name="indexed" string="Indexados" domain="[('rag_status', '=', 'indexed')]" />
+                <group>
+                    <filter name="group_manufacturer" string="Fabricante" context="{'group_by': 'manufacturer_id'}" />
+                    <filter name="group_scope" string="Ámbito" context="{'group_by': 'scope'}" />
+                    <filter name="group_document_type" string="Tipo de documento" context="{'group_by': 'document_type'}" />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="helpdesk_rag_manufacturer_view_form" model="ir.ui.view">
+        <field name="name">helpdesk.rag.manufacturer.form</field>
+        <field name="model">helpdesk.rag.manufacturer</field>
+        <field name="arch" type="xml">
+            <form string="Fabricante">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Yamaha, Samsung, Apple…" /></h1>
+                    </div>
+                    <field name="model_ids">
+                        <list editable="bottom">
+                            <field name="name" />
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="helpdesk_rag_manufacturer_action" model="ir.actions.act_window">
+        <field name="name">Fabricantes y modelos</field>
+        <field name="res_model">helpdesk.rag.manufacturer</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="helpdesk_rag_manufacturer_menu"
+        name="Fabricantes y modelos"
+        parent="helpdesk_mgmt.helpdesk_ticket_main_menu"
+        action="helpdesk_rag_manufacturer_action"
+        sequence="31"
+    />
 
     <record id="helpdesk_rag_action" model="ir.actions.act_window">
         <field name="name">Catálogo</field>

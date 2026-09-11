@@ -2,3 +2,9 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_helpdesk_rag_manager,helpdesk.rag.manager,model_helpdesk_rag,helpdesk_mgmt.group_helpdesk_manager,1,1,1,1
 access_helpdesk_rag_user,helpdesk.rag.user,model_helpdesk_rag,helpdesk_mgmt.group_helpdesk_user,1,1,1,0
 access_helpdesk_rag_user_own,helpdesk.rag.user.own,model_helpdesk_rag,helpdesk_mgmt.group_helpdesk_user_own,1,1,1,0
+access_helpdesk_rag_manufacturer_manager,helpdesk.rag.manufacturer.manager,model_helpdesk_rag_manufacturer,helpdesk_mgmt.group_helpdesk_manager,1,1,1,1
+access_helpdesk_rag_manufacturer_user,helpdesk.rag.manufacturer.user,model_helpdesk_rag_manufacturer,helpdesk_mgmt.group_helpdesk_user,1,1,1,0
+access_helpdesk_rag_manufacturer_user_own,helpdesk.rag.manufacturer.user.own,model_helpdesk_rag_manufacturer,helpdesk_mgmt.group_helpdesk_user_own,1,0,0,0
+access_helpdesk_rag_model_manager,helpdesk.rag.model.manager,model_helpdesk_rag_model,helpdesk_mgmt.group_helpdesk_manager,1,1,1,1
+access_helpdesk_rag_model_user,helpdesk.rag.model.user,model_helpdesk_rag_model,helpdesk_mgmt.group_helpdesk_user,1,1,1,0
+access_helpdesk_rag_model_user_own,helpdesk.rag.model.user.own,model_helpdesk_rag_model,helpdesk_mgmt.group_helpdesk_user_own,1,0,0,0

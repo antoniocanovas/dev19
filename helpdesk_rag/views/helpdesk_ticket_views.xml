@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="helpdesk_ticket_view_form_rag" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.form.rag</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.ticket_view_form" />
+        <field name="arch" type="xml">
+            <!-- Detrás del bloque principal de datos del ticket: el equipo es
+                 parte de la clasificación, no del contenido de la consulta. -->
+            <xpath expr="//group[@name='main']" position="after">
+                <group name="rag_equipo" string="Equipo">
+                    <field name="manufacturer_id" />
+                    <!-- '=?' ignora la condición cuando el valor es falso: con
+                         fabricante puesto salen solo sus modelos, sin él salen
+                         todos. Un domain normal habría buscado los modelos sin
+                         fabricante, que no existen. -->
+                    <field
+                        name="model_ids"
+                        widget="many2many_tags"
+                        domain="[('manufacturer_id', '=?', manufacturer_id)]"
+                        placeholder="Acota la búsqueda de documentación al equipo del ticket"
+                    />
+                    <field name="model_names" invisible="1" />
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="helpdesk_ticket_view_search_rag" model="ir.ui.view">
+        <field name="name">helpdesk.ticket.search.rag</field>
+        <field name="model">helpdesk.ticket</field>
+        <field name="inherit_id" ref="helpdesk_mgmt.helpdesk_ticket_view_search" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="manufacturer_id" />
+                <field name="model_ids" />
+            </xpath>
+        </field>
+    </record>
+</odoo>

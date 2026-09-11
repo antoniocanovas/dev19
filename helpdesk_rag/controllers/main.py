@@ -1,11 +1,38 @@
 import json
 import logging
 
+from markupsafe import Markup, escape
+from werkzeug.exceptions import Forbidden, NotFound
+
 from odoo import fields, http
+from odoo.exceptions import AccessError
 from odoo.http import request
 from odoo.tools import consteq
 
 _logger = logging.getLogger(__name__)
+
+# Página mínima para el visor: el documento ya trae su propio marcado, aquí
+# solo se envuelve. Las imágenes van embebidas como data-URI y algunas son más
+# anchas que la pantalla, de ahí el max-width.
+_PLANTILLA = """<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>%(titulo)s</title>
+<style>
+ body { max-width: 60rem; margin: 2rem auto; padding: 0 1rem;
+        font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; }
+ img { max-width: 100%%; height: auto; }
+ table { border-collapse: collapse; } td, th { border: 1px solid #ccc; padding: .25rem .5rem; }
+ :target { background: #fff3cd; }
+</style>
+</head>
+<body>
+<h1>%(titulo)s</h1>
+%(cuerpo)s
+</body>
+</html>"""
 
 
 def _check_token(data):
@@ -26,6 +53,51 @@ def _error(message, status=403):
 
 
 class HelpdeskRagController(http.Controller):
+    @http.route(
+        "/helpdesk_rag/doc/<int:doc_id>",
+        type="http",
+        auth="user",
+        methods=["GET"],
+    )
+    def document_html(self, doc_id, **kwargs):
+        """Sirve el documento como página HTML propia, para usuarios con sesión.
+
+        Las respuestas de la IA enlazan a la sección concreta con un
+        '#seccion-...'. Abrir la ficha del backend no sirve para eso: Odoo monta
+        el formulario por JavaScript DESPUÉS de que el navegador haya procesado
+        el fragmento, así que no hay nada a lo que saltar y el enlace deja al
+        usuario al principio de un documento de cientos de páginas. Servido como
+        página estática, el anclaje del navegador funciona sin más.
+        """
+        # Sin sudo a propósito: leer con el env del usuario aplica sus permisos
+        # y reglas de registro, que es justo el control de acceso que se quiere.
+        record = request.env["helpdesk.rag"].browse(doc_id).exists()
+        if not record:
+            raise NotFound()
+        try:
+            titulo = record.name
+            cuerpo = record.body
+        except AccessError as exc:
+            raise Forbidden() from exc
+
+        if not cuerpo:
+            cuerpo = Markup("<p><em>Este documento todavía no tiene contenido.</em></p>")
+
+        pagina = _PLANTILLA % {
+            "titulo": escape(titulo or ""),
+            # El campo es fields.Html, que Odoo sanea al guardarlo; se inserta
+            # tal cual porque es justo el marcado que hay que mostrar.
+            "cuerpo": cuerpo,
+        }
+        return request.make_response(
+            pagina,
+            headers=[
+                ("Content-Type", "text/html; charset=utf-8"),
+                # Documentación interna: que no la cachee ningún proxy.
+                ("Cache-Control", "private, max-age=0"),
+            ],
+        )
+
     @http.route(
         "/helpdesk_rag/set_result",
         type="http",
