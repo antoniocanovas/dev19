@@ -156,6 +156,7 @@ msgstr ""
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__lot_id
 #: model:ir.model.fields,field_description:mercas_base.field_account_move_line__lot_id
+#: model:ir.model.fields,field_description:mercas_base.field_mercas_label_print_wizard_line__lot_id
 msgid "Lot"
 msgstr ""
 
@@ -266,7 +267,7 @@ msgstr ""
 
 #. module: mercas_base
 #: model:ir.model,name:mercas_base.model_mercas_label_print_wizard
-msgid "Print Product Labels by Box"
+msgid "Print Box Labels (product + lot)"
 msgstr ""
 
 #. module: mercas_base
@@ -1039,3 +1040,38 @@ msgstr ""
 msgid "Not Invoiced"
 msgstr ""
 
+
+#. module: mercas_base
+#: model:ir.model,name:mercas_base.model_report_mercas_base_report_mercas_box_label
+msgid "Mercas Box Label"
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model,name:mercas_base.model_report_mercas_base_report_mercas_box_label_dymo
+msgid "Mercas Box Label (Dymo)"
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.actions.report,name:mercas_base.action_report_mercas_box_label
+msgid "Box Labels (PDF)"
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.actions.report,name:mercas_base.action_report_mercas_box_label_dymo
+msgid "Box Labels Dymo (PDF)"
+msgstr ""
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.mercas_box_label_content
+msgid "Lot:"
+msgstr ""
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.mercas_box_label_content
+msgid "Exp.:"
+msgstr ""
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.mercas_box_label_content
+msgid "Origin:"
+msgstr ""

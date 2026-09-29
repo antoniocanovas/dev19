@@ -48,6 +48,11 @@ class ChatAiBot(models.AbstractModel):
         if not text:
             return
 
+        # Reply in the asking user's language: a Discuss post doesn't always
+        # carry the user's lang in its context, and every reply string goes
+        # through self.env._(), which translates into env.lang.
+        self = self.with_context(lang=self.env.user.lang or self.env.lang)
+
         if not self.env.user.has_group("chat_ai.group_ai_chat_user"):
             reply = self._not_authorized_reply()
         else:

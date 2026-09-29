@@ -525,6 +525,13 @@ class MercasDomainChatMixin(models.AbstractModel):
             shown = nonzero or rows
             separator = '\n' + '-' * 30 + '\n'
 
+            if not result.get('general') and not nonzero:
+                # Every matching variant is at 0: say so in one line instead
+                # of listing each empty variant.
+                return _('There is no stock of "%s" right now.') % (
+                    esc(result.get('searched') or '')
+                )
+
             if result.get('general'):
                 if not shown:
                     return _('There is no product with stock right now.')

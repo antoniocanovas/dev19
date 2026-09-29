@@ -437,3 +437,9 @@ msgstr "Texto libre que se añade a las instrucciones anteriores en cada consult
 msgid "E.g.: purchase amounts should be shown without VAT..."
 msgstr "Ej: los importes de compras deben mostrarse sin IVA..."
 
+
+#. module: mercas_ai
+#. odoo-python
+#: code:addons/mercas_ai/wizard/domain_chat_mixin.py:0
+msgid "There is no stock of \"%s\" right now."
+msgstr "No hay existencias de \"%s\" ahora mismo."

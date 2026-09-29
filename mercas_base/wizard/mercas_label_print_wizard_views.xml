@@ -14,6 +14,7 @@
                 <field name="line_ids">
                     <list editable="bottom" create="0">
                         <field name="product_id" readonly="1" force_save="1"/>
+                        <field name="lot_id" readonly="1" force_save="1"/>
                         <field name="quantity"/>
                     </list>
                 </field>

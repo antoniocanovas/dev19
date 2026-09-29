@@ -157,6 +157,7 @@ msgstr "Solo se puede editar si se ha vendido/desechado parte del material (liqu
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__lot_id
 #: model:ir.model.fields,field_description:mercas_base.field_account_move_line__lot_id
+#: model:ir.model.fields,field_description:mercas_base.field_mercas_label_print_wizard_line__lot_id
 msgid "Lot"
 msgstr "Lote"
 
@@ -267,8 +268,8 @@ msgstr "Importe a facturar"
 
 #. module: mercas_base
 #: model:ir.model,name:mercas_base.model_mercas_label_print_wizard
-msgid "Print Product Labels by Box"
-msgstr "Imprimir etiquetas de producto por caja"
+msgid "Print Box Labels (product + lot)"
+msgstr "Imprimir etiquetas de caja (producto + lote)"
 
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_mercas_label_print_wizard__purchase_id
@@ -1040,3 +1041,38 @@ msgstr "Fecha"
 msgid "Not Invoiced"
 msgstr "No facturados"
 
+
+#. module: mercas_base
+#: model:ir.model,name:mercas_base.model_report_mercas_base_report_mercas_box_label
+msgid "Mercas Box Label"
+msgstr "Etiqueta de caja Mercas"
+
+#. module: mercas_base
+#: model:ir.model,name:mercas_base.model_report_mercas_base_report_mercas_box_label_dymo
+msgid "Mercas Box Label (Dymo)"
+msgstr "Etiqueta de caja Mercas (Dymo)"
+
+#. module: mercas_base
+#: model:ir.actions.report,name:mercas_base.action_report_mercas_box_label
+msgid "Box Labels (PDF)"
+msgstr "Etiquetas de caja (PDF)"
+
+#. module: mercas_base
+#: model:ir.actions.report,name:mercas_base.action_report_mercas_box_label_dymo
+msgid "Box Labels Dymo (PDF)"
+msgstr "Etiquetas de caja Dymo (PDF)"
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.mercas_box_label_content
+msgid "Lot:"
+msgstr "Lote:"
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.mercas_box_label_content
+msgid "Exp.:"
+msgstr "Cad.:"
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.mercas_box_label_content
+msgid "Origin:"
+msgstr "Origen:"

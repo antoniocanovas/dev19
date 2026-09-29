@@ -91,9 +91,46 @@ class TestMercasLabelPrintWizard(TransactionCase):
 
         action = wizard.action_print()
         self.assertEqual(action["type"], "ir.actions.report")
-        quantity_by_product = action["data"]["quantity_by_product"]
+        self.assertEqual(action["report_name"], "mercas_base.report_mercas_box_label")
+        quantity_by_product = {
+            product_id: qty for product_id, _lot_id, qty in action["data"]["labels"]
+        }
         self.assertEqual(quantity_by_product[self.platano.id], 3)
         self.assertEqual(quantity_by_product[self.pera.id], 15)
+
+    def test_labels_carry_lot(self):
+        lot = self.env["stock.lot"].create({
+            "name": "LBL-001",
+            "product_id": self.platano.id,
+            "company_id": self.company.id,
+        })
+        self.purchase.order_line.filtered(
+            lambda l: l.product_id == self.platano
+        ).lot_id = lot
+
+        wizard = self._create_wizard()
+        platano_line = wizard.line_ids.filtered(lambda l: l.product_id == self.platano)
+        self.assertEqual(platano_line.lot_id, lot)
+
+        action = wizard.action_print()
+        self.assertIn([self.platano.id, lot.id, 10], action["data"]["labels"])
+
+        values = self.env["report.mercas_base.report_mercas_box_label"]._get_report_values(
+            None, action["data"]
+        )
+        # 10 banana + 15 pear boxes, one label each; default format is 2x7
+        # (14 per page) -> 2 pages.
+        self.assertEqual(len(values["labels"]), 25)
+        self.assertEqual(len(values["pages"]), 2)
+        banana_labels = [l for l in values["labels"] if l["lot"] == lot]
+        self.assertEqual(len(banana_labels), 10)
+        self.assertEqual(banana_labels[0]["barcode"], "LBL-001")
+
+    def test_dymo_uses_dymo_report(self):
+        wizard = self._create_wizard()
+        wizard.print_format = "dymo"
+        action = wizard.action_print()
+        self.assertEqual(action["report_name"], "mercas_base.report_mercas_box_label_dymo")
 
     def test_print_requires_positive_quantity(self):
         wizard = self._create_wizard()

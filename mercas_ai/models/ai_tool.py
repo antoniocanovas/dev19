@@ -9,8 +9,9 @@ class AiTool(models.Model):
     since search_records never even exposes financial fields to it.
 
     All ORM access below goes through ``self._user_model(model_name)``
-    (inherited from odoo_mcp_manager's ai.tool: ``self.env[model_name]
-    .with_user(self._effective_uid())``) instead of ``.sudo()`` — the
+    (``self.env[model_name].with_user(<effective uid>)``, defined below —
+    odoo_mcp_manager used to provide it but dropped it upstream) instead of
+    ``.sudo()`` — the
     report is built with the real access rights and record rules of
     whoever is asking (``mcp_user_id`` in context when set, e.g. the real
     Discuss author or an authenticated MCP client, otherwise
@@ -36,6 +37,14 @@ class AiTool(models.Model):
         if handler:
             return handler(parameters)
         return super()._execute_builtin(parameters)
+
+    def _user_model(self, model_name):
+        """*model_name* bound to the user the tool acts for: ``mcp_user_id``
+        in context on MCP/bot routes (whose env is the Public/superuser
+        one), otherwise the current user -- so every report enforces that
+        user's ACLs and record rules."""
+        uid = self.env.context.get('mcp_user_id') or self.env.uid
+        return self.env[model_name].with_user(uid)
 
     # ── Shared helpers ──────────────────────────────────────────────────────
 
@@ -543,7 +552,10 @@ class AiTool(models.Model):
         ]
         # Siempre con desglose por lote (cantidad original comprada vs. lo que
         # queda ahora) -- no solo el total agregado del producto.
-        return {'found': True, 'rows': rows, 'lots': self._stock_lots_detail(products)}
+        return {
+            'found': True, 'searched': product, 'rows': rows,
+            'lots': self._stock_lots_detail(products),
+        }
 
     @staticmethod
     def _product_variant_label(product):
@@ -608,24 +620,33 @@ class AiTool(models.Model):
                 return {'found': False, 'searched': ''}
             return {'found': True, 'details': self._lot_details(lots)}
 
-        alternatives = []
+        product_alternatives = []
         if lot_name:
-            alternatives.append([('name', '=', lot_name)])
             # The classifier sometimes puts a whole product phrase into "lot"
             # instead of "product" (e.g. "lote tomate pera" reads as if
             # "tomate pera" were the lot code) — an exact match on a name
             # that isn't a real lot code always misses, so also try it as a
             # product name.
-            alternatives.append(
+            product_alternatives.append(
                 self._product_name_domain(lot_name, code_field='product_id.default_code')
             )
         if product_name:
-            alternatives.append(
+            product_alternatives.append(
                 self._product_name_domain(product_name, code_field='product_id.default_code')
             )
+        # A lot asked for by its exact code is shown even if already empty
+        # (its history is the point); matched by product name, only lots
+        # still on hand -- otherwise "stock tomates" lists every old,
+        # depleted lot of that product.
+        by_product = Domain.AND([Domain.OR(product_alternatives), [('product_qty', '>', 0)]])
+        alternatives = [by_product]
+        if lot_name:
+            alternatives.append([('name', '=', lot_name)])
         domain = list(Domain.AND([Domain.OR(alternatives), not_box]))
 
-        lots = self._user_model('stock.lot').search(domain, limit=5)
+        lots = self._user_model('stock.lot').search(
+            domain, order='expiration_date', limit=self._LOT_LIST_LIMIT,
+        )
         if not lots:
             return {'found': False, 'searched': lot_name or product_name}
         return {'found': True, 'details': self._lot_details(lots)}
