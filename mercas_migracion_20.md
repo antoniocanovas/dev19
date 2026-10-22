@@ -218,3 +218,28 @@ Se aplicó con la recomendación anterior.
 Resultado sobre la base nueva `test_mercas_risk` (con `mercas_touch` y `sale_financial_risk`): **48 tests, 0 fallos**. Son las clases `TestMercasBoxOrders` y `TestMercasTouch`. No se pasaron los tours ni los tests JS de hoot.
 
 Para dev19 basta con llevar la parte de `mercas_base`, que es idéntica, con sus tres tests.
+
+## 8. Mejoras de dev20 traídas a dev19 (22/10/2026)
+
+Se han llevado a dev19 las mejoras de dev20 posteriores al port (`1dc2c11`, `cd6cfc4`, `ee98377`, `bbfcd04`) y las del propio port que no eran adaptación a Odoo 20.
+
+- **`mercas_base`:**
+  - `_mercas_validate()` (nuevo `models/stock_picking.py`), el `sudo()` de las ubicaciones técnicas y el dominio de provincia de origen en compras (apartado 6).
+  - Riesgo financiero de las facturas automáticas de cajas, con sus tres tests (apartado 7).
+  - Albarán del proveedor (`supplier_ref`) en las recepciones y recepciones en el autocompletar de la factura de proveedor (`purchase.bill.union`).
+  - Calidad y calibre (`mercas_role` en los atributos): análisis de ventas, pestaña *Ventas* del lote y desglose de la liquidación.
+- **`mercas_demo`:** categorías *Frutas* y *Verduras*, atributos de calidad y calibre, *Manzana granel* y README.
+- **`mercas_touch`:** portado a Odoo 19 (versión 19.0.1.0.0).
+- **`mercas_ai` y `mercas_keys`:** sin cambios. En dev20 solo tienen adaptaciones a Odoo 20 y tours de humo.
+
+Diferencias con dev20 por la versión de Odoo:
+
+- **`sale.report`:** usa `_select_additional_fields` (en Odoo 20, `_select_dict`).
+- **`purchase.bill.union`:** en Odoo 19 la vista se crea en `init()`, no con `_table_sql`. Se envuelve la vista estándar (`pg_get_viewdef`) para añadir `mercas_receipts`, y `_depends` vacía a la base los campos de los albaranes antes de leerla. La lista heredada es `purchase.view_purchase_bill_union_tree`.
+- **`mercas_touch`:**
+  - En la pantalla, Owl 2: `useState`, `static props`, `useExternalListener` y los servicios `barcode` y `bus_service`.
+  - Iconos de Font Awesome en lugar de los Material de Odoo 20.
+  - Desechos con `stock.scrap` (`action_validate`).
+  - La unidad de las líneas de compra es `product_uom_id`.
+
+Resultado sobre la base nueva `test_mercas_touch19` (con `mercas_touch` y `sale_financial_risk`): tests de `mercas_base` y `mercas_touch`, **0 fallos y 0 errores**, sin tests saltados. No se pasaron los tours de `mercas_touch` porque falta `websocket-client` en `venv312`.

@@ -153,12 +153,14 @@ class ResPartner(models.Model):
         current = partner.with_company(company).property_stock_customer
         if current and current.location_id == parent_loc:
             return
-        new_loc = self.env["stock.location"].create({
+        # A technical location made by the sale or purchase flow: also for users who can't
+        # manage the locations or edit the partner
+        new_loc = self.env["stock.location"].sudo().create({
             "name": partner.name,
             "location_id": parent_loc.id,
             "usage": "customer",
         })
-        partner.with_company(company).property_stock_customer = new_loc
+        partner.sudo().with_company(company).property_stock_customer = new_loc
 
     def mercas_ensure_supplier_location(self, company):
         """Ensure the commercial partner has a sub-location under the mercas supplier parent.
@@ -174,9 +176,11 @@ class ResPartner(models.Model):
         current = partner.with_company(company).property_stock_supplier
         if current and current.location_id == parent_loc:
             return
-        new_loc = self.env["stock.location"].create({
+        # A technical location made by the sale or purchase flow: also for users who can't
+        # manage the locations or edit the partner
+        new_loc = self.env["stock.location"].sudo().create({
             "name": partner.name,
             "location_id": parent_loc.id,
             "usage": "supplier",
         })
-        partner.with_company(company).property_stock_supplier = new_loc
+        partner.sudo().with_company(company).property_stock_supplier = new_loc
