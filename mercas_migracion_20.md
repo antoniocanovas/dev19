@@ -38,7 +38,7 @@ Revisión del código portado en `dev20` frente a `dev19`, para retomar la migra
   - Valida el albarán con `skip_immediate`, `skip_backorder` y, además, `skip_sms`, para la confirmación del SMS de `stock_sms`.
   - Si el albarán no queda hecho, da un error. Antes el pedido podía quedar como entregado sin estarlo.
 - **Ubicaciones técnicas de cliente y proveedor:** se crean con `sudo()`, para que el flujo funcione con usuarios sin permisos de inventario.
-- **Provincia de origen en las líneas de compra:** dominio `mercas_origin` cuando el pedido tiene activo `mercas_origin_filter`.
+- **Provincia de origen en las líneas de compra:** limitada al país de origen de la línea y, con `mercas_origin_filter`, a los países marcados como `mercas_origin` (las provincias ya no se marcan).
 
 ### `mercas_ai`
 
