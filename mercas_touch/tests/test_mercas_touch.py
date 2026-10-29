@@ -315,6 +315,59 @@ class TestMercasTouch(MercasTouchCommon):
         with self.assertRaises(ValidationError):
             self.Touch.get_print_action('res.partner', self.customer.id, 'labels')
 
+    def test_deca(self):
+        """ The DeCA of a sale opens a dialog with the carrier proposed, as the company says,
+        and what is still missing; it is printed from there. """
+        self.company.mercas_default_carrier = 'last'
+        self._buy(30.0, lot_name='DECA-1')
+        lot = self.env['stock.lot'].search([('name', '=', 'DECA-1')])
+
+        def sell(qty):
+            order = self.Touch.sell({'uuid': str(uuid.uuid4()), 'partner_id': self.customer.id, 'lines': [
+                {'product_id': self.pear.id, 'lot_id': lot.id, 'qty': qty},
+            ]})['order']
+            return order, self.env['sale.order'].browse(order['id']).picking_ids
+
+        order, picking = sell(5.0)
+        self.assertFalse(picking.carrier_contact_id, "No delivery of the customer had a carrier yet")
+        action = self.Touch.get_deca_action(order['id'])
+        self.assertEqual((action['res_model'], action['res_id'], action['target']), ('stock.picking', picking.id, 'new'))
+        self.assertIn(self.env._("Main vehicle or tractor licence plate"), picking.mercas_deca_missing)
+        with self.assertRaises(UserError):
+            picking.with_user(self.user).action_mercas_print_deca()
+
+        carrier = self.env['res.partner'].create({'name': 'Touch Carrier', 'vat': 'ESA58818501'})
+        self.customer.vat = 'ESB12345674'
+        self.company.partner_id.vat = 'ESA12345674'
+        picking.with_user(self.user).write({'carrier_contact_id': carrier.id, 'tractor_license_plate': '1234BCD'})
+        self.assertFalse(picking.mercas_deca_missing)
+        action = picking.with_user(self.user).action_mercas_print_deca()
+        self.assertEqual(action['report_name'], 'l10n_es_deca_oca.report_deca')
+        self.assertTrue(action['close_on_report_download'])
+
+        _order, picking = sell(5.0)
+        self.assertEqual(picking.carrier_contact_id, carrier, "The last carrier of the customer")
+        self.assertEqual(picking.tractor_license_plate, '1234BCD')
+        self.company.mercas_default_carrier = 'customer'
+        _order, picking = sell(5.0)
+        self.assertEqual(picking.carrier_contact_id, self.customer)
+        self.assertFalse(picking.tractor_license_plate)
+        self.company.mercas_default_carrier = 'none'
+        order, picking = sell(5.0)
+        self.assertFalse(picking.carrier_contact_id)
+
+        # A delivery made before the setting, or before l10n_es_deca_oca was installed (whose
+        # weight isn't computed): the dialog proposes the carrier and computes the weight
+        self.company.mercas_default_carrier = 'last'
+        self.env.flush_all()
+        self.env.cr.execute("UPDATE stock_move SET deca_weight = NULL WHERE picking_id = %s", [picking.id])
+        self.env.cr.execute("UPDATE stock_picking SET deca_weight = NULL WHERE id = %s", [picking.id])
+        self.env.invalidate_all()
+        self.assertFalse(picking.deca_weight)
+        self.Touch.get_deca_action(order['id'])
+        self.assertEqual(picking.carrier_contact_id, self.customer, "The last carrier of the customer")
+        self.assertEqual(picking.deca_weight, 5.0)
+
     def test_sell_over_risk(self):
         """ With sale_financial_risk, a customer over their risk keeps the sale as a quotation
         and the screen opens the standard dialog, where a risk manager can go on. """

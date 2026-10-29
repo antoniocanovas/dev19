@@ -1028,6 +1028,35 @@ class MercasTouch(models.AbstractModel):
         return {'id': payment.id, 'name': payment.name, 'amount': payment.amount, 'state': payment.state}
 
     @api.model
+    def get_deca_action(self, order_id):
+        """ The dialog of the DeCA of the delivery of a sale: the carrier and the licence plates
+        proposed, what is still missing, and the button to print it. """
+        picking = self._get_deca_picking(order_id)
+        picking.check_access('write')
+        picking._mercas_prepare_deca()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': self.env._("DeCA of %s", picking.name),
+            'res_model': 'stock.picking',
+            'res_id': picking.id,
+            'views': [(self.env.ref('mercas_touch.view_picking_form_deca').id, 'form')],
+            'target': 'new',
+        }
+
+    def _get_deca_picking(self, order_id):
+        """ The last delivery made of a sale: the DeCA is printed for one delivery. """
+        if not is_record_id(order_id):
+            raise ValidationError(self.env._("Invalid order."))
+        order = self.env['sale.order'].browse(order_id).exists()
+        if not order:
+            raise ValidationError(self.env._("The order doesn't exist anymore."))
+        picking = order.picking_ids.filtered(
+            lambda picking: picking.state == 'done' and picking.picking_type_code == 'outgoing').sorted('id')[-1:]
+        if not picking:
+            raise UserError(self.env._("There is no delivery of %s.", order.name))
+        return picking
+
+    @api.model
     def get_print_action(self, model, order_id, kind):
         """ What to print after an operation: the delivery slip of a sale, or the box labels
         of a sale or a purchase (the wizard of `mercas_base`, to choose how many). """

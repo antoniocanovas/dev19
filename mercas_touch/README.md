@@ -11,7 +11,7 @@ Pantalla de mostrador para mercados mayoristas de fruta, pensada para tablet o p
 
 La aplicación se llama *Mostrador* y aparece en la pantalla de inicio de Odoo. Su dirección es `/odoo/mercas-touch`.
 
-Depende de `mercas_base` (y con él de los módulos de lotes de OCA) y de `barcodes`. Funciona en Odoo 19 Community y Enterprise.
+Depende de `mercas_base` (y con él de los módulos de lotes de OCA), de `barcodes` y de `l10n_es_deca_oca` (documento de control del transporte, que necesita `pypdf`). Funciona en Odoo 19 Community y Enterprise.
 
 ## Criterio
 
@@ -41,6 +41,7 @@ Dentro de cada modo, la flecha (o **Esc**) vuelve atrás, y los botones F1-F6 de
 6. **Ticket.** A la derecha, las líneas, las cajas y el total orientativo (sin impuestos). Las líneas muestran su calidad y calibre. Tocando una línea se modifica entera, también la calidad y el calibre: la descripción del pedido se actualiza y se conserva el texto de la línea. Arriba se ve si el presupuesto está guardado. Cada cambio se guarda en él: la flecha atrás vuelve a la lista de presupuestos sin perder nada, y la papelera cancela el presupuesto (pide confirmación).
    - **Cambio rápido de precios:** el precio de cada línea es un botón. Al tocarlo se abre un editor solo de precio, con el teclado numérico. La primera tecla sustituye el precio, como en un TPV, y el subtotal se ve al momento. *Siguiente* y *Anterior* pasan de una línea a otra; con teclado, **Intro** o **↓** va a la siguiente, **Mayús+Intro** o **↑** a la anterior y **Esc** termina. Pasada la última línea, el editor se cierra.
 7. **Vender y entregar.** Guarda las últimas líneas en el presupuesto y ejecuta *Vender y Entregar* de `mercas_base`: confirma y valida el albarán. Después se puede imprimir el **albarán** o las **etiquetas de caja**, o abrir el pedido.
+   - **DeCA (documento de control del transporte, opcional):** el botón *DeCA* abre un diálogo del albarán con el transportista, las matrículas de la tractora y del remolque, las autorizaciones especiales y el peso, y avisa de lo que aún falta (matrícula, transportista, NIF del transportista, del cliente o de la empresa, o el peso de los productos). *Imprimir DeCA* guarda los datos e imprime el documento (`l10n_es_deca_oca`). El transportista se propone según *Transportista por defecto* de la pestaña Mercas de la compañía: el del último albarán del cliente con sus matrículas, el propio cliente o ninguno; también en los albaranes creados desde el backend, y al abrir el diálogo en albaranes anteriores. Cambiar estos datos tras imprimir genera una nueva versión del DeCA.
 8. **Facturar y cobrar.** *Facturar* crea y publica la factura del pedido, que se puede imprimir. *Cobrar* abre el cobro del cliente con esa factura ya marcada y su importe pendiente propuesto: se elige el diario y se cobra, total o parcialmente.
 
 Si el cliente supera su riesgo (con `sale_financial_risk` y sin permitir confirmar por encima del riesgo), el pedido queda en presupuesto y se abre el aviso estándar de OCA, donde un gestor de riesgo puede continuar.
@@ -55,7 +56,7 @@ La lista inicial de ventas y de compras tiene tres filtros:
 
 Al tocar un pedido confirmado se abre su **resumen**: estado, estado de facturación, líneas (producto, lote, calidad y calibre, cantidad, precio e importe) y la última factura. Desde ahí:
 
-- En una **venta:** imprimir el albarán y las etiquetas, **Facturar**, imprimir la factura y **Cobrar**.
+- En una **venta:** imprimir el albarán y las etiquetas, el **DeCA**, **Facturar**, imprimir la factura y **Cobrar**.
 - En una **compra:** imprimir las etiquetas y **Crear factura de proveedor**, que crea la factura estándar del pedido en borrador y la abre en un diálogo para revisarla y confirmarla. Si los lotes de esa compra se facturan por liquidación (F4), no se debe crear también la factura desde el pedido.
 
 *Volver a la lista* (o la flecha atrás) vuelve a la lista con el mismo filtro.

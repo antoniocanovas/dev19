@@ -1166,6 +1166,12 @@ export class TouchScreen extends Component {
         await this.action.doAction(action);
     }
 
+    /** The DeCA of the delivery: its carrier and licence plates, proposed, and then printed. */
+    async onDeca() {
+        const action = await this.orm.call(MODEL, "get_deca_action", [this.state.done.id]);
+        await this.action.doAction(action);
+    }
+
     async onNewOperation() {
         this.state.done = null;
         if (this.hasDrafts()) {

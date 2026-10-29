@@ -98,3 +98,22 @@ class ResCompany(models.Model):
             "Does not apply to lots under firm negotiation."
         ),
     )
+    mercas_default_carrier = fields.Selection(
+        selection=[
+            ("last", "Last carrier of the customer"),
+            ("customer", "The customer"),
+            ("none", "None"),
+        ],
+        string="Default Carrier",
+        default="last",
+        required=True,
+        help=(
+            "Carrier proposed on the deliveries, for the transport document "
+            "(DeCA):\n"
+            "- Last carrier of the customer: the carrier and the licence "
+            "plates of the last delivery of the customer that has them.\n"
+            "- The customer: the customer picks up the goods with their own "
+            "vehicle; the licence plates are left empty.\n"
+            "- None: the carrier is filled in on each delivery."
+        ),
+    )

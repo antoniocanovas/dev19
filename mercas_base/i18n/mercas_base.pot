@@ -26,6 +26,7 @@ msgstr ""
 
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_change_wizard__line_ids
+#: model_terms:ir.ui.view,arch_db:mercas_base.view_company_form_mercas
 msgid "Deliveries"
 msgstr ""
 
@@ -1166,4 +1167,33 @@ msgstr ""
 #. module: mercas_base
 #: model:ir.model.fields,help:mercas_base.field_purchase_bill_union__mercas_receipts
 msgid "Receipts of the purchase order, with the supplier's delivery note."
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model.fields,field_description:mercas_base.field_res_company__mercas_default_carrier
+msgid "Default Carrier"
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model.fields,field_help:mercas_base.field_res_company__mercas_default_carrier
+msgid ""
+"Carrier proposed on the deliveries, for the transport document (DeCA):\n"
+"- Last carrier of the customer: the carrier and the licence plates of the last delivery of the customer that has them.\n"
+"- The customer: the customer picks up the goods with their own vehicle; the licence plates are left empty.\n"
+"- None: the carrier is filled in on each delivery."
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model.fields.selection,name:mercas_base.selection__res_company__mercas_default_carrier__last
+msgid "Last carrier of the customer"
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model.fields.selection,name:mercas_base.selection__res_company__mercas_default_carrier__customer
+msgid "The customer"
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model.fields.selection,name:mercas_base.selection__res_company__mercas_default_carrier__none
+msgid "None"
 msgstr ""

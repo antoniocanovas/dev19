@@ -527,6 +527,10 @@
                         t-on-click="() => this.onPrint('delivery')">
                     <i class="fa fa-print"/> Delivery slip
                 </button>
+                <button t-if="done.kind === 'sale' and done.state === 'sale'" class="btn btn-secondary btn-lg o_mercas_touch_deca"
+                        t-on-click="this.onDeca">
+                    <i class="fa fa-truck"/> DeCA
+                </button>
                 <button t-if="(done.kind === 'sale' and done.state === 'sale') or done.kind === 'purchase'"
                         class="btn btn-secondary btn-lg o_mercas_touch_print_labels" t-on-click="() => this.onPrint('labels')">
                     <i class="fa fa-tags"/> Box labels
