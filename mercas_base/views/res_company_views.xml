@@ -24,6 +24,7 @@
                         </group>
                         <group string="Accounting">
                             <field name="compensation_journal_id"/>
+                            <field name="mercas_self_billing_journal_id"/>
                             <field name="mercas_margin"/>
                             <field name="auto_confirm_supplier_invoice" widget="toggle"/>
                             <field name="liquidation_mode"/>

@@ -5,3 +5,4 @@ from . import test_sale_order_line_product_qty_datetime
 from . import test_mercas_box_orders
 from . import test_mercas_classification
 from . import test_purchase_bill_union
+from . import test_self_billing

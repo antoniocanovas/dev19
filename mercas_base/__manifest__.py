@@ -27,6 +27,7 @@
         "wizard/stock_lot_invoice_wizard_views.xml",
         "wizard/stock_lot_change_wizard_views.xml",
         "report/mercas_box_label_templates.xml",
+        "report/report_invoice.xml",
         "wizard/mercas_label_print_wizard_views.xml",
         "views/stock_lot_views.xml",
         "views/purchase_order_views.xml",
@@ -37,6 +38,7 @@
         "views/purchase_bill_union_views.xml",
         "views/sale_order_views.xml",
         "views/mercas_menu.xml",
+        "data/mercas_self_billing_data.xml",
     ],
     "assets": {
         "web.assets_backend": [

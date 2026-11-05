@@ -1400,3 +1400,51 @@ msgstr "Imprimir DeCA"
 #: model:ir.model.fields,help:mercas_touch.field_stock_picking__mercas_deca_missing
 msgid "Data still missing to print the DeCA."
 msgstr "Datos que aún faltan para imprimir el DeCA."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Bills"
+msgstr "Facturas"
+
+#. module: mercas_touch
+#. odoo-python
+#: code:addons/mercas_touch/models/mercas_touch.py:0
+msgid "Draft"
+msgstr "Borrador"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
+msgid "Delete the bill"
+msgstr "Borrar la factura"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
+msgid "The bill in draft of %(amount)s will be deleted."
+msgstr "Se borrará la factura en borrador de %(amount)s."
+
+#. module: mercas_touch
+#. odoo-python
+#: code:addons/mercas_touch/models/mercas_touch.py:0
+msgid "Only a bill in draft can be deleted."
+msgstr "Solo se puede borrar una factura en borrador."
+
+#. module: mercas_touch
+#. odoo-python
+#: code:addons/mercas_touch/models/mercas_touch.py:0
+msgid "The bill doesn't belong to %s anymore."
+msgstr "La factura ya no pertenece a %s."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Print"
+msgstr "Imprimir"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Invoiced"
+msgstr "Facturado"

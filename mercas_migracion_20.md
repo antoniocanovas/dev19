@@ -2,7 +2,7 @@
 
 Revisión del código portado en `dev20` frente a `dev19`, para retomar la migración más adelante. Complementa la sección 6 de `mercas_next.md`.
 
-*Revisado el 20/10/2026. No se ha ejecutado ninguna migración ni test: es una revisión del código.*
+*Revisado el 20/10/2026 (apartados 1-7); ampliado el 22/10 (apartado 8) y el 29/10/2026 (apartado 9).*
 
 ---
 
@@ -243,3 +243,42 @@ Diferencias con dev20 por la versión de Odoo:
   - La unidad de las líneas de compra es `product_uom_id`.
 
 Resultado sobre la base nueva `test_mercas_touch19` (con `mercas_touch` y `sale_financial_risk`): tests de `mercas_base` y `mercas_touch`, **0 fallos y 0 errores**, sin tests saltados. No se pasaron los tours de `mercas_touch` porque falta `websocket-client` en `venv312`.
+
+## 9. Facturación de compras, autofacturación y DeCA, llevados a dev20 (29/10/2026)
+
+Cambios de dev19 posteriores a `05eb6dd` (último commit trasladado a dev20): el commit `c430804` (*mercas_touch_inv*: DeCA, transportista por defecto) y los cambios de la sesión del 29/10, aún sin commitear en ninguno de los dos repositorios. Se trasladaron con un parche (`git diff 05eb6dd` más los ficheros nuevos) y `patch -p1`; los bloques que no encajaron se resolvieron a mano.
+
+**`mercas_base`:**
+
+- **Factura estándar del pedido y facturación por lote:** `purchase.order.line._mercas_is_invoiced_from_lot`; `action_create_invoice` y `_add_purchase_order_lines` dejan fuera esas líneas y las secciones vacías; los lotes firmes sin facturas desde el lote van en la factura estándar con `mercas_is_firm_line`.
+- **Cajas:** la primera factura del lote (firme, adelanto o liquidación) incluye las cajas pendientes (`_mercas_pending_box_invoice_lines`).
+- **Aviso de líneas vacías:** `account.move._get_alerts` no cuenta secciones ni notas (mismo código en Odoo 20).
+- **Autofacturación:** casilla y fecha de acuerdo en el proveedor, diario de autofacturas por compañía creado al instalar/actualizar (`data/mercas_self_billing_data.xml` → `res.company._mercas_setup_self_billing_journal`), diario por defecto según el proveedor (`_search_default_journal` y onchange), bloqueo al publicar, referencia = número (`_set_next_sequence`, antes de las comprobaciones del SII) y bloque de emisor/destinatario en el PDF (`report/report_invoice.xml`; la mención va fuera de la fila: wkhtmltopdf no parte filas de más de 12 columnas).
+- **Optimización sin cambio de funcionalidad:** mixin `mercas.box.order.mixin` para las secciones y cajas de ventas y compras; en `stock.lot`, `_mercas_posted_net`, `_mercas_sale_move_lines`, `_mercas_scrap_move_lines` y `_mercas_confirmed_purchase_lines`; `sale.order.line._mercas_net_price`; `grouped()` en lugar de diccionarios a mano.
+
+**`mercas_touch`:**
+
+- Botones de facturación de la compra según lo pendiente (*Liquidar*, *Facturar adelanto*, *Factura firme*, *Crear factura de proveedor*), lista *Facturas* (siempre desplegada, se recarga al cerrar el diálogo de la factura) con impresión de las publicadas y borrado de los borradores.
+- DeCA (de `c430804`): depende de `l10n_es_deca_oca`.
+- `_browse_order` y `are_record_ids` para las comprobaciones repetidas.
+
+**Diferencias resueltas a mano en dev20:**
+
+- Manifiestos: el XML de datos va antes de `security/ir.access.csv`; `l10n_es_deca_oca` en `depends` de `mercas_touch` (existe la 20.0.1.0.0 en dev20).
+- Pantalla: iconos Material (`<i class="oi" data-icon="…"/>`: `receipt_long`, `description`, `print`, `delete`, `local_shipping`) en lugar de Font Awesome.
+- `escape_psql` → `escape_like_value` en `mercas_touch` (obsoleto desde Odoo 20; ya estaba antes del traslado).
+- No hacen falta permisos nuevos: el mixin es abstracto.
+
+**Resultado:**
+
+- dev19, base `test_mercas_touch19`: `mercas_base` + `mercas_touch`, 100 tests, 0 fallos.
+- dev20, base `test_mercas_touch20` (con `venv312`; instala `l10n_es_deca_oca`): 101 tests, 0 fallos; tras el cambio de `escape_like_value`, `mercas_touch` 38 tests, 0 fallos.
+- Tours sin pasar en ninguna de las dos (falta `websocket-client`).
+
+**Pendiente:**
+
+- Commitear en dev19 y dev20.
+- Pasar los tours instalando `websocket-client` en los entornos.
+- Comprobar en el servidor (Linux) que el PDF no pierde las negritas: en el Mac, wkhtmltopdf 0.12.6 las pierde al azar (1 de cada 5 aprox.), también lanzado a mano y sin Odoo.
+- La insignia y el filtro *Para facturar* de las compras siguen el `invoice_status` estándar: en compras con lotes por liquidación no desaparece aunque los lotes estén facturados.
+- `mercas_ai`, `mercas_demo` y `mercas_keys` no cambian en esta sesión.
