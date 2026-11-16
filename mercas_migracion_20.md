@@ -298,3 +298,15 @@ Diferencias resueltas a mano en dev20:
 - Redondeo con `uom.is_zero`/`uom.compare` (Odoo 20 no tiene `uom.uom.rounding`); mismo código en dev19.
 
 Resultado: `mercas_base` + `mercas_touch` en `test_mercas_touch19` (105 tests) y `test_mercas_touch20` (108 tests, base creada de nuevo): solo fallan los 6 de `TestSelfBilling`. Ocurre en bases recién creadas: el diario de autofacturas se crea al instalar `mercas_base`, antes de que Odoo cargue el plan contable. No tiene relación con este cambio.
+
+## 11. Búsqueda de tipos de caja en el táctil, llevada a dev20 (16/11/2026)
+
+Commit de dev19 posterior a `5e05b44` («mercas_touch: búsqueda de tipos de caja»), trasladado con `git diff -- mercas_touch` + `patch -p1`, sin rechazos.
+
+- **Línea de venta/compra:** el `<select>` de la caja pasa a ser un buscador: se escribe para filtrar (referencia interna, nombre o código de barras) y se elige entre los resultados (máx. 50 a la vez). Escape cierra la lista; la «×» deja la línea sin caja.
+- **Pestaña Cajas (F3):** buscador sobre las tarjetas; las cajas con cantidad puesta no se ocultan y las del saldo del cliente/proveedor van primero.
+- **`get_screen_data`:** carga siempre todas las cajas, fuera del límite de `PRODUCT_LIMIT`.
+
+Diferencias resueltas a mano en dev20: iconos Material `search` y `close` en lugar de `fa-search` y `fa-times`.
+
+Resultado: `mercas_touch` en `test_mercas_touch19` y `test_mercas_touch20`: 39 tests, 0 fallos (tours saltados: falta `websocket-client`).
