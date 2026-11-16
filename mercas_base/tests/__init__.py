@@ -6,3 +6,4 @@ from . import test_mercas_box_orders
 from . import test_mercas_classification
 from . import test_purchase_bill_union
 from . import test_self_billing
+from . import test_stock_lot_inventory
