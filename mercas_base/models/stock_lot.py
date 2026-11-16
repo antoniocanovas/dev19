@@ -2,7 +2,7 @@ from markupsafe import Markup
 
 from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools import float_compare, float_is_zero, format_amount, format_date, formatLang
+from odoo.tools import float_is_zero, format_amount, format_date, formatLang
 
 
 class StockLot(models.Model):
@@ -417,13 +417,13 @@ class StockLot(models.Model):
         if not location or location.usage != "internal":
             raise UserError(_("Choose an internal location to count the lot %s.", self.name))
         quants = self._mercas_location_quants(location)
-        rounding = self.product_id.uom_id.rounding
+        uom = self.product_id.uom_id
         diff = qty - sum(quants.mapped("quantity"))
-        if float_is_zero(diff, precision_rounding=rounding):
+        if uom.is_zero(diff):
             return 0.0
         plain = quants.filtered(lambda q: not q.package_id and not q.owner_id)[:1]
         target = (plain.quantity if plain else 0.0) + diff
-        if float_compare(target, 0.0, precision_rounding=rounding) < 0:
+        if uom.compare(target, 0.0) < 0:
             raise UserError(_(
                 "Part of the stock of the lot %s is in packages; adjust it from "
                 "the inventory instead.", self.name,

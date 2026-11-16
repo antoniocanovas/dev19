@@ -282,3 +282,19 @@ Cambios de dev19 posteriores a `05eb6dd` (último commit trasladado a dev20): el
 - Comprobar en el servidor (Linux) que el PDF no pierde las negritas: en el Mac, wkhtmltopdf 0.12.6 las pierde al azar (1 de cada 5 aprox.), también lanzado a mano y sin Odoo.
 - La insignia y el filtro *Para facturar* de las compras siguen el `invoice_status` estándar: en compras con lotes por liquidación no desaparece aunque los lotes estén facturados.
 - `mercas_ai`, `mercas_demo` y `mercas_keys` no cambian en esta sesión.
+
+## 10. Inventario del lote y detalle del lote en el táctil, llevados a dev20 (16/11/2026)
+
+Commits `8a0e420` y siguiente de dev19, trasladados con `git show 8a0e420` + `patch -p1`.
+
+- **`mercas_base`:** botón **Inventario** en el formulario del lote (asistente `stock.lot.inventory.wizard`, `stock.lot._mercas_apply_inventory`: ajuste de inventario estándar con `stock.quant` en modo inventario).
+- **`mercas_touch`:** botón **Detalle** en las tarjetas de F4 (form del lote en diálogo) y aviso `lots_changed` tras un inventario (`models/stock_lot.py`).
+
+Diferencias resueltas a mano en dev20:
+
+- Permiso en `security/ir.access.csv` (formato de Odoo 20: `model_id` por nombre, `operation` = `crud`).
+- `i18n/es.po` de `mercas_base`: entradas nuevas añadidas al final a mano (el final del fichero difiere).
+- Icono Material `info` en lugar de `fa-info-circle`.
+- Redondeo con `uom.is_zero`/`uom.compare` (Odoo 20 no tiene `uom.uom.rounding`); mismo código en dev19.
+
+Resultado: `mercas_base` + `mercas_touch` en `test_mercas_touch19` (105 tests) y `test_mercas_touch20` (108 tests, base creada de nuevo): solo fallan los 6 de `TestSelfBilling`. Ocurre en bases recién creadas: el diario de autofacturas se crea al instalar `mercas_base`, antes de que Odoo cargue el plan contable. No tiene relación con este cambio.
