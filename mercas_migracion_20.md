@@ -310,3 +310,18 @@ Commit de dev19 posterior a `5e05b44` («mercas_touch: búsqueda de tipos de caj
 Diferencias resueltas a mano en dev20: iconos Material `search` y `close` en lugar de `fa-search` y `fa-times`.
 
 Resultado: `mercas_touch` en `test_mercas_touch19` y `test_mercas_touch20`: 39 tests, 0 fallos (tours saltados: falta `websocket-client`).
+
+## 12. Aviso de líneas de compra facturadas desde su lote y extensión del asistente de etiquetas, llevados a dev20 (17/11/2026)
+
+Commits `47c1ab3` y `648f7ee` de dev19, trasladados con `git diff 0edcea0 648f7ee -- mercas_base mercas_touch` + `patch -p1`, sin rechazos.
+
+- **`mercas_base`:** `purchase.order._mercas_lot_settlement_lines()` y aviso `mercas_lot_settlement_lines` en `account.move._get_alerts` (factura de proveedor): las líneas con lote que la factura estándar deja fuera, con botón «Ver los lotes».
+- **`mercas_touch`:** `settlement_lines` en el resultado de la compra y recuadro de aviso en la pantalla de resultado.
+- **`mercas_base`:** `mercas.label.print.wizard._get_report_xmlid()`, para que un módulo de cliente añada formatos de etiqueta (p. ej. `custom_maripili`, que no se ha llevado a dev20).
+
+Diferencias resueltas a mano en dev20:
+
+- `purchase.order.line.uom_id` en lugar de `product_uom_id` (aviso de la factura y `settlement_lines`).
+- `patch` dejó copias `.orig` y sobrescribió `mercas_touch/static/src/touch_screen/touch_screen.xml.orig`, que está versionado en dev20: restaurado con `git checkout`.
+
+Resultado: `mercas_base` + `mercas_touch` en `test_mercas_touch19` y `test_mercas_touch20`: 106 tests, 0 fallos.
