@@ -1,0 +1,46 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* custom_maripili
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2026-11-17 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: custom_maripili
+#: model:ir.model.fields.selection,name:custom_maripili.selection__mercas_label_print_wizard__print_format__70x50
+msgid "70 x 50 (label printer)"
+msgstr "70 x 50 (etiquetadora)"
+
+#. module: custom_maripili
+#: model:ir.model,name:custom_maripili.model_report_custom_maripili_report_box_label_70x50
+msgid "Box Label 70 x 50 (Maripili)"
+msgstr "Etiqueta de caja 70 x 50 (Maripili)"
+
+#. module: custom_maripili
+#: model:ir.actions.report,name:custom_maripili.action_report_box_label_70x50
+msgid "Box Labels 70 x 50 (PDF)"
+msgstr "Etiquetas de caja 70 x 50 (PDF)"
+
+#. module: custom_maripili
+#: model_terms:ir.ui.view,arch_db:custom_maripili.box_label_70x50_content
+msgid "Lot:"
+msgstr "Lote:"
+
+#. module: custom_maripili
+#: model_terms:ir.ui.view,arch_db:custom_maripili.box_label_70x50_content
+msgid "Exp.:"
+msgstr "Cad.:"
+
+#. module: custom_maripili
+#: model_terms:ir.ui.view,arch_db:custom_maripili.box_label_70x50_content
+msgid "Origin:"
+msgstr "Origen:"

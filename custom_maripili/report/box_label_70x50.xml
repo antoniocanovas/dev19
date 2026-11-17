@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Label printer Citizen CL-S700 (203 dpi), roll of 70 x 50 mm labels.
+         Printed through the printer's own driver, with that label size and
+         at 100% scale (no "fit to page"). -->
+    <record id="paperformat_label_70x50" model="report.paperformat">
+        <field name="name">Label 70 x 50 mm</field>
+        <field name="default" eval="False"/>
+        <field name="format">custom</field>
+        <field name="page_width">70</field>
+        <field name="page_height">50</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">0</field>
+        <field name="margin_bottom">0</field>
+        <field name="margin_left">0</field>
+        <field name="margin_right">0</field>
+        <field name="header_spacing">0</field>
+        <field name="disable_shrinking" eval="True"/>
+        <field name="dpi">96</field>
+    </record>
+
+    <!-- Content of one label. Expects: label (dict from
+         report.mercas_base.report_mercas_box_label), company. Own design of
+         Maripili: change it here, not in mercas_base. -->
+    <template id="box_label_70x50_content">
+        <t t-set="product" t-value="label['product']"/>
+        <t t-set="lot" t-value="label['lot']"/>
+        <div style="font-size:95%;line-height:120%;">
+            <div style="padding:0 1mm;height:2.5em;overflow:hidden;font-size:115%;">
+                <strong t-out="product.display_name"/>
+            </div>
+            <!-- Plain text before each t-out (no <span> around it): that's what
+                 makes "Lot:", "Exp.:" and "Origin:" separate translatable terms. -->
+            <div t-if="lot" style="padding:0 1mm;">Lot: <strong t-out="lot.name"/></div>
+            <div t-if="label['expiration']" style="padding:0 1mm;">Exp.: <t t-out="label['expiration']" t-options="{'widget': 'date'}"/></div>
+            <div t-if="label['origin']" style="padding:0 1mm;">Origin: <t t-out="label['origin']"/></div>
+            <div t-if="label['barcode']" class="text-center" style="padding:1mm 0 0 0;">
+                <div t-out="label['barcode']" style="padding:0"
+                     t-options="{'widget': 'barcode', 'symbology': 'Code128', 'quiet': 0, 'img_style': 'width:60mm;height:11mm'}"/>
+                <span t-out="label['barcode']"/>
+            </div>
+        </div>
+    </template>
+
+    <!-- One 70 x 50 mm label per page -->
+    <template id="report_box_label_70x50">
+        <t t-call="web.html_container">
+            <!-- div.article: without it Odoo sends the bare fragment to
+                 wkhtmltopdf, without <meta charset="utf-8">, and accents come
+                 out garbled (see mercas_base.report_mercas_box_label). -->
+            <div class="article" t-att-data-oe-lang="env.context.get('lang')">
+                <div t-foreach="labels" t-as="label" class="o_label_sheet"
+                     style="width:70mm;height:50mm;margin:0;padding:2mm;">
+                    <div class="o_label_full" style="width:100%;height:46mm;overflow:hidden;">
+                        <t t-call="custom_maripili.box_label_70x50_content"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <record id="action_report_box_label_70x50" model="ir.actions.report">
+        <field name="name">Box Labels 70 x 50 (PDF)</field>
+        <field name="model">stock.lot</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">custom_maripili.report_box_label_70x50</field>
+        <field name="report_file">custom_maripili.report_box_label_70x50</field>
+        <field name="paperformat_id" ref="paperformat_label_70x50"/>
+        <field name="print_report_name">'Box Labels'</field>
+    </record>
+
+</odoo>
