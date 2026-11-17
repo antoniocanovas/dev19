@@ -156,6 +156,16 @@ class PurchaseOrder(models.Model):
             and not float_is_zero(l.qty_to_invoice, precision_digits=precision)
         )
 
+    def _mercas_lot_settlement_lines(self):
+        """Lines left out of the standard bill and still to invoice from
+        their lot (settlement, advance or firm invoice of the lot), to warn
+        about them on the bill and in the touch screen."""
+        return self.order_line.filtered(
+            lambda l: not l.display_type
+            and l._mercas_is_invoiced_from_lot()
+            and not l.lot_id.invoiced
+        )
+
     def action_create_invoice(self, attachment_ids=False):
         """The standard bill leaves out the lines invoiced from their lot:
         billing them at the price of the purchase would skip the sale

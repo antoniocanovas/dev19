@@ -962,6 +962,13 @@ class MercasTouch(models.AbstractModel):
                 mode for mode, lots in self._get_purchase_lots_to_invoice(order).items() if lots
             ] if order.state == 'purchase' else [],
             'invoice_count': len(self._get_purchase_invoices(order)),
+            # Left out of the bill of the purchase: invoiced from their lot
+            'settlement_lines': [{
+                'product': line.product_id.display_name,
+                'lot_name': line.lot_id.name,
+                'qty': line.product_qty,
+                'uom': line.product_uom_id.name,
+            } for line in order._mercas_lot_settlement_lines()] if order.state == 'purchase' else [],
             'lots': [{
                 'product': line.product_id.display_name,
                 'lot_id': line.lot_id.id,

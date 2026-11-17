@@ -761,6 +761,9 @@ class TestMercasTouch(MercasTouchCommon):
         sell(5.0)
         summary = self.Touch.get_order_summary('purchase', order['id'])
         self.assertEqual(summary['lot_invoice_modes'], ['advance'])
+        self.assertEqual(
+            [(line['lot_name'], line['qty']) for line in summary['settlement_lines']], [('BOX-SETTLE', 20.0)],
+            "Warned: not in the bill of the purchase, invoiced from its lot")
         self.assertTrue(summary['bill_pending'], "The boxes are still to invoice")
         box_line = invoice('advance')
         self.assertEqual(box_line.quantity, 4)
@@ -772,6 +775,7 @@ class TestMercasTouch(MercasTouchCommon):
         self.assertEqual(self.Touch.get_order_summary('purchase', order['id'])['lot_invoice_modes'], ['settle'])
         self.assertFalse(invoice('settle'), "The boxes were already invoiced with the advance")
         summary = self.Touch.get_order_summary('purchase', order['id'])
+        self.assertEqual(summary['settlement_lines'], [], "Settled: nothing left to warn about")
         figures = next(line['lot_figures'] for line in summary['lines'] if line['lot'] == 'BOX-SETTLE')
         self.assertEqual((figures['stock'], figures['sold'], figures['firm']), (0.0, 20.0, False))
         self.assertEqual(figures['invoiced'], lot.net_invoiced_amount, "Under sale settlement, in amount")

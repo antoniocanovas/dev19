@@ -1478,3 +1478,19 @@ msgstr "más: sigue escribiendo para afinar la búsqueda."
 #: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
 msgid "Search a box by reference or name…"
 msgstr "Buscar una caja por referencia o nombre…"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Not in the bill: invoiced from their lot"
+msgstr "No van en la factura: se facturan desde su lote"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid ""
+"Invoice them with the buttons of the lots: Settle, Invoice advance or Firm "
+"invoice."
+msgstr ""
+"Facturar con los botones de los lotes: Liquidar, Facturar adelanto o Factura "
+"firme."

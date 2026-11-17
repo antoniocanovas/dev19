@@ -577,6 +577,14 @@
                     <t t-if="lot.box_qty"> · <t t-out="lot.box_qty"/> boxes</t>
                 </div>
             </div>
+            <div t-if="done.kind === 'purchase' and done.settlement_lines?.length"
+                 class="alert alert-warning text-start mt-3 mb-0 o_mercas_touch_settlement_lines">
+                <div class="fw-bold">Not in the bill: invoiced from their lot</div>
+                <div class="small mb-1">Invoice them with the buttons of the lots: Settle, Invoice advance or Firm invoice.</div>
+                <div t-foreach="done.settlement_lines" t-as="line" t-key="line_index">
+                    <t t-out="line.product"/>: <strong t-out="line.lot_name"/> · <t t-out="this.formatQty(line.qty)"/> <t t-out="line.uom"/>
+                </div>
+            </div>
             <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
                 <button t-if="done.kind === 'sale' and done.state === 'sale'" class="btn btn-secondary btn-lg o_mercas_touch_print_delivery"
                         t-on-click="() => this.onPrint('delivery')">

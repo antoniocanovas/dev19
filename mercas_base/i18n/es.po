@@ -1561,3 +1561,31 @@ msgstr "Inventario del lote %s"
 #: code:addons/mercas_base/models/stock_lot.py:0
 msgid "The stock of the lot %s changed while counting it. Try again."
 msgstr "El stock del lote %s ha cambiado mientras se contaba. Inténtelo de nuevo."
+
+#. module: mercas_base
+#. odoo-python
+#: code:addons/mercas_base/models/account_move.py:0
+msgid ""
+"Not in this bill: the lines with a lot are invoiced from their lot "
+"(settlement, advance or firm invoice of the lot). %s"
+msgstr ""
+"No están en esta factura: las líneas con lote se facturan desde su lote "
+"(liquidación, anticipo o factura firme del lote). %s"
+
+#. module: mercas_base
+#. odoo-python
+#: code:addons/mercas_base/models/account_move.py:0
+msgid "lot %s"
+msgstr "lote %s"
+
+#. module: mercas_base
+#. odoo-python
+#: code:addons/mercas_base/models/account_move.py:0
+msgid "See the lots"
+msgstr "Ver los lotes"
+
+#. module: mercas_base
+#. odoo-python
+#: code:addons/mercas_base/models/account_move.py:0
+msgid "Lots to invoice"
+msgstr "Lotes por facturar"
