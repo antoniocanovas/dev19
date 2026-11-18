@@ -338,3 +338,19 @@ Diferencias resueltas a mano en dev20:
 - Tarjeta de producto: icono Material `barcode` en lugar de `fa-barcode`.
 
 Resultado: `mercas_touch` en `test_mercas_touch19` y `test_mercas_touch20`: 45 tests, 0 fallos (tours saltados: falta `websocket-client`).
+
+## 14. Facturación firme por defecto, comentarios de la venta y envío por correo, llevados a dev20 (18/11/2026)
+
+Commits `0bc2c77`, `81bcb9f` y `0091113` de dev19, trasladados con `git diff a78c9fe 81bcb9f -- mercas_base mercas_touch` + `patch -p1` (y `0091113` a mano).
+
+- **`mercas_base`:** opción *Facturación firme* en la compañía, valor por defecto de los contactos nuevos; `mercas_firm_negotiation` es campo comercial (oculto en contactos hijos y sincronizado con su empresa, también desmarcado); la línea de compra toma el valor de la empresa del proveedor. Migración que alinea los contactos existentes.
+- **`mercas_base`:** campo *Comentarios* del pedido de venta (`mercas_comment`), impreso en pedido, albarán y factura (`report/report_comment.xml`); `account.move.mercas_comment` calculado desde los pedidos facturados; bloqueado cuando una factura se ha enviado o tiene su PDF guardado.
+- **`mercas_touch`:** comentarios en la pantalla de la venta (`set_sale_comment`) y *Enviar por correo* (`send_sale_documents`): factura al contacto de facturación con el envío estándar; albarán y DeCA al de entrega con la plantilla `mail_template_delivery_documents`; un solo correo si coinciden las direcciones.
+
+Diferencias resueltas a mano en dev20:
+
+- Versión `20.0.1.0.1` y migración en `migrations/20.0.1.0.1` (en dev19, `19.0.1.0.1`).
+- Iconos Material `check`, `send` y `mail` en lugar de `fa-check`, `fa-paper-plane` y `fa-envelope`.
+- `account.move.send._get_default_sending_settings` en Odoo 20 suma `sending_methods` con una lista: se pasan como lista (`['email']`), también en dev19 (`0091113`).
+
+Resultado: `mercas_base` + `mercas_touch` en `test_mercas_touch19` (112 tests) y `test_mercas_touch20` (115 tests): 0 fallos. Plantilla de correo traducida al español en las dos.
