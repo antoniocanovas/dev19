@@ -325,3 +325,16 @@ Diferencias resueltas a mano en dev20:
 - `patch` dejó copias `.orig` y sobrescribió `mercas_touch/static/src/touch_screen/touch_screen.xml.orig`, que está versionado en dev20: restaurado con `git checkout`.
 
 Resultado: `mercas_base` + `mercas_touch` en `test_mercas_touch19` y `test_mercas_touch20`: 106 tests, 0 fallos.
+
+## 13. Precio propuesto estándar en el táctil, llevado a dev20 (18/11/2026)
+
+Commit `e70e2c4` de dev19, trasladado con `git show e70e2c4 -- mercas_touch` + `patch -p1`.
+
+- **`mercas_touch`:** `get_line_price(kind, partner_id, product_id, qty, attribute_value_ids)` calcula el precio de una línea de pedido nueva (`new()`) como el backend: en compras, tarifa del proveedor para la cantidad o, si no hay, coste; en ventas, tarifa del cliente con el extra de los atributos o, si no hay, precio de venta. Neto del descuento de la línea. La pantalla lo pide al abrir el producto y otra vez al añadir si han cambiado la cantidad o los atributos; el precio tecleado a mano se respeta. En compras, las tarjetas de producto ya no muestran el precio de venta.
+
+Diferencias resueltas a mano en dev20:
+
+- Importación de `float_round`: en dev20 la línea anterior importa `escape_like_value` en lugar de `escape_psql`.
+- Tarjeta de producto: icono Material `barcode` en lugar de `fa-barcode`.
+
+Resultado: `mercas_touch` en `test_mercas_touch19` y `test_mercas_touch20`: 45 tests, 0 fallos (tours saltados: falta `websocket-client`).
