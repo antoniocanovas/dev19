@@ -3,6 +3,7 @@ from collections import defaultdict
 
 from odoo import Command, api, fields, models
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools import float_round
 from odoo.tools.sql import escape_psql
 
 from odoo.addons.web.controllers.utils import clean_action
@@ -268,6 +269,41 @@ class MercasTouch(models.AbstractModel):
             (line for line in balance.values() if line['customer'] or line['supplier']),
             key=lambda line: line['name'],
         )
+
+    @api.model
+    def get_line_price(self, kind, partner_id, product_id, qty=0, attribute_value_ids=None):
+        """ The price proposed for a new line, computed by an order line as in the backend:
+
+        - purchase: the vendor price list of the supplier for that quantity, or else the cost
+          of the product;
+        - sale: the price list of the customer, with the extra price of the attributes chosen
+          (quality, size), or else the sale price of the product.
+
+        Net of the discount of the line: the screen has no discount. """
+        if kind not in ('sale', 'purchase'):
+            raise ValidationError(self.env._("Invalid kind of order."))
+        partner = self._get_partner(partner_id)
+        if not is_record_id(product_id):
+            raise ValidationError(self.env._("Invalid product."))
+        product = self.env['product.product'].browse(product_id).exists()
+        if not product:
+            raise ValidationError(self.env._("The product doesn't exist anymore."))
+        qty = qty if is_number(qty) and qty > 0 else 1.0
+        order = self.env[f'{kind}.order'].new({'partner_id': partner.id, 'company_id': self.env.company.id})
+        line_vals = {'order_id': order.id, 'product_id': product.id}
+        if kind == 'sale':
+            line_vals['product_uom_qty'] = qty
+            attribute_values = self.env['product.template.attribute.value'].browse(
+                [value for value in attribute_value_ids or [] if is_record_id(value)]
+            ).exists().filtered(lambda value: value.product_tmpl_id == product.product_tmpl_id)
+            if attribute_values:
+                line_vals['product_no_variant_attribute_value_ids'] = [Command.set(attribute_values.ids)]
+        else:
+            line_vals['product_qty'] = qty
+        line = self.env[f'{kind}.order.line'].new(line_vals)
+        line.order_id = order
+        digits = self.env['decimal.precision'].precision_get('Product Price')
+        return float_round(line.price_unit * (1 - (line.discount or 0.0) / 100), precision_digits=digits)
 
     @api.model
     def get_product_lots(self, product_id):

@@ -94,6 +94,48 @@ class TestMercasTouch(MercasTouchCommon):
                          "The boxes come in the same receipt")
         self.assertEqual(result['order']['lots'][0]['lot_name'], line.lot_id.name)
 
+    def test_purchase_price(self):
+        """ The price proposed to buy is the one of the purchase order: the vendor price list of
+        the supplier for the quantity (net of its discount), or else the cost of the product,
+        never the sale price. """
+        self.lettuce.standard_price = 0.3
+        self.assertEqual(self.Touch.get_line_price('purchase', self.supplier.id, self.lettuce.id), 0.3)
+        self.env['product.supplierinfo'].create([{
+            'partner_id': self.supplier.id,
+            'product_tmpl_id': self.lettuce.product_tmpl_id.id,
+            'price': 0.5,
+            'min_qty': 0,
+        }, {
+            'partner_id': self.supplier.id,
+            'product_tmpl_id': self.lettuce.product_tmpl_id.id,
+            'price': 0.4,
+            'discount': 10,
+            'min_qty': 100,
+        }])
+        self.assertEqual(self.Touch.get_line_price('purchase', self.supplier.id, self.lettuce.id, 10), 0.5)
+        self.assertAlmostEqual(self.Touch.get_line_price('purchase', self.supplier.id, self.lettuce.id, 100), 0.36)
+        # Another supplier, without price list: the cost
+        self.assertEqual(self.Touch.get_line_price('purchase', self.customer.id, self.lettuce.id, 10), 0.3)
+
+    def test_sale_price(self):
+        """ The price proposed to sell is the one of the sale order: the price list of the
+        customer (net of its discount), or else the sale price of the product. """
+        self.assertEqual(self.Touch.get_line_price('sale', self.customer.id, self.lettuce.id, 5), 0.8)
+        self.env['res.config.settings'].create({'group_product_pricelist': True}).execute()
+        pricelist = self.env['product.pricelist'].create({
+            'name': 'Touch Wholesale',
+            'item_ids': [Command.create({
+                'applied_on': '0_product_variant',
+                'product_id': self.lettuce.id,
+                'compute_price': 'fixed',
+                'fixed_price': 0.6,
+                'min_quantity': 10,
+            })],
+        })
+        self.customer.property_product_pricelist = pricelist
+        self.assertEqual(self.Touch.get_line_price('sale', self.customer.id, self.lettuce.id, 5), 0.8)
+        self.assertEqual(self.Touch.get_line_price('sale', self.customer.id, self.lettuce.id, 10), 0.6)
+
     def test_purchase_with_lot_name_and_origin(self):
         spain = self.env.ref('base.es')
         result = self._buy(50.0, lot_name='PEAR-001', origin_country_id=spain.id)

@@ -198,7 +198,8 @@
                 <span class="d-flex flex-column min-w-0">
                     <span class="fw-bold text-truncate" t-out="product.name"/>
                     <span class="small text-muted">
-                        <t t-out="this.formatAmount(product.price)"/> / <t t-out="product.uom"/>
+                        <!-- The sale price: a purchase proposes the one of the supplier -->
+                        <t t-if="this.state.mode !== 'purchase'"><t t-out="this.formatAmount(product.price)"/> / </t><t t-out="product.uom"/>
                         <t t-if="product.tracking"> · <i class="fa fa-barcode"/> Lots</t>
                     </span>
                 </span>
