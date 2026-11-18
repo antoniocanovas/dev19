@@ -40,6 +40,10 @@ Cada línea de pedido tiene los campos **Cajas** (`box_qty`) y **Caja** (`box_pr
 - Por cada línea con `box_qty > 0` se crea automáticamente una línea de caja vinculada (`box_sale_line_id`) usando el producto indicado en `box_product_id` de la línea (que se inicializa desde la plantilla del producto y puede modificarse manualmente antes de confirmar).
 - Si después de confirmar se modifica `box_qty`, `box_product_id` o el producto de una línea, la línea de caja se actualiza o elimina en consecuencia.
 
+### Ventas — Comentarios
+
+El pedido de venta tiene el campo **Comentarios** (`mercas_comment`, encima de los términos y condiciones), un texto libre que se imprime en el PDF del pedido, en sus albaranes y en sus facturas (`report/report_comment.xml`); en la factura se toma de los pedidos facturados (`account.move.mercas_comment`, calculado). No se puede cambiar cuando alguna factura del pedido se ha enviado o tiene su PDF guardado: el PDF ya no se regenera y quedaría desfasado. Desde `mercas_touch` se escribe en la pantalla de la venta.
+
 ### Ventas — Ubicación por cliente
 
 Al confirmar un pedido de venta se verifica si el cliente tiene una sub-ubicación propia bajo el **Almacén clientes** configurado en la empresa. Si no existe, se crea automáticamente con el nombre del partner y se asigna como `property_stock_customer` del cliente (campo dependiente de empresa).

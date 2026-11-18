@@ -1,10 +1,22 @@
-from odoo import Command, _, api, models
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.misc import formatLang
 
 
 class AccountMove(models.Model):
     _inherit = "account.move"
+
+    mercas_comment = fields.Text(
+        string="Comments",
+        compute="_compute_mercas_comment",
+        help="Comments of the sales invoiced, printed on the invoice.",
+    )
+
+    @api.depends("invoice_line_ids.sale_line_ids.order_id.mercas_comment")
+    def _compute_mercas_comment(self):
+        for move in self:
+            orders = move.invoice_line_ids.sale_line_ids.order_id
+            move.mercas_comment = "\n".join(c for c in orders.mapped("mercas_comment") if c) or False
 
     def action_post(self):
         result = super().action_post()

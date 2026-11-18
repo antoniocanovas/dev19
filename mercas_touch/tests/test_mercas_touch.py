@@ -373,6 +373,123 @@ class TestMercasTouch(MercasTouchCommon):
         with self.assertRaises(ValidationError):
             self.Touch.get_print_action('res.partner', self.customer.id, 'labels')
 
+    def test_sale_comment_and_documents_by_email(self):
+        """ The comments of a sale are printed on its delivery slip and its invoice, until the
+        invoice is sent. The documents go by email: the invoice to the contact of invoicing,
+        with the standard sending; the delivery slip to the contact of delivery; a single email
+        when both have the same address. """
+        self._buy(30.0, lot_name='MAIL-1')
+        lot = self.env['stock.lot'].search([('name', '=', 'MAIL-1')])
+        self.customer.email = 'billing@example.com'
+        shipping = self.env['res.partner'].create({
+            'name': 'Touch Warehouse', 'type': 'delivery', 'parent_id': self.customer.id,
+            'email': 'warehouse@example.com',
+        })
+
+        def sell():
+            order = self.Touch.sell({'uuid': str(uuid.uuid4()), 'partner_id': self.customer.id, 'lines': [
+                {'product_id': self.pear.id, 'lot_id': lot.id, 'qty': 5.0, 'price_unit': 2.0},
+            ]})['order']
+            return order, self.env['sale.order'].browse(order['id'])
+
+        order, sale = sell()
+        sale.partner_shipping_id = shipping
+        self.assertEqual(self.Touch.set_sale_comment(order['id'], '  Fragile goods  '),
+                         {'comment': 'Fragile goods', 'comment_locked': False})
+        picking = sale.picking_ids
+        html = self.env['ir.actions.report']._render_qweb_html('stock.action_report_delivery', picking.ids)[0]
+        self.assertIn(b'Fragile goods', html)
+
+        mail = self.Touch.get_order_summary('sale', order['id'])['mail']
+        self.assertEqual(mail['documents'], ['delivery'])
+        self.assertTrue(mail['deca_missing'], "The DeCA isn't complete")
+        self.assertEqual(mail['emails'], {'invoice': 'billing@example.com', 'shipping': 'warehouse@example.com'})
+        with self.assertRaises(UserError):
+            self.Touch.send_sale_documents(order['id'], ['invoice'])
+
+        self.Touch.invoice_sale(order['id'])
+        invoice = sale.invoice_ids
+        self.assertEqual(invoice.mercas_comment, 'Fragile goods')
+        html = self.env['ir.actions.report']._render_qweb_html('account.account_invoices', invoice.ids)[0]
+        self.assertIn(b'Fragile goods', html)
+
+        sent = self.Touch.send_sale_documents(order['id'], ['delivery', 'invoice'])
+        self.assertEqual(sent, [
+            {'email': 'warehouse@example.com', 'documents': ['delivery']},
+            {'email': 'billing@example.com', 'documents': ['invoice']},
+        ])
+        self.assertTrue(invoice.is_move_sent)
+        self.assertTrue(invoice.invoice_pdf_report_id)
+        message = picking.message_ids.filtered(lambda m: shipping in m.partner_ids)
+        self.assertEqual(len(message), 1)
+        self.assertEqual(len(message.attachment_ids), 1)
+        summary = self.Touch.get_order_summary('sale', order['id'])
+        self.assertTrue(summary['comment_locked'], "The invoice was sent: its PDF is kept")
+        with self.assertRaises(UserError):
+            self.Touch.set_sale_comment(order['id'], 'Too late')
+
+        # The same address for both contacts: a single email, the one of the invoice
+        order, sale = sell()
+        shipping.email = 'BILLING@example.com'
+        sale.partner_shipping_id = shipping
+        self.Touch.invoice_sale(order['id'])
+        sent = self.Touch.send_sale_documents(order['id'], ['invoice', 'delivery'])
+        self.assertEqual(sent, [{'email': 'billing@example.com', 'documents': ['invoice', 'delivery']}])
+        message = sale.invoice_ids.message_ids.filtered(lambda m: self.customer in m.partner_ids)
+        self.assertEqual(len(message), 1)
+        self.assertEqual(len(message.attachment_ids), 2, "The invoice and the delivery slip")
+
+        # A contact without email: nothing is sent
+        shipping.email = False
+        with self.assertRaises(UserError):
+            self.Touch.send_sale_documents(order['id'], ['delivery'])
+
+    def test_sale_comment_reaches_invoices_made_later(self):
+        """ The comments typed on the screen are printed on the invoice of the sale, however
+        and whenever it is made: from the backend afterwards, a draft made before the comments,
+        or a posted invoice not yet sent nor printed whose comments change. """
+        self._buy(30.0, lot_name='COMMENT-1')
+        lot = self.env['stock.lot'].search([('name', '=', 'COMMENT-1')])
+
+        def sell():
+            order = self.Touch.sell({'uuid': str(uuid.uuid4()), 'partner_id': self.customer.id, 'lines': [
+                {'product_id': self.pear.id, 'lot_id': lot.id, 'qty': 5.0, 'price_unit': 2.0},
+            ]})['order']
+            return order['id'], self.env['sale.order'].browse(order['id'])
+
+        def invoice_html(invoice):
+            return self.env['ir.actions.report']._render_qweb_html('account.account_invoices', invoice.ids)[0]
+
+        # 1. Comments on the screen, invoice made later from the backend (standard wizard)
+        order_id, sale = sell()
+        self.Touch.set_sale_comment(order_id, 'Keep refrigerated')
+        wizard = self.env['sale.advance.payment.inv'].with_context(
+            active_model='sale.order', active_ids=sale.ids).create({'advance_payment_method': 'delivered'})
+        wizard.create_invoices()
+        invoice = sale.invoice_ids
+        self.assertEqual(invoice.state, 'draft')
+        self.assertEqual(invoice.mercas_comment, 'Keep refrigerated')
+        self.assertIn(b'Keep refrigerated', invoice_html(invoice))
+        invoice.action_post()
+        self.assertIn(b'Keep refrigerated', invoice_html(invoice))
+
+        # 2. Draft invoice made before the comments
+        order_id, sale = sell()
+        sale._create_invoices()
+        invoice = sale.invoice_ids
+        self.assertFalse(invoice.mercas_comment)
+        self.Touch.set_sale_comment(order_id, 'Deliver before 8:00')
+        self.assertEqual(invoice.mercas_comment, 'Deliver before 8:00')
+        self.assertIn(b'Deliver before 8:00', invoice_html(invoice))
+
+        # 3. Posted, not sent nor printed: the comments can still change, and the invoice follows
+        invoice.action_post()
+        self.assertFalse(self.Touch.get_order_summary('sale', order_id)['comment_locked'])
+        self.Touch.set_sale_comment(order_id, 'Deliver before 9:00')
+        html = invoice_html(invoice)
+        self.assertIn(b'Deliver before 9:00', html)
+        self.assertNotIn(b'Deliver before 8:00', html)
+
     def test_deca(self):
         """ The DeCA of a sale opens a dialog with the carrier proposed, as the company says,
         and what is still missing; it is printed from there. """

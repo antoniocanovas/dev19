@@ -1599,3 +1599,41 @@ msgid ""
 msgstr ""
 "Si está activado cualquier contacto nuevo tendrá esta opción habilitada por "
 "lo que el precio de compra será el negociado en ese momento."
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.view_sale_order_form_mercas
+msgid "Comments (printed on the order, delivery slips and invoices)..."
+msgstr ""
+"Comentarios (se imprimen en el pedido, los albaranes y las facturas)..."
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_account_bank_statement_line__mercas_comment
+#: model:ir.model.fields,help:mercas_base.field_account_move__mercas_comment
+msgid "Comments of the sales invoiced, printed on the invoice."
+msgstr "Comentarios de las ventas facturadas, impresos en la factura."
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_sale_order__mercas_comment
+msgid ""
+"Printed on the order, its delivery slips and its invoices. It can't be "
+"changed once an invoice has been sent or its PDF generated."
+msgstr ""
+"Se imprimen en el pedido, sus albaranes y sus facturas. No se pueden cambiar"
+" una vez enviada una factura o generado su PDF."
+
+#. module: mercas_base
+#. odoo-python
+#: code:addons/mercas_base/models/sale_order.py:0
+msgid ""
+"The comments of %s can't be changed: its invoice has already been sent or "
+"printed."
+msgstr ""
+"Los comentarios de %s no se pueden cambiar: su factura ya se ha enviado o "
+"impreso."
+
+#. module: mercas_base
+#: model:ir.model.fields,field_description:mercas_base.field_account_bank_statement_line__mercas_comment
+#: model:ir.model.fields,field_description:mercas_base.field_account_move__mercas_comment
+#: model:ir.model.fields,field_description:mercas_base.field_sale_order__mercas_comment
+msgid "Comments"
+msgstr "Comentarios"

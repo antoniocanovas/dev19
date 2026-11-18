@@ -1340,7 +1340,82 @@ export class TouchScreen extends Component {
     /** The DeCA of the delivery: its carrier and licence plates, proposed, and then printed. */
     async onDeca() {
         const action = await this.orm.call(MODEL, "get_deca_action", [this.state.done.id]);
-        await this.action.doAction(action);
+        // Completed, the DeCA can be sent by email
+        await this.action.doAction(action, { onClose: () => this.refreshOrderSummary() });
+    }
+
+    /** The comments of the sale being typed, or the ones saved. */
+    commentValue(done) {
+        return done.commentEdit ?? done.comment;
+    }
+
+    /** Save the comments of the sale: printed on the order, the delivery slip and the invoice. */
+    async onSaveComment(done) {
+        const result = await this.run("set_sale_comment", [done.id, this.commentValue(done)]);
+        if (result && this.state.done === done) {
+            Object.assign(done, result);
+            delete done.commentEdit;
+        }
+    }
+
+    mailDocumentLabel(kind) {
+        return { delivery: _t("Delivery slip"), deca: _t("DeCA"), invoice: _t("Invoice") }[kind];
+    }
+
+    /** The invoice goes to the contact of invoicing; the delivery slip and the DeCA, of delivery. */
+    mailEmail(done, kind) {
+        return done.mail.emails[kind === "invoice" ? "invoice" : "shipping"];
+    }
+
+    mailName(done, kind) {
+        return done.mail.names[kind === "invoice" ? "invoice" : "shipping"];
+    }
+
+    /** Open (with the documents available and an email, checked) or close the sending. */
+    async onToggleMail() {
+        const done = this.state.done;
+        if (done.mailPanel) {
+            done.mailPanel = null;
+            return;
+        }
+        // An invoice or a DeCA made meanwhile
+        await this.refreshOrderSummary();
+        if (this.state.done !== done || !done.mail) {
+            return;
+        }
+        done.mailPanel = {
+            kinds: done.mail.documents.filter((kind) => this.mailEmail(done, kind)),
+        };
+    }
+
+    onToggleMailKind(kind) {
+        const panel = this.state.done.mailPanel;
+        panel.kinds = panel.kinds.includes(kind)
+            ? panel.kinds.filter((other) => other !== kind)
+            : [...panel.kinds, kind];
+    }
+
+    async onSendMail() {
+        const done = this.state.done;
+        const kinds = ["delivery", "deca", "invoice"].filter((kind) => done.mailPanel.kinds.includes(kind));
+        const sent = await this.run("send_sale_documents", [done.id, kinds]);
+        if (!sent) {
+            return;
+        }
+        for (const mail of sent) {
+            this.notification.add(
+                _t("Sent to %(email)s: %(documents)s", {
+                    email: mail.email,
+                    documents: mail.documents.map((kind) => this.mailDocumentLabel(kind)).join(", "),
+                }),
+                { type: "success" }
+            );
+        }
+        if (this.state.done === done) {
+            done.mailPanel = null;
+            // The invoice sent: its comments can't be changed anymore
+            await this.refreshOrderSummary();
+        }
     }
 
     async onNewOperation() {
