@@ -123,6 +123,8 @@ Reutiliza el mecanismo estándar de etiquetas de producto de Odoo (`product.labe
 
 Cada línea de pedido de compra tiene el campo **Facturación firme** (`mercas_firm_negotiation`), que por defecto toma el valor configurado en el mismo campo del proveedor (**Facturación firme por defecto** en la ficha de contacto) y se puede cambiar a mano por línea. Al asignar lote a la línea (o al crearse automáticamente, ver más abajo), ese valor se traslada al lote — ver *Lotes de stock* para cómo afecta a la facturación al proveedor.
 
+La opción **Facturación firme** de la compañía (pestaña Mercas) es el valor por defecto del campo en los contactos nuevos; los existentes conservan el suyo. La línea de compra toma el valor de la empresa del proveedor (`commercial_partner_id`), también cuando el pedido va a una de sus personas de contacto.
+
 ### Compras — Devolución de envases
 
 **Detección por contenido, no por tipo de pedido**: un pedido de compra se considera devolución de envases (`mercas_is_box_return`, calculado y almacenado) cuando tiene al menos una línea de producto y **todas** sus líneas de producto están marcadas como caja/envase (`product.is_box`). No hace falta ningún wizard ni campo de tipo: un pedido de compra creado a mano con solo productos de caja se detecta igual.

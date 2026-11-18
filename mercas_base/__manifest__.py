@@ -1,6 +1,6 @@
 {
     "name": "Mercas Base",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     "summary": "Módulo base para gestión de mercados mayoristas de frutas",
     "author": "Antonio Cánovas",
     "license": "LGPL-3",

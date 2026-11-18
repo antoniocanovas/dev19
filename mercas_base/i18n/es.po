@@ -217,6 +217,7 @@ msgstr "Producto"
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__mercas_firm_negotiation
 #: model:ir.model.fields,field_description:mercas_base.field_purchase_order_line__mercas_firm_negotiation
+#: model:ir.model.fields,field_description:mercas_base.field_res_company__mercas_firm_negotiation
 #: model:ir.model.fields,field_description:mercas_base.field_res_partner__mercas_firm_negotiation
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__mercas_firm_negotiation
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_search_mercas
@@ -1589,3 +1590,12 @@ msgstr "Ver los lotes"
 #: code:addons/mercas_base/models/account_move.py:0
 msgid "Lots to invoice"
 msgstr "Lotes por facturar"
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_res_company__mercas_firm_negotiation
+msgid ""
+"If enabled, every new contact gets this option enabled, so the purchase "
+"price is the one negotiated at that moment."
+msgstr ""
+"Si está activado cualquier contacto nuevo tendrá esta opción habilitada por "
+"lo que el precio de compra será el negociado en ese momento."

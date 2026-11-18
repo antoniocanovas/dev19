@@ -290,8 +290,12 @@ class PurchaseOrderLine(models.Model):
 
     @api.depends("order_id.partner_id")
     def _compute_mercas_firm_negotiation(self):
+        # The option of the supplier (company), also when the purchase is
+        # addressed to one of its contacts
         for line in self:
-            line.mercas_firm_negotiation = line.order_id.partner_id.mercas_firm_negotiation
+            line.mercas_firm_negotiation = (
+                line.order_id.partner_id.commercial_partner_id.mercas_firm_negotiation
+            )
 
     @api.depends("product_id")
     def _compute_box_product_id(self):
