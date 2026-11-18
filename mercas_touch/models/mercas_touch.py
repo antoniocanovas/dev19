@@ -1354,7 +1354,7 @@ class MercasTouch(models.AbstractModel):
         delivery documents going to the same address. """
         sender = self.env['account.move.send']
         settings = sender._get_default_sending_settings(
-            invoice, sending_methods={'email'}, mail_partner_ids=[partner.id])
+            invoice, sending_methods=['email'], mail_partner_ids=[partner.id])
         widget = settings.get('mail_attachments_widget') or []
         widget += [{
             'id': attachment.id,
@@ -1363,7 +1363,7 @@ class MercasTouch(models.AbstractModel):
             'manual': True,
         } for attachment in attachments]
         sender._generate_and_send_invoices(
-            invoice, sending_methods={'email'}, mail_partner_ids=[partner.id], mail_attachments_widget=widget)
+            invoice, sending_methods=['email'], mail_partner_ids=[partner.id], mail_attachments_widget=widget)
 
     def _send_sale_delivery_documents(self, picking, partner, attachments):
         """ The delivery slips and the DeCA by email, posted on the last delivery. """
