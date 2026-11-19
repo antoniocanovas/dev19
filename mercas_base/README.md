@@ -44,7 +44,7 @@ Cada línea de pedido tiene los campos **Cajas** (`box_qty`) y **Caja** (`box_pr
 
 Las cajas de una venta se reparten en **palets** (pestaña **Palets** del pedido, o el botón **Palets** del mostrador táctil). El reparto lo decide quien prepara la venta, sin control de peso ni de número de cajas.
 
-**Configuración** (Inventario › Configuración › Tipos de paquete; el módulo activa la opción **Paquetes** al instalarse o actualizarse):
+**Configuración** (Inventario › Configuración › Tipos de paquete; el módulo activa la opción **Paquetes** al instalarse):
 
 - Un tipo por cada caja, con su **Peso** (la tara) y su **Producto envase**: la tara de las cajas de ese producto envase.
 - Un tipo por cada palet, marcado como **Palet**, con su peso (tara), sus medidas y, si es retornable (europalet), su **Producto envase**. Con prefijo de secuencia (p. ej. `PAL`), los palets se numeran `PAL0000001`…

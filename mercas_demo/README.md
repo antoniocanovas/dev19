@@ -28,8 +28,6 @@ Datos de demostración y de arranque para probar `mercas_base` (y `mercas_touch`
 - **Precios** de coste y de venta de la fruta, la verdura y los envases.
 - Compra y recibe la mercancía de los palets y crea el presupuesto **Demo palets** con sus lotes y palets.
 
-Al actualizar a la versión 19.0.1.0.1 en una base que ya tenía la demo, se crean los tipos de paquete, el *Europalet* (con su precio y, con `l10n_es`, IVA 0 %), la compra recibida y el presupuesto *Demo palets*, sin tocar los precios ni los impuestos de los demás productos.
-
 Los datos se cargan con `noupdate`: actualizar el módulo no sobrescribe los cambios hechos a mano.
 
 ## Dependencias

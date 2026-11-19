@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- ============================================================= -->
+    <!-- Palets y cajas como tipos de paquete (packing list)           -->
+    <!-- Peso = tara, en kg; medidas en mm                             -->
+    <!-- ============================================================= -->
+
+    <!-- Europalet: envase retornable, como las cajas -->
+    <record id="product_europalet" model="product.product">
+        <field name="name">Europalet</field>
+        <field name="categ_id" ref="product_category_envases"/>
+        <field name="type">consu</field>
+        <field name="is_storable">True</field>
+        <field name="tracking">none</field>
+        <field name="uom_id" ref="uom.product_uom_unit"/>
+        <field name="is_box">True</field>
+    </record>
+
+    <record id="package_type_caja1" model="stock.package.type">
+        <field name="name">Caja1</field>
+        <field name="sequence">10</field>
+        <field name="base_weight">0.5</field>
+        <field name="mercas_box_product_id" ref="product_caja1"/>
+        <field name="packaging_length">500</field>
+        <field name="width">300</field>
+        <field name="height">200</field>
+    </record>
+
+    <record id="package_type_caja2" model="stock.package.type">
+        <field name="name">Caja2</field>
+        <field name="sequence">11</field>
+        <field name="base_weight">0.8</field>
+        <field name="mercas_box_product_id" ref="product_caja2"/>
+        <field name="packaging_length">600</field>
+        <field name="width">400</field>
+        <field name="height">250</field>
+    </record>
+
+    <record id="package_type_palet_europeo" model="stock.package.type">
+        <field name="name">Palet europeo</field>
+        <field name="sequence">1</field>
+        <field name="mercas_is_pallet">True</field>
+        <field name="mercas_box_product_id" ref="product_europalet"/>
+        <field name="base_weight">25</field>
+        <field name="max_weight">1000</field>
+        <field name="packaging_length">1200</field>
+        <field name="width">800</field>
+        <field name="height">1500</field>
+        <field name="sequence_code">PAL</field>
+    </record>
+
+    <record id="package_type_palet_desechable" model="stock.package.type">
+        <field name="name">Palet desechable</field>
+        <field name="sequence">2</field>
+        <field name="mercas_is_pallet">True</field>
+        <field name="base_weight">15</field>
+        <field name="packaging_length">1200</field>
+        <field name="width">800</field>
+        <field name="height">1200</field>
+        <field name="sequence_code">PALD</field>
+    </record>
+
+</odoo>

@@ -32,10 +32,8 @@ PALLET_SALE_REF = "Demo palets"
 
 
 def post_init_hook(env):
-    """Idempotent setup, called on fresh install (post_init_hook) and re-run on
-    upgrade via migrations/<version>/post-mercas_demo.py so it also applies to
-    databases where mercas_demo was already installed before this logic existed.
-    """
+    """Setup on install: lot tracking, company defaults, taxes, prices and the
+    quotation of the pallets."""
     _activate_lot_tracking(env)
     _configure_company(env)
     _assign_compensation_journal(env)
