@@ -5,4 +5,6 @@ access_stock_lot_change_wizard,access.stock.lot.change.wizard,model_stock_lot_ch
 access_stock_lot_change_wizard_line,access.stock.lot.change.wizard.line,model_stock_lot_change_wizard_line,group_correct_lots,1,1,1,1
 access_mercas_label_print_wizard,access.mercas.label.print.wizard,model_mercas_label_print_wizard,base.group_user,1,1,1,1
 access_mercas_label_print_wizard_line,access.mercas.label.print.wizard.line,model_mercas_label_print_wizard_line,base.group_user,1,1,1,1
+access_mercas_sale_pallet,access.mercas.sale.pallet,model_mercas_sale_pallet,base.group_user,1,1,1,1
+access_mercas_sale_pallet_line,access.mercas.sale.pallet.line,model_mercas_sale_pallet_line,base.group_user,1,1,1,1
 access_stock_lot_inventory_wizard,access.stock.lot.inventory.wizard,model_stock_lot_inventory_wizard,stock.group_stock_user,1,1,1,1

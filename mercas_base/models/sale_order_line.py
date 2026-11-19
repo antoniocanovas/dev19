@@ -28,6 +28,16 @@ class SaleOrderLine(models.Model):
         domain=[("is_box", "=", True)],
     )
     mercas_product_is_box = fields.Boolean(related="product_id.is_box")
+    mercas_pallet_box_line = fields.Boolean(
+        string="Returnable Pallets Line",
+        copy=False,
+        help="Line of the returnable pallets of the sale, kept by its pallets.",
+    )
+    mercas_pallet_line_ids = fields.One2many(
+        comodel_name="mercas.sale.pallet.line",
+        inverse_name="sale_line_id",
+        string="Boxes on Pallets",
+    )
     mercas_has_assigned_lot = fields.Boolean(
         compute="_compute_mercas_has_assigned_lot",
         help="Has at least one delivery move line (done or pending) with a "
@@ -181,6 +191,8 @@ class SaleOrderLine(models.Model):
                 lambda l: l.product_uom_qty != vals["product_uom_qty"]
             )
         result = super().write(vals)
+        if {"box_qty", "product_uom_qty", "product_uom_id", "product_id"} & set(vals):
+            self._mercas_trim_pallets()
         if changed_qty_lines:
             changed_qty_lines.product_qty_datetime = fields.Datetime.now()
         if "box_qty" in vals or "box_product_id" in vals or "product_id" in vals:
@@ -223,6 +235,24 @@ class SaleOrderLine(models.Model):
                     order._mercas_prepare_box_lines()
         self._mercas_notify_lines_changed(self.order_id)
         return result
+
+    def _mercas_trim_pallets(self):
+        """Take off the pallets the boxes a line no longer has, from its last
+        pallets."""
+        pallet_lines = self.env["mercas.sale.pallet.line"].search([("sale_line_id", "in", self.ids)])
+        for line, on_pallets in pallet_lines.grouped("sale_line_id").items():
+            excess = sum(on_pallets.mapped("box_qty")) - line.box_qty
+            for pallet_line in on_pallets.sorted(
+                lambda pl: (pl.pallet_id.sequence, pl.pallet_id.id, pl.id), reverse=True
+            ):
+                if excess <= 0:
+                    break
+                take = min(excess, pallet_line.box_qty)
+                excess -= take
+                if take == pallet_line.box_qty:
+                    pallet_line.unlink()
+                else:
+                    pallet_line.box_qty -= take
 
     def unlink(self):
         orders = self.order_id

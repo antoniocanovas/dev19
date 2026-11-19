@@ -40,6 +40,28 @@ Cada línea de pedido tiene los campos **Cajas** (`box_qty`) y **Caja** (`box_pr
 - Por cada línea con `box_qty > 0` se crea automáticamente una línea de caja vinculada (`box_sale_line_id`) usando el producto indicado en `box_product_id` de la línea (que se inicializa desde la plantilla del producto y puede modificarse manualmente antes de confirmar).
 - Si después de confirmar se modifica `box_qty`, `box_product_id` o el producto de una línea, la línea de caja se actualiza o elimina en consecuencia.
 
+### Ventas — Palets y packing list
+
+Las cajas de una venta se reparten en **palets** (pestaña **Palets** del pedido, o el botón **Palets** del mostrador táctil). El reparto lo decide quien prepara la venta, sin control de peso ni de número de cajas.
+
+**Configuración** (Inventario › Configuración › Tipos de paquete; el módulo activa la opción **Paquetes** al instalarse o actualizarse):
+
+- Un tipo por cada caja, con su **Peso** (la tara) y su **Producto envase**: la tara de las cajas de ese producto envase.
+- Un tipo por cada palet, marcado como **Palet**, con su peso (tara), sus medidas y, si es retornable (europalet), su **Producto envase**. Con prefijo de secuencia (p. ej. `PAL`), los palets se numeran `PAL0000001`…
+
+**Funcionamiento**:
+
+- Cada palet (`mercas.sale.pallet`) dice cuántas cajas de cada línea lleva (`mercas.sale.pallet.line`). Las cajas que no están en ningún palet son **cajas sueltas**. Si una línea pasa a tener menos cajas que las que hay en palets, se quitan de los últimos palets.
+- Al entregar la venta, cada palet es un **paquete** (`stock.package`) del albarán: las líneas del albarán de cada producto se reparten entre los paquetes de sus palets en proporción a sus cajas, partiéndolas si hace falta, con el mismo lote y ubicaciones. Las cajas sueltas quedan sin paquete. Las cajas y los propios palets (envases) no se meten en los palets: son el continente, no la mercancía.
+- Los **palets retornables** añaden al confirmar una línea de envase en la sección **Envases** (un europalet por palet), como las cajas, y cuentan en el saldo de envases del cliente.
+- **Corrección después de vender**: si se cambian los palets de una venta ya entregada (desde el pedido o el táctil), se reescriben las líneas hechas del albarán; Odoo mueve las existencias por sí mismo (sin cambiar el total, el lote ni el destino) y deja la corrección en el historial del albarán. Los palets que siguen conservan su paquete (y su número o SSCC). Si cambia el número de europalets, no se toca la venta: se avisa para regularizarlo como una entrega o devolución de envases.
+
+**Packing list** (botón del pedido, menú Imprimir del pedido y del albarán, y el táctil): cada palet es un bulto (marcas: su número de paquete), con tipo, medidas y volumen (largo × ancho del tipo × altura del palet o, si no tiene, la del tipo); debajo, las cajas de cada línea con producto, lote, origen, nº de cajas y tipo de caja; después las cajas sueltas; y los totales de bultos, cajas, neto, tara, bruto y volumen.
+
+- **Neto**: los kg entregados de la línea (los pedidos si aún no se ha entregado) repartidos por cajas, convertidos a la unidad de peso de los productos (o con el peso del producto si se vende por unidades).
+- **Tara**: nº de cajas × peso del tipo de su caja, más el peso del tipo de palet.
+- **Bruto**: neto + tara; si el paquete del palet tiene **Peso de envío** (pesado en báscula), se usa ese.
+
 ### Ventas — Comentarios
 
 El pedido de venta tiene el campo **Comentarios** (`mercas_comment`, encima de los términos y condiciones), un texto libre que se imprime en el PDF del pedido, en sus albaranes y en sus facturas (`report/report_comment.xml`); en la factura se toma de los pedidos facturados (`account.move.mercas_comment`, calculado). No se puede cambiar cuando alguna factura del pedido se ha enviado o tiene su PDF guardado: el PDF ya no se regenera y quedaría desfasado. Desde `mercas_touch` se escribe en la pantalla de la venta.
@@ -182,6 +204,10 @@ Para los proveedores cuyas facturas expedimos nosotros en su nombre (facturació
 - **Número:** el estándar numera con una serie por proveedor (`AF` + id del proveedor + año/mes/número). Al confirmar, si la factura no tiene referencia del proveedor, toma ese número: es el número de la factura del proveedor (el que se envía al SII y el del 347).
 - **PDF:** el informe estándar se titula *Autofactura*; además lleva la mención **Facturación por el destinatario** y los datos del **emisor** (el proveedor: nombre, dirección y NIF) y del **destinatario** (la empresa).
 - **Envío:** con el botón *Enviar* de la factura, que usa la plantilla estándar de autofacturación, para su aceptación por el proveedor según el acuerdo.
+
+### Maestros — Categoría: mercancía de mercado
+
+Las categorías de producto tienen la casilla **Mercancía de mercado** (`product.category.is_merca`, marcada por defecto). En el mostrador táctil (`mercas_touch`), el catálogo de ventas y compras solo ofrece los productos de las categorías marcadas (y los que no tienen categoría); también al escanear un código. Los envases se eligen aparte, en cada línea, sea cual sea su categoría. Para ocultar del mostrador material o servicios, se desmarca su categoría.
 
 ### Maestros — Producto: caja/envase
 

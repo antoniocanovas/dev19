@@ -13,6 +13,19 @@ class StockPicking(models.Model):
              "Auto-Complete of the vendor bill also finds the purchase by it.",
     )
 
+    def _action_done(self):
+        res = super()._action_done()
+        # The goods of the deliveries go on the packages of their pallets
+        for picking in self.filtered(
+            lambda p: p.state == "done" and p.picking_type_code == "outgoing" and p.sale_id.mercas_pallet_ids
+        ):
+            picking.sale_id._mercas_apply_pallets(pickings=picking, initial=True)
+        return res
+
+    def action_print_mercas_packing_list(self):
+        self.ensure_one()
+        return self.env.ref("mercas_base.action_report_mercas_packing_list_picking").report_action(self)
+
     def _mercas_validate(self):
         """Validate the transfers of the automatic flows ("Sold & Sent",
         "Purchase & Receive", boxes) without the dialogs of the standard
