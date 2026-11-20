@@ -2,7 +2,7 @@ import uuid
 from collections import defaultdict
 
 from odoo import Command, api, fields, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tools import float_round
 from odoo.tools.sql import escape_psql
 
@@ -118,7 +118,17 @@ class MercasTouch(models.AbstractModel):
                 'countries': [{'id': country.id, 'name': country.name} for country in countries],
             },
             'has_risk': 'risk_exception' in self.env['res.partner']._fields,
+            'can_bill': self._can_bill(),
         }
+
+    def _can_bill(self):
+        """ Whether the user invoices the purchases to their suppliers (bills, settlements,
+        advances and firm invoices of lots): only the billing administrators. """
+        return self.env.user.has_group('account.group_account_manager')
+
+    def _check_can_bill(self):
+        if not self._can_bill():
+            raise AccessError(self.env._("Only the billing administrators can invoice the purchases."))
 
     @api.model
     def get_origin_states(self, country_id):
@@ -145,11 +155,24 @@ class MercasTouch(models.AbstractModel):
             'sale_ok': product.sale_ok,
             'purchase_ok': product.purchase_ok,
             'box_product_id': product.product_tmpl_id.box_product_id.id,
+            # Weighed with its boxes: the screen works out the net weight from the gross one
+            # (scale) less the weight of the boxes
+            'weight': product.weight,
+            'weighed': product._mercas_is_weighed(product.uom_id),
+            'uom_per_weight': self._uom_per_weight(product),
             'price': product.lst_price,
             'attributes': self._get_product_attributes(product),
             # Changes with the image, so that the browser cache is refreshed
             'image_unique': fields.Datetime.to_string(product.write_date) if product.image_128 else False,
         }
+
+    def _uom_per_weight(self, product):
+        """ Units of the product in one unit of weight (1 when it is sold by weight in the
+        weight unit of the products, as kg). """
+        if not product._mercas_is_weighed(product.uom_id):
+            return 1.0
+        weight_uom = self.env['product.template']._get_weight_uom_id_from_ir_config_parameter()
+        return weight_uom._compute_quantity(1.0, product.uom_id, round=False)
 
     def _get_product_attributes(self, product):
         """ Attributes chosen on each sale of the product, as the quality and the size of goods
@@ -598,6 +621,7 @@ class MercasTouch(models.AbstractModel):
         """ The standard bill of a received purchase, in draft, to review it in a dialog. Its
         lines with a lot under sale settlement are invoiced from their lots
         (invoice_purchase_lots). """
+        self._check_can_bill()
         order = self._get_purchase_order(order_id)
         if not order._mercas_standard_bill_lines():
             raise UserError(self.env._("There is nothing to invoice in %s.", order.name))
@@ -609,6 +633,7 @@ class MercasTouch(models.AbstractModel):
     def invoice_purchase_lots(self, order_id, mode):
         """ Invoice the lots of a received purchase in the given way (see invoice_lots), and
         open the invoice made in a dialog. """
+        self._check_can_bill()
         if mode not in LOT_INVOICE_MODES:
             raise ValidationError(self.env._("Invalid way of invoicing."))
         order = self._get_purchase_order(order_id)
@@ -1013,10 +1038,12 @@ class MercasTouch(models.AbstractModel):
             'received': bool(order.picking_ids) and all(
                 picking.state in ('done', 'cancel') for picking in order.picking_ids),
             **self._get_order_states(order),
-            'bill_pending': order.state == 'purchase' and bool(order._mercas_standard_bill_lines()),
+            # The buttons to invoice it, only for the billing administrators
+            'bill_pending': self._can_bill() and order.state == 'purchase'
+            and bool(order._mercas_standard_bill_lines()),
             'lot_invoice_modes': [
                 mode for mode, lots in self._get_purchase_lots_to_invoice(order).items() if lots
-            ] if order.state == 'purchase' else [],
+            ] if order.state == 'purchase' and self._can_bill() else [],
             'invoice_count': len(self._get_purchase_invoices(order)),
             # Left out of the bill of the purchase: invoiced from their lot
             'settlement_lines': [{
@@ -1126,6 +1153,7 @@ class MercasTouch(models.AbstractModel):
 
         :return: the action opening the invoices made
         """
+        self._check_can_bill()
         if mode not in LOT_INVOICE_MODES:
             raise ValidationError(self.env._("Invalid way of invoicing."))
         if not are_record_ids(lot_ids):

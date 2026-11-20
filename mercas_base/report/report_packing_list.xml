@@ -150,6 +150,13 @@
         </t>
     </template>
 
+    <!-- The one of the delivery note, with a name of its own: the reports are looked up by
+         their name (/report/pdf/<report_name>/<ids>), and with the same name as the one of
+         the sale the ids of the pickings would be read as sale orders. -->
+    <template id="report_mercas_packing_list_picking">
+        <t t-call="mercas_base.report_mercas_packing_list"/>
+    </template>
+
     <record id="action_report_mercas_packing_list" model="ir.actions.report">
         <field name="name">Packing List</field>
         <field name="model">sale.order</field>
@@ -165,8 +172,8 @@
         <field name="name">Packing List</field>
         <field name="model">stock.picking</field>
         <field name="report_type">qweb-pdf</field>
-        <field name="report_name">mercas_base.report_mercas_packing_list</field>
-        <field name="report_file">mercas_base.report_mercas_packing_list</field>
+        <field name="report_name">mercas_base.report_mercas_packing_list_picking</field>
+        <field name="report_file">mercas_base.report_mercas_packing_list_picking</field>
         <field name="print_report_name">'Packing List - %s' % (object.sale_id.name or object.name)</field>
         <field name="binding_model_id" ref="stock.model_stock_picking"/>
         <field name="binding_type">report</field>

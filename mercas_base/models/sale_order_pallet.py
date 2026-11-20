@@ -185,12 +185,8 @@ class SaleOrder(models.Model):
 
     def _mercas_net_weight(self, product, qty, uom):
         """Net weight of `qty` `uom` of `product`, in the weight unit of the
-        products: converted when it is a unit of weight, or with the weight
-        of the product otherwise."""
-        weight_uom = self.env["product.template"]._get_weight_uom_id_from_ir_config_parameter()
-        if uom._has_common_reference(weight_uom):
-            return uom._compute_quantity(qty, weight_uom, round=False)
-        return uom._compute_quantity(qty, product.uom_id, round=False) * product.weight
+        products."""
+        return product._mercas_net_weight(qty, uom)
 
     def action_print_mercas_packing_list(self):
         self.ensure_one()
@@ -201,22 +197,21 @@ class SaleOrder(models.Model):
         boxes of each line on them, then the loose boxes, and the totals.
 
         The kg of a line are the delivered ones (the ordered ones before the
-        delivery), shared out by boxes. The tare of a box is the weight of the
-        package type of its box product; the tare of a pallet, the one of its
-        type plus the boxes it holds. A pallet weighed (shipping weight of its
-        package) shows that weight as its gross weight."""
+        delivery), shared out by boxes. The tare of the boxes is the one of
+        their line (the weight of the box product when the boxes were set);
+        the tare of a pallet, the weight of its type plus the boxes it holds.
+        A pallet weighed (shipping weight of its package) shows that weight as
+        its gross weight."""
         self.ensure_one()
         lines = self._mercas_product_lines().filtered(lambda l: l.box_qty > 0)
-        box_types = self.env["stock.package.type"]._mercas_box_types(lines.box_product_id)
 
         def line_net(line):
             qty = line.qty_delivered or line.product_uom_qty
             return self._mercas_net_weight(line.product_id, qty, line.product_uom_id)
 
         def row(line, boxes):
-            box_type = box_types.get(line.box_product_id)
             net = line_net(line) * boxes / line.box_qty
-            tare = boxes * (box_type.base_weight if box_type else 0.0)
+            tare = line.mercas_tare * boxes / line.box_qty
             lot = line.lot_id
             return {
                 "line": line,
@@ -226,7 +221,7 @@ class SaleOrder(models.Model):
                     name for name in (lot.origin_state_id.name, lot.origin_country_id.name) if name
                 ),
                 "boxes": boxes,
-                "box_name": box_type.name if box_type else line.box_product_id.name or "",
+                "box_name": line.box_product_id.name or "",
                 "net": net,
                 "tare": tare,
                 "gross": net + tare,

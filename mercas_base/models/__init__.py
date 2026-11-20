@@ -4,6 +4,7 @@ from . import res_country
 from . import account_move
 from . import account_move_line
 from . import mercas_box_order_mixin
+from . import mercas_weighed_line_mixin
 from . import purchase_order
 from . import product_attribute
 from . import product_category

@@ -725,6 +725,9 @@ export class TouchScreen extends Component {
             price: line ? this.formatInput(line.price) : partner ? "" : this.formatInput(product.price),
             boxQty: line ? line.boxQty : 0,
             boxProductId: line ? line.boxProductId : defaultBox,
+            // Weight on the scale, with the boxes: the net weight (qty) is worked out from it.
+            // Empty when the net weight is typed
+            gross: "",
             // Text typed to look for a box; null while the list of boxes is closed
             boxSearch: null,
             note: line ? line.note : "",
@@ -734,9 +737,14 @@ export class TouchScreen extends Component {
             firm: line ? line.firm : Boolean(partner?.firm_negotiation),
             lotName: line ? line.lotName : "",
             attributeValueIds: line ? [...(line.attributeValueIds || [])] : [],
-            // Field written by the keypad
-            field: "qty",
+            // Field written by the keypad: a new line of goods sold by weight starts with the
+            // weight on the scale
+            field: !line && product.weighed ? "gross" : "qty",
         };
+        const entry = this.state.entry;
+        if (line && product.weighed && entry.boxQty && this.entryTare(entry)) {
+            entry.gross = this.formatInput(line.qty + this.entryTare(entry));
+        }
         this.loadOriginStates(this.state.entry.originCountryId);
         if (!line && partner) {
             this.loadLinePrice(this.state.entry);
@@ -791,6 +799,7 @@ export class TouchScreen extends Component {
     onEntryInput(field, ev) {
         this.state.entry[field] = ev.target.value;
         this.state.entry.field = field;
+        this.onEntryWeightChanged(field);
     }
 
     onNumpadInput(value) {
@@ -799,6 +808,39 @@ export class TouchScreen extends Component {
             entry.boxQty = Math.max(0, parseInt(value || "0", 10) || 0);
         } else {
             entry[entry.field] = value;
+        }
+        this.onEntryWeightChanged(entry.field);
+    }
+
+    /**
+     * Tare of the boxes of the line being added, in the unit of its product: boxes × weight of
+     * the box product.
+     */
+    entryTare(entry) {
+        const box = entry.boxQty && entry.boxProductId ? this.productById(entry.boxProductId) : null;
+        return box ? entry.boxQty * (box.weight || 0) * (entry.product.uom_per_weight || 1) : 0;
+    }
+
+    /**
+     * The scale weighs the goods with their boxes: with a gross weight, the net weight (the
+     * quantity of the line) is the gross one less the tare of the boxes, also when the boxes
+     * change. Typing the net weight leaves the gross one empty.
+     */
+    onEntryWeightChanged(field) {
+        const entry = this.state.entry;
+        if (!entry || !entry.product.weighed) {
+            return;
+        }
+        if (field === "qty") {
+            entry.gross = "";
+            return;
+        }
+        if (!String(entry.gross || "").trim()) {
+            return;
+        }
+        const gross = this.parseNumber(entry.gross);
+        if (Number.isFinite(gross)) {
+            entry.qty = this.formatInput(Math.max(0, gross - this.entryTare(entry)));
         }
     }
 
@@ -829,6 +871,7 @@ export class TouchScreen extends Component {
                 }
             } else {
                 entry[entry.field] = applyNumpadKey(entry[entry.field], key);
+                this.onEntryWeightChanged(entry.field);
             }
         } else if (this.state.scrap) {
             this.state.scrap.qty = applyNumpadKey(this.state.scrap.qty, key);
@@ -839,6 +882,7 @@ export class TouchScreen extends Component {
 
     onBoxQtyStep(step) {
         this.state.entry.boxQty = Math.max(0, (this.state.entry.boxQty || 0) + step);
+        this.onEntryWeightChanged("boxQty");
     }
 
     /**
@@ -886,6 +930,7 @@ export class TouchScreen extends Component {
     onSelectBox(boxProductId) {
         this.state.entry.boxProductId = boxProductId || false;
         this.state.entry.boxSearch = null;
+        this.onEntryWeightChanged("boxProductId");
         document.activeElement?.blur();
     }
 
@@ -975,6 +1020,9 @@ export class TouchScreen extends Component {
     /** A float field left: `record[key]` gets the result of the operation it holds. */
     onFloatChange(record, key) {
         record[key] = this.resolveFloatInput(record[key]);
+        if (record === this.state.entry && key === "gross") {
+            this.onEntryWeightChanged(key);
+        }
     }
 
     /** Enter in a float field works out the operation typed, without leaving the field. */

@@ -75,6 +75,7 @@ Revisión del código portado en `dev20` frente a `dev19`, para retomar la migra
 | `sale_financial_risk` | OCA 19.0 (`19credit-control`) | 20.0.1.0.1 | Ver el apartado 4 |
 | `chat_ai` | Propio | 20.0.1.0.0 | Firma de `_message_post_after_hook`. En dev19 hay una carpeta anidada `chat_ai/chat_ai` que no pasa a dev20 |
 | `odoo_mcp_manager` | Cybrosys 19 | 20.0.1.0.1 | Versión 20.0 publicada por Cybrosys |
+| `stock_picking_report_valued` | OCA 19.0 (`19stock-logistics-reporting`) | 20.0.1.0.0 | En la línea de albarán la unidad es `uom_id` (no `product_uom_id`) y se compara con `uom_id.compare` (la unidad ya no tiene `rounding`) |
 
 Ninguna de las de OCA está publicada en la rama 20.0 de OCA (a 14/10/2026). Son ports propios: conviene subirlos como PR `[20.0][MIG]` para no mantener copias.
 
@@ -389,3 +390,22 @@ Diferencias resueltas a mano en dev20:
 - `patch` sobrescribe los `touch_screen.js.orig`/`touch_screen.xml.orig` que están versionados en dev20: hay que restaurarlos con `git checkout HEAD --` después del parche.
 
 Resultado: `mercas_touch` en `test_mercas_touch19` y `test_mercas_touch20`: 46 tests, 0 fallos (tours saltados: falta `websocket-client`). dev20 sin commit (junto con el apartado 15).
+
+## 17. Pesos (bruto, tara, neto), envases aparte, facturar compras solo administradores y packing list del albarán, llevados a dev20 (20/11/2026)
+
+Commit de dev19 con el mismo título, trasladado con `git diff HEAD -- mercas_base mercas_demo mercas_touch` (antes del commit, con los ficheros nuevos marcados con `git add -N`) + `patch -p1`.
+
+- **Pesos por línea:** mixin `mercas.weighed.line.mixin` (tara = cajas × peso del producto envase, bruto con inverso que fija el neto) en las líneas de venta y compra; cajas y tara en la línea de factura; columnas Cajas · Bruto · Tara · Neto en factura, albarán (valorado, con totales y tara de palets), pedido de venta, pedido de compra y solicitud de presupuesto; envases en tabla aparte en factura y albarán. Campo **Bruto** en `mercas_touch`. En las listas de pedido, bruto y tara con `optional="hide"`.
+- **Dependencias nuevas de `mercas_base`:** `sale_management` y `stock_picking_report_valued` (port propio a dev20, ver apartado 3).
+- **Packing list del albarán:** nombre de informe propio (`report_mercas_packing_list_picking`); con el mismo que el del pedido, al imprimir desde el navegador se leían los ids de albarán como pedidos.
+- **`mercas_touch`:** facturar las compras (crear factura, liquidar, adelanto, firme) solo para `account.group_account_manager`, en botones y en el servidor.
+- **Demo:** peso en los envases (Caja1 0,5, Caja2 0,8, Europalet 25 kg); fuera los tipos de paquete de caja.
+
+Diferencias resueltas a mano en dev20:
+
+- Rechazos del parche: `report_name` del packing list del albarán (dev20 no tiene `report_file`) y el `t-if` de los botones de facturar de F4 (el botón *Etiquetas* lleva icono Material).
+- La línea de compra tiene `uom_id` en vez de `product_uom_id`: el mixin de pesos lleva `_mercas_uom_field` (por defecto `product_uom_id`, `uom_id` en la compra).
+- La línea de albarán también usa `uom_id`: `_mercas_delivery_weights` y el port de `stock_picking_report_valued`.
+- Copias `.orig` sin versionar que deja `patch`, borradas; los `touch_screen.{js,xml}.orig` versionados, restaurados con `git checkout HEAD --`.
+
+Resultado: dev19 `test_mercas_touch19`, 133 tests de `mercas_base` y `mercas_touch`, 0 fallos. dev20 `test_mercas_touch20`, 139 tests (con los de `stock_picking_report_valued`), 0 fallos. Tours saltados (falta `websocket-client`). dev20 sin commit (junto con los apartados 15 y 16).

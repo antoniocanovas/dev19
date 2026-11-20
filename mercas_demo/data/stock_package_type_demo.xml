@@ -2,8 +2,9 @@
 <odoo noupdate="1">
 
     <!-- ============================================================= -->
-    <!-- Palets y cajas como tipos de paquete (packing list)           -->
-    <!-- Peso = tara, en kg; medidas en mm                             -->
+    <!-- Palets como tipos de paquete (packing list)                   -->
+    <!-- Peso = tara, en kg; medidas en mm. La tara de las cajas es el -->
+    <!-- peso de su producto envase.                                   -->
     <!-- ============================================================= -->
 
     <!-- Europalet: envase retornable, como las cajas -->
@@ -15,26 +16,9 @@
         <field name="tracking">none</field>
         <field name="uom_id" ref="uom.product_uom_unit"/>
         <field name="is_box">True</field>
-    </record>
-
-    <record id="package_type_caja1" model="stock.package.type">
-        <field name="name">Caja1</field>
-        <field name="sequence">10</field>
-        <field name="base_weight">0.5</field>
-        <field name="mercas_box_product_id" ref="product_caja1"/>
-        <field name="packaging_length">500</field>
-        <field name="width">300</field>
-        <field name="height">200</field>
-    </record>
-
-    <record id="package_type_caja2" model="stock.package.type">
-        <field name="name">Caja2</field>
-        <field name="sequence">11</field>
-        <field name="base_weight">0.8</field>
-        <field name="mercas_box_product_id" ref="product_caja2"/>
-        <field name="packaging_length">600</field>
-        <field name="width">400</field>
-        <field name="height">250</field>
+        <!-- Peso del palet vacío (kg), el mismo que su tipo de palet: la tara de los palets
+             sale del tipo; este es el peso del envase como producto -->
+        <field name="weight">25</field>
     </record>
 
     <record id="package_type_palet_europeo" model="stock.package.type">

@@ -15,12 +15,10 @@ class TestMercasPallets(TransactionCase):
         cls.env.user.group_ids += cls.env.ref("stock.group_tracking_lot")
         cls.customer = cls.env["res.partner"].create({"name": "Pallet Customer"})
         kg = cls.env.ref("uom.product_uom_kgm")
-        cls.box = cls.env["product.product"].create({"name": "Green Box", "type": "consu", "is_box": True})
+        # The weight of the box product is the tare of each box
+        cls.box = cls.env["product.product"].create({"name": "Green Box", "type": "consu", "is_box": True, "weight": 0.5})
         cls.europallet = cls.env["product.product"].create({"name": "Europallet", "type": "consu", "is_box": True})
         PackageType = cls.env["stock.package.type"]
-        cls.box_type = PackageType.create({
-            "name": "Green Box 10 kg", "base_weight": 0.5, "mercas_box_product_id": cls.box.id,
-        })
         cls.euro_type = PackageType.create({
             "name": "Europallet", "base_weight": 25.0, "mercas_is_pallet": True,
             "mercas_box_product_id": cls.europallet.id,
@@ -190,4 +188,10 @@ class TestMercasPallets(TransactionCase):
         html = Report._render_qweb_html("mercas_base.action_report_mercas_packing_list", order.ids)[0]
         self.assertIn(first["name"], html.decode())
         html = Report._render_qweb_html("mercas_base.action_report_mercas_packing_list_picking", order.picking_ids.ids)[0]
+        self.assertIn(order.name, html.decode())
+        # Printed from the browser the report is looked up by its name (/report/pdf/<name>/<ids>):
+        # the one of the delivery note must take the ids as pickings, not as sale orders
+        picking_report = self.env.ref("mercas_base.action_report_mercas_packing_list_picking")
+        self.assertEqual(Report._get_report(picking_report.report_name), picking_report)
+        html = Report._render_qweb_html(picking_report.report_name, order.picking_ids.ids)[0]
         self.assertIn(order.name, html.decode())

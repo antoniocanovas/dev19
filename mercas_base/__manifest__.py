@@ -10,10 +10,14 @@
         "stock",
         "account",
         "sale_stock",
+        # Sales app: quotation templates, optional products and the Sales menus
+        "sale_management",
         "contacts",
         "purchase_lot",
         "purchase_stock",
         "sale_order_lot_selection",
+        # Valued delivery note (prices), with the boxes and weights of mercas
+        "stock_picking_report_valued",
         "bus",
         "product",
         # Inventory > Settings > Expiration Dates: the dates of the lots
@@ -33,6 +37,7 @@
         "report/report_invoice.xml",
         "report/report_comment.xml",
         "report/report_packing_list.xml",
+        "report/report_weights.xml",
         "wizard/mercas_label_print_wizard_views.xml",
         "views/stock_lot_views.xml",
         "views/purchase_order_views.xml",

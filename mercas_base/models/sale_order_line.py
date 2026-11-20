@@ -4,7 +4,10 @@ MERCAS_LINES_BUS_NOTIFICATION_TYPE = "mercas_sale_order_lines_updated"
 
 
 class SaleOrderLine(models.Model):
-    _inherit = "sale.order.line"
+    _name = "sale.order.line"
+    _inherit = ["sale.order.line", "mercas.weighed.line.mixin"]
+
+    _mercas_qty_field = "product_uom_qty"
 
     box_qty = fields.Integer(
         string="Boxes",
@@ -159,6 +162,7 @@ class SaleOrderLine(models.Model):
         vals = super()._prepare_invoice_line(**optional_values)
         if self.lot_id:
             vals["lot_id"] = self.lot_id.id
+        vals.update(self._mercas_invoice_weight_vals(vals.get("quantity", 0.0)))
         return vals
 
     def get_available_lots_for_line(self):

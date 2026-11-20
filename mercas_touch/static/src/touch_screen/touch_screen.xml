@@ -258,7 +258,23 @@
                                 t-out="value.name"/>
                     </div>
                 </div>
-                <label class="form-label mb-0">Quantity (<t t-out="entry.product.uom"/>)</label>
+                <!-- Weighed on the scale with the boxes: net = gross - boxes × weight of the box -->
+                <t t-if="entry.product.weighed">
+                    <label class="form-label mb-0">Gross (<t t-out="entry.product.uom"/>)</label>
+                    <input type="text" inputmode="decimal" autocomplete="off"
+                           t-att-class="'form-control form-control-lg o_mercas_touch_gross ' + (entry.field === 'gross' ? 'border-primary border-2' : '')"
+                           t-att-value="entry.gross" t-on-focus="() => this.onEntryField('gross')"
+                           t-on-input="(ev) => this.onEntryInput('gross', ev)"
+                           t-on-change="() => this.onFloatChange(entry, 'gross')"
+                           t-on-keydown="(ev) => this.onFloatKeydown(ev, entry, 'gross')"/>
+                    <label class="form-label mb-0">
+                        Net (<t t-out="entry.product.uom"/>)
+                        <span t-if="this.entryTare(entry)" class="text-muted small">
+                            · tare <t t-out="this.formatQty(this.entryTare(entry))"/>
+                        </span>
+                    </label>
+                </t>
+                <label t-else="" class="form-label mb-0">Quantity (<t t-out="entry.product.uom"/>)</label>
                 <input type="text" inputmode="decimal" autocomplete="off"
                        t-att-class="'form-control form-control-lg o_mercas_touch_qty ' + (entry.field === 'qty' ? 'border-primary border-2' : '')"
                        t-att-value="entry.qty" t-on-focus="() => this.onEntryField('qty')"
@@ -1003,12 +1019,14 @@
                 <span class="me-auto"><t t-out="this.selectedLotIds().length"/> lots selected</span>
                 <button class="btn btn-secondary btn-lg o_mercas_touch_selected_labels" t-att-disabled="this.state.sending or !this.selectedLotIds().length"
                         t-on-click="() => this.onPrintLotLabels(this.selectedLotIds())"><i class="fa fa-tags"/> Labels</button>
-                <button class="btn btn-primary btn-lg o_mercas_touch_settle" t-att-disabled="this.state.sending or !this.selectedLotIds().length"
-                        t-on-click="() => this.onInvoiceLots('settle')">Settle</button>
-                <button class="btn btn-secondary btn-lg o_mercas_touch_advance" t-att-disabled="this.state.sending or !this.selectedLotIds().length"
-                        t-on-click="() => this.onInvoiceLots('advance')">Invoice advance</button>
-                <button class="btn btn-secondary btn-lg o_mercas_touch_firm_invoice" t-att-disabled="this.state.sending or !this.selectedLotIds().length"
-                        t-on-click="() => this.onInvoiceLots('firm')">Firm invoice</button>
+                <t t-if="this.state.data.can_bill">
+                    <button class="btn btn-primary btn-lg o_mercas_touch_settle" t-att-disabled="this.state.sending or !this.selectedLotIds().length"
+                            t-on-click="() => this.onInvoiceLots('settle')">Settle</button>
+                    <button class="btn btn-secondary btn-lg o_mercas_touch_advance" t-att-disabled="this.state.sending or !this.selectedLotIds().length"
+                            t-on-click="() => this.onInvoiceLots('advance')">Invoice advance</button>
+                    <button class="btn btn-secondary btn-lg o_mercas_touch_firm_invoice" t-att-disabled="this.state.sending or !this.selectedLotIds().length"
+                            t-on-click="() => this.onInvoiceLots('firm')">Firm invoice</button>
+                </t>
             </div>
         </t>
     </t>

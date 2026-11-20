@@ -451,6 +451,12 @@ msgstr "Producto no válido."
 #. module: mercas_touch
 #. odoo-python
 #: code:addons/mercas_touch/models/mercas_touch.py:0
+msgid "Only the billing administrators can invoice the purchases."
+msgstr "Solo los administradores de facturación pueden facturar las compras."
+
+#. module: mercas_touch
+#. odoo-python
+#: code:addons/mercas_touch/models/mercas_touch.py:0
 msgid "Invalid way of invoicing."
 msgstr "Forma de facturar no válida."
 
@@ -1883,3 +1889,21 @@ msgstr "Solo se pueden imprimir los documentos de una venta confirmada."
 #: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
 msgid "In a single PDF, for the same printer. The box labels go apart."
 msgstr "En un solo PDF, para la misma impresora. Las etiquetas de caja van aparte."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Gross ("
+msgstr "Bruto ("
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Net ("
+msgstr "Neto ("
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "· tare"
+msgstr "· tara"

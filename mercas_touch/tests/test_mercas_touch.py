@@ -1,7 +1,7 @@
 import uuid
 
 from odoo import Command
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, new_test_user, tagged
 
 
@@ -50,6 +50,12 @@ class MercasTouchCommon(TransactionCase):
                    'stock.group_stock_user,stock.group_production_lot,account.group_account_invoice',
         )
         cls.Touch = cls.env['mercas.touch'].with_user(cls.user)
+        # The purchases are invoiced to the suppliers only by the billing administrators
+        cls.billing_admin = new_test_user(
+            cls.env, login='touch_billing_admin', name='Touch Billing Admin',
+            groups='sales_team.group_sale_salesman_all_leads,purchase.group_purchase_user,'
+                   'stock.group_stock_user,stock.group_production_lot,account.group_account_manager',
+        )
 
     @classmethod
     def _buy(cls, qty=100.0, price=1.0, lot_name=None, **line):
@@ -172,6 +178,23 @@ class TestMercasTouch(MercasTouchCommon):
         second = self.Touch.purchase(vals)
         self.assertEqual(first['order']['id'], second['order']['id'])
         self.assertEqual(self.env['purchase.order'].search_count([('mercas_touch_uuid', '=', vals['uuid'])]), 1)
+
+    def test_product_weights(self):
+        """ The screen works out the net weight from the gross one less the boxes: it gets
+        the weight of the boxes and whether the goods are sold by weight. """
+        self.box.weight = 0.6
+        pear = self.Touch._get_product_data(self.pear)
+        self.assertTrue(pear['weighed'])
+        self.assertEqual(pear['uom_per_weight'], 1.0)
+        self.assertFalse(self.Touch._get_product_data(self.lettuce)['weighed'])
+        self.assertEqual(self.Touch._get_product_data(self.box)['weight'], 0.6)
+        # The line sold keeps the tare of its boxes
+        vals = {'uuid': str(uuid.uuid4()), 'partner_id': self.supplier.id,
+                'lines': [{'product_id': self.pear.id, 'qty': 10.0, 'box_qty': 5, 'box_product_id': self.box.id}]}
+        order = self.env['purchase.order'].browse(self.Touch.purchase(vals)['order']['id'])
+        line = order.order_line.filtered(lambda l: l.product_id == self.pear)
+        self.assertAlmostEqual(line.mercas_tare, 3.0)
+        self.assertAlmostEqual(line.mercas_gross_weight, 13.0)
 
     def test_product_lots(self):
         self._buy(30.0, lot_name='OLD')
@@ -331,6 +354,7 @@ class TestMercasTouch(MercasTouchCommon):
         self.assertEqual(len(notified), 1, "Nothing to tell when the count didn't change")
 
     def test_lots_and_invoicing(self):
+        self.Touch = self.Touch.with_user(self.billing_admin)
         firm_order = self._buy(10.0, 1.0, lot_name='FIRM-1', firm=True)['order']
         self._buy(10.0, 1.0, lot_name='SETTLE-1')
         firm = self.env['stock.lot'].search([('name', '=', 'FIRM-1')])
@@ -970,10 +994,29 @@ class TestMercasTouch(MercasTouchCommon):
         self.assertIn(sold['id'], ids('all'))
         self.assertEqual(self.Touch.get_order_summary('sale', sold['id'])['invoice']['id'], invoice['id'])
 
+    def test_bill_only_billing_admins(self):
+        """ The counter buys, but doesn't invoice the purchases: no buttons, nor the calls. """
+        order = self.Touch.purchase({'uuid': str(uuid.uuid4()), 'partner_id': self.supplier.id, 'lines': [
+            {'product_id': self.lettuce.id, 'qty': 5.0, 'price_unit': 0.5},
+        ]})['order']
+        self.assertFalse(self.Touch.get_screen_data()['can_bill'])
+        self.assertFalse(order['bill_pending'])
+        self.assertEqual(order['lot_invoice_modes'], [])
+        with self.assertRaises(AccessError):
+            self.Touch.invoice_purchase(order['id'])
+        with self.assertRaises(AccessError):
+            self.Touch.invoice_purchase_lots(order['id'], 'settle')
+        with self.assertRaises(AccessError):
+            self.Touch.invoice_lots([1], 'settle')
+        admin = self.Touch.with_user(self.billing_admin)
+        self.assertTrue(admin.get_screen_data()['can_bill'])
+        self.assertTrue(admin.get_order_summary('purchase', order['id'])['bill_pending'])
+
     def test_invoice_purchase(self):
         """ The lots under firm negotiation are billed with the standard bill of the purchase,
         sections and boxes included, and count as invoiced in the lot. All the bills can be
         looked up from the purchase, and the drafts deleted. """
+        self.Touch = self.Touch.with_user(self.billing_admin)
         order = self.Touch.purchase({'uuid': str(uuid.uuid4()), 'partner_id': self.supplier.id, 'lines': [
             {'product_id': self.pear.id, 'qty': 10.0, 'price_unit': 1.2, 'lot_name': 'BILL-1', 'firm': True,
              'box_qty': 2, 'box_product_id': self.box.id},
@@ -1031,6 +1074,7 @@ class TestMercasTouch(MercasTouchCommon):
         """ A lot under sale settlement is invoiced from the lot: its first invoice, an advance
         or the settlement, also takes the boxes bought with it still to invoice, which aren't
         invoiced again. """
+        self.Touch = self.Touch.with_user(self.billing_admin)
         order = self._buy(20.0, 1.0, lot_name='BOX-SETTLE', box_qty=4, box_product_id=self.box.id)['order']
         lot = self.env['stock.lot'].search([('name', '=', 'BOX-SETTLE')])
 
