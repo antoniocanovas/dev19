@@ -42,6 +42,11 @@ class TestMercasPallets(TransactionCase):
         packages of the deliveries. """
         self.assertIn(self.env.ref("stock.group_tracking_lot"), self.env.ref("base.group_user").all_implied_ids)
 
+    def test_expiration_dates_enabled(self):
+        """ The install enables Inventory > Expiration Dates (product_expiry). """
+        self.assertEqual(self.env['ir.module.module']._get('product_expiry').state, 'installed')
+        self.assertIn('expiration_date', self.env['stock.lot']._fields)
+
     def _sale(self):
         order = self.env["sale.order"].create({
             "partner_id": self.customer.id,

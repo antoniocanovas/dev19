@@ -354,3 +354,23 @@ Diferencias resueltas a mano en dev20:
 - `account.move.send._get_default_sending_settings` en Odoo 20 suma `sending_methods` con una lista: se pasan como lista (`['email']`), también en dev19 (`0091113`).
 
 Resultado: `mercas_base` + `mercas_touch` en `test_mercas_touch19` (112 tests) y `test_mercas_touch20` (115 tests): 0 fallos. Plantilla de correo traducida al español en las dos.
+
+## 15. Palets y packing list, impresión unificada, mercancía de mercado y sin migraciones, llevados a dev20 (19/11/2026)
+
+Commits `fc4bfae` y `9978257` de dev19, trasladados con `git diff 0091113 9978257 -- mercas_base mercas_touch mercas_demo` + `patch -p1`.
+
+- **`mercas_base`:** palets de la venta (`mercas.sale.pallet`/`mercas.sale.pallet.line`), cada palet como paquete del albarán al entregar y corrección después de vender (`stock.move.line._mercas_apply_pallets_to_move`); tipos de paquete con *Palet* y *Producto envase*; línea de europalets retornables; informe *Packing list* (venta y albarán); opción *Paquetes* activada al instalar; categoría *Mercancía de mercado* (`product.category.is_merca`).
+- **`mercas_touch`:** botón *Palets* (rápido y gráfico, también tras vender); botón único *Imprimir* (albarán, DeCA, packing list y factura en un PDF, informe `action_report_sale_documents`); catálogo solo con las categorías de mercancía de mercado.
+- **`mercas_demo`:** europalet, tipos de caja y palet, compra recibida con lotes y presupuesto *Demo palets*; *Envases* no es mercancía de mercado.
+- **Sin migraciones:** se instala todo de nuevo, así que se quitan los `migrations/` de `mercas_base` (en dev20, `20.0.1.0.1`) y no se crean otros.
+
+Diferencias resueltas a mano en dev20:
+
+- Versiones `20.0.1.0.3` (`mercas_base`) y `20.0.1.0.1` (`mercas_demo`).
+- Permisos de los palets en `security/ir.access.csv` (formato de Odoo 20).
+- `stock.move.line.uom_id` en lugar de `product_uom_id` al repartir las líneas del albarán entre palets.
+- Sin `report_file` en los informes nuevos (packing list y documentos de la venta).
+- `tracking` `False` en lugar de `none` en el europalet de la demo.
+- Pantalla táctil: botones *Imprimir* y *Palets* del resultado puestos a mano (rechazo del parche) e iconos Material (`grid_view`, `warning`, `add`, `remove`, `shuffle`, `delete`, `arrow_downward`, `check`, `print`) en lugar de los `fa-*`.
+
+Resultado: `test_mercas_touch20` actualizada (151 tests): solo falla `test_packages_enabled`, porque *Paquetes* se activa al instalar y esa base venía de antes (activado a mano después). Instalación limpia de `mercas_demo` + `mercas_touch` en `test_mercas_pallet_demo20`: *Paquetes* activo, presupuesto *Demo palets* vendido con sus palets (`PAL0000001`, `PALD0000001`), documentos de impresión y packing list correctos; los 10 tests de palets, impresión y catálogo pasan.

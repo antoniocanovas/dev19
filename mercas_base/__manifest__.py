@@ -16,6 +16,8 @@
         "sale_order_lot_selection",
         "bus",
         "product",
+        # Inventory > Settings > Expiration Dates: the dates of the lots
+        "product_expiry",
     ],
     "data": [
         "security/mercas_security.xml",

@@ -438,7 +438,7 @@ El módulo crea un menú raíz **Mercas** con accesos directos a las pantallas e
 
 ## Instalación
 
-El `post_init_hook` activa automáticamente, como si un usuario marcase las casillas en *Inventario > Configuración > Ajustes*, las opciones: ubicaciones de almacenamiento, números de serie y lote, variantes de producto, unidades de medida y embalajes, y firma en las órdenes de entrega. No requiere configuración manual adicional tras instalar el módulo. Al instalar o actualizar, además, cada compañía con plan contable recibe su diario de autofacturas, seleccionado en la empresa (ver *Contabilidad — Autofacturación de proveedores*).
+El `post_init_hook` activa automáticamente, como si un usuario marcase las casillas en *Inventario > Configuración > Ajustes*, las opciones: ubicaciones de almacenamiento, números de serie y lote, variantes de producto, unidades de medida y embalajes, firma en las órdenes de entrega y paquetes. Las **fechas de caducidad** (*Inventario > Configuración > Ajustes*) quedan activadas porque el módulo depende de `product_expiry`, que es lo que instala esa opción; cada producto decide si las usa con su casilla *Fechas de caducidad*. No requiere configuración manual adicional tras instalar el módulo. Al instalar o actualizar, además, cada compañía con plan contable recibe su diario de autofacturas, seleccionado en la empresa (ver *Contabilidad — Autofacturación de proveedores*).
 
 ## Notas técnicas
 
