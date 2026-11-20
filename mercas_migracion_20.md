@@ -408,4 +408,4 @@ Diferencias resueltas a mano en dev20:
 - La línea de albarán también usa `uom_id`: `_mercas_delivery_weights` y el port de `stock_picking_report_valued`.
 - Copias `.orig` sin versionar que deja `patch`, borradas; los `touch_screen.{js,xml}.orig` versionados, restaurados con `git checkout HEAD --`.
 
-Resultado: dev19 `test_mercas_touch19`, 133 tests de `mercas_base` y `mercas_touch`, 0 fallos. dev20 `test_mercas_touch20`, 139 tests (con los de `stock_picking_report_valued`), 0 fallos. Tours saltados (falta `websocket-client`). dev20 sin commit (junto con los apartados 15 y 16).
+Resultado: dev19 `test_mercas_touch19`, 133 tests de `mercas_base` y `mercas_touch`, 0 fallos. dev20 `test_mercas_touch20`, 139 tests (con los de `stock_picking_report_valued`), 0 fallos. Tours saltados (falta `websocket-client`). Commiteado en dev20 como `a23eea7`, junto con los apartados 15 y 16.
