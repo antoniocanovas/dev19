@@ -374,3 +374,18 @@ Diferencias resueltas a mano en dev20:
 - Pantalla táctil: botones *Imprimir* y *Palets* del resultado puestos a mano (rechazo del parche) e iconos Material (`grid_view`, `warning`, `add`, `remove`, `shuffle`, `delete`, `arrow_downward`, `check`, `print`) en lugar de los `fa-*`.
 
 Resultado: `test_mercas_touch20` actualizada (151 tests): solo falla `test_packages_enabled`, porque *Paquetes* se activa al instalar y esa base venía de antes (activado a mano después). Instalación limpia de `mercas_demo` + `mercas_touch` en `test_mercas_pallet_demo20`: *Paquetes* activo, presupuesto *Demo palets* vendido con sus palets (`PAL0000001`, `PALD0000001`), documentos de impresión y packing list correctos; los 10 tests de palets, impresión y catálogo pasan.
+
+## 16. Calculadora en el teclado numérico y operaciones en los campos decimales, llevados a dev20 (20/11/2026)
+
+Commit de dev19 con el mismo título, trasladado con `git diff -- mercas_touch` (antes del commit) + `patch -p1`.
+
+- **Teclado numérico:** columna de operadores (÷ × − +) y tecla `=`; el campo guarda la operación (`12,5×3`) y se calcula con `=` o al confirmar; multiplicación y división primero. Los operadores se desactivan (no se ocultan) en los campos de cajas, y en el teclado de palets no se muestran (`calculator="false"`). Cuatro columnas de 3,5 a 5 rem para no desbordar en pantallas estrechas.
+- **Campos decimales** (cantidad y precio de la línea, precio del ticket, altura del palet, cantidad a desechar e importe a cobrar): una operación escrita con el teclado (`50*2-3`, `12,5x3`) se sustituye por su resultado al pulsar Intro o salir del campo; también se admite el `=` de Odoo (`=(2+3)^2`), que calcula el parser estándar (`parseFloat`).
+
+Diferencias resueltas a mano en dev20:
+
+- Props del teclado con `useProps` y `t.boolean().optional(true)` (Owl 3).
+- Icono Material `backspace` en la tecla de borrar.
+- `patch` sobrescribe los `touch_screen.js.orig`/`touch_screen.xml.orig` que están versionados en dev20: hay que restaurarlos con `git checkout HEAD --` después del parche.
+
+Resultado: `mercas_touch` en `test_mercas_touch19` y `test_mercas_touch20`: 46 tests, 0 fallos (tours saltados: falta `websocket-client`). dev20 sin commit (junto con el apartado 15).

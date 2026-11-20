@@ -12,7 +12,7 @@ import { formatFloat } from "@web/core/utils/numbers";
 import { imageUrl } from "@web/core/utils/urls";
 import { parseFloat } from "@web/views/fields/parsers";
 import { standardActionServiceProps } from "@web/webclient/actions/action_service";
-import { applyNumpadKey, TouchNumpad } from "./touch_numpad";
+import { applyNumpadKey, evalNumpadExpression, isNumpadExpression, TouchNumpad } from "./touch_numpad";
 import { localization } from "@web/core/l10n/localization";
 
 const MODEL = "mercas.touch";
@@ -813,17 +813,18 @@ export class TouchScreen extends Component {
         const pallets = this.state.pallets;
         if (pallets) {
             // Boxes to move: whole boxes only
-            if (pallets.selected && key !== localization.decimalPoint) {
+            if (pallets.selected && (/^[0-9]$/.test(key) || ["backspace", "clear"].includes(key))) {
                 pallets.moveQty = applyNumpadKey(pallets.moveFresh ? "" : pallets.moveQty, key);
                 pallets.moveFresh = false;
             }
         } else if (priceEdit) {
-            // The first key replaces the price, as on a till
-            priceEdit.value = applyNumpadKey(priceEdit.fresh ? "" : priceEdit.value, key);
+            // The first digit replaces the price, as on a till; an operator works on it
+            const replace = priceEdit.fresh && (/^[0-9]$/.test(key) || key === localization.decimalPoint);
+            priceEdit.value = applyNumpadKey(replace ? "" : priceEdit.value, key);
             priceEdit.fresh = false;
         } else if (entry) {
             if (entry.field === "boxQty") {
-                if (key !== localization.decimalPoint) {
+                if (/^[0-9]$/.test(key) || ["backspace", "clear"].includes(key)) {
                     this.onNumpadInput(applyNumpadKey(String(entry.boxQty || ""), key));
                 }
             } else {
@@ -957,7 +958,38 @@ export class TouchScreen extends Component {
         this.state.entry.showNote = !this.state.entry.showNote;
     }
 
+    /**
+     * The text of a float field when it's left or on Enter: an operation typed on the keyboard
+     * ("50*2-3", "12,5x3") or on the keypad ("12,5×3") becomes its result. The "=" in front of
+     * the fields of Odoo ("=(50*2-3)^2") is also understood, for parentheses and powers. An operation that can't be
+     * worked out stays, to be corrected.
+     */
+    resolveFloatInput(value) {
+        if (!isNumpadExpression(value)) {
+            return value;
+        }
+        const number = evalNumpadExpression(value);
+        return Number.isNaN(number) ? value : this.formatInput(number);
+    }
+
+    /** A float field left: `record[key]` gets the result of the operation it holds. */
+    onFloatChange(record, key) {
+        record[key] = this.resolveFloatInput(record[key]);
+    }
+
+    /** Enter in a float field works out the operation typed, without leaving the field. */
+    onFloatKeydown(ev, record, key) {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            this.onFloatChange(record, key);
+        }
+    }
+
+    /** The number of a field, also when it holds an operation of the keypad ("12,5×3"). */
     parseNumber(value) {
+        if (isNumpadExpression(value)) {
+            return evalNumpadExpression(value);
+        }
         try {
             return parseFloat(String(value || "").trim() || "0");
         } catch {

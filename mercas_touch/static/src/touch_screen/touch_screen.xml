@@ -262,12 +262,16 @@
                 <input type="text" inputmode="decimal" autocomplete="off"
                        t-att-class="'form-control form-control-lg o_mercas_touch_qty ' + (entry.field === 'qty' ? 'border-primary border-2' : '')"
                        t-att-value="entry.qty" t-on-focus="() => this.onEntryField('qty')"
-                       t-on-input="(ev) => this.onEntryInput('qty', ev)"/>
+                       t-on-input="(ev) => this.onEntryInput('qty', ev)"
+                       t-on-change="() => this.onFloatChange(entry, 'qty')"
+                       t-on-keydown="(ev) => this.onFloatKeydown(ev, entry, 'qty')"/>
                 <label class="form-label mb-0">Price per <t t-out="entry.product.uom"/></label>
                 <input type="text" inputmode="decimal" autocomplete="off"
                        t-att-class="'form-control form-control-lg o_mercas_touch_price ' + (entry.field === 'price' ? 'border-primary border-2' : '')"
                        t-att-value="entry.price" t-on-focus="() => this.onEntryField('price')"
-                       t-on-input="(ev) => this.onEntryInput('price', ev)"/>
+                       t-on-input="(ev) => this.onEntryInput('price', ev)"
+                       t-on-change="() => this.onFloatChange(entry, 'price')"
+                       t-on-keydown="(ev) => this.onFloatKeydown(ev, entry, 'price')"/>
                 <label class="form-label mb-0">Boxes</label>
                 <div class="d-flex flex-wrap gap-2 align-items-center">
                     <div class="input-group input-group-lg o_mercas_touch_box_qty">
@@ -384,6 +388,7 @@
                 <input type="text" inputmode="none" autocomplete="off"
                        class="form-control form-control-lg fs-2 border-primary border-2 o_mercas_touch_price_edit_input"
                        t-att-value="this.state.priceEdit.value" t-on-input="this.onPriceInput"
+                       t-on-change="() => this.onFloatChange(this.state.priceEdit, 'value')"
                        t-on-keydown="this.onPriceKeydown"/>
                 <div class="d-flex justify-content-between fs-5">
                     <span>Subtotal</span>
@@ -803,7 +808,9 @@
                                 </select>
                                 <input type="text" inputmode="decimal" class="form-control o_mercas_touch_pallet_height" style="width: 6rem;"
                                        t-att-placeholder="p.lengthUom" title="Height of the loaded pallet (optional)"
-                                       t-att-value="pallet.height" t-on-input="(ev) => this.onPalletHeight(pallet, ev)"/>
+                                       t-att-value="pallet.height" t-on-input="(ev) => this.onPalletHeight(pallet, ev)"
+                                       t-on-change="() => this.onFloatChange(pallet, 'height')"
+                                       t-on-keydown="(ev) => this.onFloatKeydown(ev, pallet, 'height')"/>
                             </div>
                             <t t-foreach="this.palletChips(pallet)" t-as="chip" t-key="chip.line.id">
                                 <t t-call="mercas_touch.TouchScreenPalletChip"/>
@@ -835,7 +842,7 @@
                         <button class="btn btn-secondary" t-on-click="() => this.onMoveStep(1)"><i class="fa fa-plus"/></button>
                     </div>
                     <div class="small text-muted">Tap the pallet to put them on, or "Not on a pallet".</div>
-                    <TouchNumpad onKey="(key) => this.onNumpadKey(key)" decimals="false"/>
+                    <TouchNumpad onKey="(key) => this.onNumpadKey(key)" decimals="false" calculator="false"/>
                 </div>
             </div>
             <div class="d-flex gap-2 border-top pt-2">
@@ -923,7 +930,9 @@
                     <div class="text-muted"><t t-out="scrap.lot.product"/> · <t t-out="this.formatQty(scrap.lot.stock)"/> <t t-out="scrap.lot.uom"/> in stock</div>
                     <label class="form-label mb-0">Quantity (<t t-out="scrap.lot.uom"/>)</label>
                     <input type="text" inputmode="decimal" class="form-control form-control-lg border-primary border-2 o_mercas_touch_scrap_qty"
-                           autocomplete="off" t-att-value="scrap.qty" t-on-input="(ev) => this.onScrapInput(ev.target.value)"/>
+                           autocomplete="off" t-att-value="scrap.qty" t-on-input="(ev) => this.onScrapInput(ev.target.value)"
+                           t-on-change="() => this.onFloatChange(scrap, 'qty')"
+                           t-on-keydown="(ev) => this.onFloatKeydown(ev, scrap, 'qty')"/>
                     <div class="d-flex gap-2 mt-2">
                         <button class="btn btn-secondary btn-lg" t-on-click="this.onBack">Cancel</button>
                         <button class="btn btn-danger btn-lg flex-grow-1 o_mercas_touch_confirm_scrap"
@@ -1060,7 +1069,9 @@
                 </label>
                 <label class="form-label mb-0 mt-2">Amount</label>
                 <input type="text" inputmode="decimal" autocomplete="off" class="form-control form-control-lg border-primary border-2 o_mercas_touch_amount"
-                       t-att-value="this.state.amount" t-on-input="(ev) => this.onAmountInput(ev.target.value)"/>
+                       t-att-value="this.state.amount" t-on-input="(ev) => this.onAmountInput(ev.target.value)"
+                       t-on-change="() => this.onFloatChange(this.state, 'amount')"
+                       t-on-keydown="(ev) => this.onFloatKeydown(ev, this.state, 'amount')"/>
                 <div class="d-flex flex-wrap gap-2 o_mercas_touch_journals">
                     <button t-foreach="this.state.data.journals" t-as="journal" t-key="journal.id"
                             t-att-class="'btn btn-lg ' + (journal.id === this.state.journalId ? 'btn-primary' : 'btn-secondary')"
@@ -1080,16 +1091,28 @@
     </t>
 
     <t t-name="mercas_touch.TouchNumpad">
-        <div class="o_mercas_touch_numpad d-grid gap-2">
-            <button t-foreach="this.keys" t-as="key" t-key="key" class="btn btn-secondary btn-lg o_mercas_touch_numpad_key"
-                    t-on-click="() => this.onKey(key)" t-out="key"/>
+        <!-- 3 columns of digits and 1 of operators, disabled (not hidden) without decimals so the
+             keypad keeps its size when the field changes -->
+        <div t-att-class="'o_mercas_touch_numpad d-grid gap-2' + (this.props.calculator ? ' o_mercas_touch_numpad_calculator' : '')">
+            <t t-foreach="this.rows" t-as="row" t-key="row_index">
+                <t t-foreach="row" t-as="key" t-key="key">
+                    <button t-if="!this.isOperator(key)" class="btn btn-secondary btn-lg o_mercas_touch_numpad_key"
+                            t-on-click="() => this.onKey(key)" t-out="key"/>
+                    <button t-elif="this.props.calculator" class="btn btn-info btn-lg o_mercas_touch_numpad_operator"
+                            t-att-disabled="!this.props.decimals" t-on-click="() => this.onKey(key)" t-out="key"/>
+                </t>
+            </t>
             <button class="btn btn-secondary btn-lg" t-att-disabled="!this.props.decimals"
                     t-on-click="() => this.onKey(this.decimalPoint)" t-out="this.decimalPoint"/>
             <button class="btn btn-secondary btn-lg o_mercas_touch_numpad_key" t-on-click="() => this.onKey('0')">0</button>
             <button class="btn btn-secondary btn-lg" title="Delete" t-on-click="() => this.onKey('backspace')">
                 <i class="fa fa-long-arrow-left"/>
             </button>
+            <button t-if="this.props.calculator" class="btn btn-info btn-lg o_mercas_touch_numpad_operator" t-att-disabled="!this.props.decimals"
+                    t-on-click="() => this.onKey('+')">+</button>
             <button class="btn btn-warning btn-lg o_mercas_touch_numpad_clear" style="grid-column: span 3" t-on-click="() => this.onKey('clear')">Clear</button>
+            <button t-if="this.props.calculator" class="btn btn-primary btn-lg o_mercas_touch_numpad_equals" t-att-disabled="!this.props.decimals"
+                    t-on-click="() => this.onKey('=')">=</button>
         </div>
     </t>
 
