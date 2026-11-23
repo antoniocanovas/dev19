@@ -1,6 +1,6 @@
 {
     "name": "Mercas Base",
-    "version": "19.0.1.0.3",
+    "version": "19.0.1.1.0",
     "summary": "Módulo base para gestión de mercados mayoristas de frutas",
     "author": "Antonio Cánovas",
     "license": "LGPL-3",
@@ -50,13 +50,18 @@
         "views/sale_order_views.xml",
         "views/mercas_pallet_views.xml",
         "views/mercas_menu.xml",
+        "views/mercas_management_dashboard_views.xml",
         "data/mercas_self_billing_data.xml",
+        "data/mercas_management_cron.xml",
     ],
     "assets": {
         "web.assets_backend": [
             "mercas_base/static/src/js/sale_order_lines_bus_notification.js",
             "mercas_base/static/src/js/product_qty_datetime_icon.js",
             "mercas_base/static/src/xml/product_qty_datetime_icon.xml",
+            "mercas_base/static/src/management/management_charts.js",
+            "mercas_base/static/src/management/management_charts.xml",
+            "mercas_base/static/src/management/management_charts.scss",
         ],
     },
     "post_init_hook": "post_init_hook",

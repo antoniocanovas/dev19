@@ -8,3 +8,4 @@ access_mercas_label_print_wizard_line,access.mercas.label.print.wizard.line,mode
 access_mercas_sale_pallet,access.mercas.sale.pallet,model_mercas_sale_pallet,base.group_user,1,1,1,1
 access_mercas_sale_pallet_line,access.mercas.sale.pallet.line,model_mercas_sale_pallet_line,base.group_user,1,1,1,1
 access_stock_lot_inventory_wizard,access.stock.lot.inventory.wizard,model_stock_lot_inventory_wizard,stock.group_stock_user,1,1,1,1
+access_mercas_management_dashboard,access.mercas.management.dashboard,model_mercas_management_dashboard,group_mercas_management,1,1,1,1
