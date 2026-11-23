@@ -2,7 +2,7 @@
 
 Revisión del código portado en `dev20` frente a `dev19`, para retomar la migración más adelante. Complementa la sección 6 de `mercas_next.md`.
 
-*Revisado el 20/10/2026 (apartados 1-7); ampliado el 22/10 (apartado 8) y el 29/10/2026 (apartado 9).*
+*Revisado el 20/10/2026 (apartados 1-7); ampliado el 22/10 (apartado 8), el 29/10 (apartado 9) y del 16/11 al 23/11/2026 (apartados 10-21).*
 
 ---
 
@@ -442,3 +442,13 @@ Commit de dev19 `dac7fc6`, trasladado con `git diff 0f90bff dac7fc6 -- mercas_de
 - **Demo:** venta **Demo cajas compensadas** de *Cliente2* (facturada, pendiente de cobro) y la devolución de sus 4 *Caja2* compensada: 2,00 € de saldo a favor para *Cobros* (F5). El diario de compensación, los impuestos y los dos pedidos de demo se crean tras cargar el plan contable (`registry._auto_install_template`, igual en 19 y 20): en una base de datos nueva el plan contable se carga después del hook.
 
 Resultado: instalación desde cero en dev19 (`test_mercas_demo_pesos19`) y dev20 (`test_mercas_demo20`): factura de 44,35 € y saldo a favor de 2,00 € en las dos. Commiteado en dev20 como `b49b151`.
+
+## 21. README de `mercas_base`, `mercas_touch` y `mercas_demo`, llevados a dev20 (23/11/2026)
+
+Solo documentación. Cada commit de dev19 se trasladó con `git diff <commit>~1 <commit> -- <módulo>/README.md` + `patch -p1` (sin rechazos):
+
+| Módulo | dev19 | dev20 | Qué se añade |
+|---|---|---|---|
+| `mercas_base` | `4e10b2c` | `b0cc248` | Bruto y tara como columnas opcionales ocultas; saldo de la devolución de envases (compensar o pagar); saldo a favor en *Cobros* del táctil; peso del producto caja como tara. |
+| `mercas_touch` | `5907530` | `971e1a1` | Importe de las cajas y saldo a favor en el resumen de modos; F5 (y Ctrl/Mayús+F5) abre *Cobros* sin recargar; métodos del servidor y tests que faltaban. |
+| `mercas_demo` | `52a75ca` | `4eeb6aa` | Tabla de precios; 2,00 € de saldo de las cajas compensadas; cuándo se crean los pedidos de demo. En dev20 dice «igual en Odoo 19» en lugar de «igual en Odoo 20». |
