@@ -476,3 +476,12 @@ Commits de dev19 `11523fa`, `615e816` y `e90761c`, trasladados con `git diff 79f
 | Acceso del modelo | `ir.model.access.csv` | `security/ir.access.csv` |
 
 Resultado: en dev20 (`test_mercas_touch20`), 151 tests de `mercas_base` y `mercas_touch` con solo 2 errores, los de las barras del resumen (`KeyError: 'bar_data'`). Tras arreglar el `t-call`, los 10 tests del resumen pasan; la batería completa no se ha vuelto a pasar. Gráficos y panel revisados en el navegador. Commiteado en dev20 como `31d245a`.
+
+## 24. Panel del Mostrador en el móvil, llevado a dev20 (23/11/2026)
+
+Commit de dev19 `a0a7636`, trasladado con `git diff a864b76 a0a7636 -- mercas_touch` + `patch -p1`. El hunk de la cabecera de Mensajes se rechazó (en dev20 el icono es Material) y se aplicó a mano.
+
+- **Estilos:** las columnas del inicio llevan `min-width: 0`. Sin él, los textos recortados (`text-truncate`, sin salto de línea) fijaban el ancho mínimo del panel, que a ~375 px medía 423 px y se cortaba por los dos lados.
+- **Plantilla:** la etiqueta de caducidad de los lotes no se encoge (`flex-shrink-0`) y la cabecera de Mensajes parte línea (`flex-wrap`).
+
+Solo cambian CSS y plantilla, así que no se han pasado tests. Revisado en el navegador en dev19 a 375 y 320 px; en dev20 no se ha comprobado en el navegador. Commiteado en dev20 como `74e5ce6`.
