@@ -434,3 +434,11 @@ Commit de dev19 `0f90bff`, trasladado con `git diff 66d7f31 0f90bff -- mercas_to
 Diferencias resueltas a mano en dev20: iconos Material en los botones nuevos (`swap_horiz`, `payments`, `account_balance`); copias `.orig` y `.rej` sin versionar que deja `patch`, borradas; `touch_screen.{js,xml}.orig` versionados, restaurados.
 
 Resultado: dev19 y dev20, 50 tests de `mercas_touch` cada uno, 0 fallos (tours saltados). Commiteado en dev20 como `61fe9b0`.
+
+## 20. Devolución de cajas compensada en la demo, llevada a dev20 (23/11/2026)
+
+Commit de dev19 `dac7fc6`, trasladado con `git diff 0f90bff dac7fc6 -- mercas_demo` + `patch -p1` (sin rechazos ni cambios).
+
+- **Demo:** venta **Demo cajas compensadas** de *Cliente2* (facturada, pendiente de cobro) y la devolución de sus 4 *Caja2* compensada: 2,00 € de saldo a favor para *Cobros* (F5). El diario de compensación, los impuestos y los dos pedidos de demo se crean tras cargar el plan contable (`registry._auto_install_template`, igual en 19 y 20): en una base de datos nueva el plan contable se carga después del hook.
+
+Resultado: instalación desde cero en dev19 (`test_mercas_demo_pesos19`) y dev20 (`test_mercas_demo20`): factura de 44,35 € y saldo a favor de 2,00 € en las dos. Commiteado en dev20 como `b49b151`.
