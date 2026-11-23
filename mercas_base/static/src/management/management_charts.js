@@ -72,7 +72,7 @@ export class MercasManagementCharts extends Component {
                 },
             },
             scales: {
-                y: { beginAtZero: true, ticks: { callback: (value) => this.shortMoney(value) } },
+                y: { beginAtZero: true, ticks: { precision: 0, callback: (value) => this.shortMoney(value) } },
                 x: { grid: { display: false } },
             },
         };
