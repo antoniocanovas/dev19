@@ -22,7 +22,7 @@ class MercasManagementDashboard(models.TransientModel):
     lots to settle and payments collected.
 
     The same summary is shown in the backend and sent each evening by email to the users of
-    the group Mercas: Management (see _cron_send_summary). The counter screen shows the sales
+    the group Management Summary by Email (see _cron_send_summary). The counter screen shows the sales
     of the day with _mercas_sales_figures.
     """
     _name = "mercas.management.dashboard"
@@ -64,7 +64,7 @@ class MercasManagementDashboard(models.TransientModel):
             "params": {
                 "type": "success" if mail else "warning",
                 "message": self.env._("The summary has been sent.") if mail else self.env._(
-                    "No user of the group Mercas: Management has an email."),
+                    "No user receiving the management summary by email has an email address."),
             },
         }
 
@@ -602,7 +602,7 @@ class MercasManagementDashboard(models.TransientModel):
 
     @api.model
     def _mercas_summary_recipients(self):
-        group = self.env.ref("mercas_base.group_mercas_management", raise_if_not_found=False)
+        group = self.env.ref("mercas_base.group_mercas_summary_mail", raise_if_not_found=False)
         if not group:
             return self.env["res.partner"]
         users = group.sudo().all_user_ids.filtered(
@@ -611,7 +611,7 @@ class MercasManagementDashboard(models.TransientModel):
 
     @api.model
     def _mercas_send_summary(self, date):
-        """ Email the summary of `date` to the users of the group Mercas: Management. """
+        """ Email the summary of `date` to the users of the group Management Summary by Email. """
         partners = self._mercas_summary_recipients()
         if not partners:
             return self.env["mail.mail"]

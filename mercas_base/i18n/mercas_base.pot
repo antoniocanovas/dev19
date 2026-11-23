@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-23 15:30+0000\n"
-"PO-Revision-Date: 2026-11-23 15:30+0000\n"
+"POT-Creation-Date: 2026-11-23 16:27+0000\n"
+"PO-Revision-Date: 2026-11-23 16:27+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -868,6 +868,11 @@ msgid "Enter a label quantity greater than zero on at least one line."
 msgstr ""
 
 #. module: mercas_base
+#: model:res.groups,name:mercas_base.group_mercas_summary_mail
+msgid "Every Evening"
+msgstr ""
+
+#. module: mercas_base
 #: model_terms:ir.ui.view,arch_db:mercas_base.mercas_box_label_content
 msgid "Exp.:"
 msgstr ""
@@ -1339,6 +1344,11 @@ msgid "Management"
 msgstr ""
 
 #. module: mercas_base
+#: model:res.groups.privilege,name:mercas_base.res_groups_privilege_mercas_summary_mail
+msgid "Management Summary by Email"
+msgstr ""
+
+#. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__mercas_margin
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot_invoice_wizard_line__mercas_margin
 msgid "Margin (%)"
@@ -1526,7 +1536,8 @@ msgstr ""
 #. module: mercas_base
 #. odoo-python
 #: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "No user of the group Mercas: Management has an email."
+msgid ""
+"No user receiving the management summary by email has an email address."
 msgstr ""
 
 #. module: mercas_base
@@ -1961,6 +1972,11 @@ msgid "Received"
 msgstr ""
 
 #. module: mercas_base
+#: model:res.groups,comment:mercas_base.group_mercas_summary_mail
+msgid "Receives the management summary of the day by email each evening."
+msgstr ""
+
+#. module: mercas_base
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_form_mercas
 msgid "Reference"
 msgstr ""
@@ -2123,9 +2139,8 @@ msgstr ""
 #. module: mercas_base
 #: model:res.groups,comment:mercas_base.group_mercas_management
 msgid ""
-"Sees the management summary (Mercas > Management) and receives it\n"
-"            by email each evening: sales and purchases in amount and kg, scrap, debt and\n"
-"            payments."
+"Sees the management summary (Mercas > Management): sales and\n"
+"            purchases in amount and kg, scrap, debt and payments."
 msgstr ""
 
 #. module: mercas_base

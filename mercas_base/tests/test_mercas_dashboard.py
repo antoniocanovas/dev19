@@ -80,7 +80,7 @@ class TestMercasDashboard(TransactionCase):
         manager = self.env["res.users"].create({
             "name": "Dashboard Manager", "login": "dashboard_manager", "email": "manager@example.com",
             "group_ids": [Command.link(self.env.ref("base.group_user").id),
-                          Command.link(self.env.ref("mercas_base.group_mercas_management").id)],
+                          Command.link(self.env.ref("mercas_base.group_mercas_summary_mail").id)],
         })
         dashboard = self.Dashboard.with_user(manager).create({})
         self.assertIn(self.env.company.name, dashboard.summary_html)
@@ -101,6 +101,8 @@ class TestMercasDashboard(TransactionCase):
             })
             self.assertTrue(user.has_group("mercas_base.group_mercas_management"), group)
             self.assertTrue(self.Dashboard.with_user(user).create({}).summary_html)
+            self.assertNotIn(user.partner_id, self.Dashboard._mercas_summary_recipients(),
+                             "Seeing it isn't receiving it by email")
         salesman = self.env["res.users"].create({
             "name": "Salesman", "login": "dashboard_salesman",
             "group_ids": [Command.link(self.env.ref("sales_team.group_sale_salesman").id)],

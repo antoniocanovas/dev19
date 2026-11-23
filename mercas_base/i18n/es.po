@@ -2222,8 +2222,8 @@ msgstr "Sin caducidad"
 #. module: mercas_base
 #. odoo-python
 #: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "No user of the group Mercas: Management has an email."
-msgstr "Ningún usuario del grupo Mercas: Dirección tiene correo electrónico."
+msgid "No user receiving the management summary by email has an email address."
+msgstr "Ningún usuario que recibe el resumen de dirección por correo tiene correo electrónico."
 
 #. module: mercas_base
 #. odoo-python
@@ -2280,10 +2280,9 @@ msgstr "Kg desechados"
 #. module: mercas_base
 #: model:res.groups,comment:mercas_base.group_mercas_management
 msgid ""
-"Sees the management summary (Mercas > Management) and receives it\n"
-"            by email each evening: sales and purchases in amount and kg, scrap, debt and\n"
-"            payments."
-msgstr "Ve el resumen de dirección (Mercas > Dirección) y lo recibe por correo cada tarde: ventas y compras en importe y kg, mermas, deuda y cobros."
+"Sees the management summary (Mercas > Management): sales and\n"
+"            purchases in amount and kg, scrap, debt and payments."
+msgstr "Ve el resumen de dirección (Mercas > Dirección): ventas y compras en importe y kg, mermas, deuda y cobros."
 
 #. module: mercas_base
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_mercas_management_dashboard_form
@@ -2494,3 +2493,18 @@ msgstr "Este año"
 #: code:addons/mercas_base/static/src/management/management_charts.xml:0
 msgid "No customer owes us anything."
 msgstr "Ningún cliente nos debe nada."
+
+#. module: mercas_base
+#: model:res.groups.privilege,name:mercas_base.res_groups_privilege_mercas_summary_mail
+msgid "Management Summary by Email"
+msgstr "Resumen de Dirección por correo"
+
+#. module: mercas_base
+#: model:res.groups,name:mercas_base.group_mercas_summary_mail
+msgid "Every Evening"
+msgstr "Cada tarde"
+
+#. module: mercas_base
+#: model:res.groups,comment:mercas_base.group_mercas_summary_mail
+msgid "Receives the management summary of the day by email each evening."
+msgstr "Recibe por correo cada tarde el resumen de dirección del día."
