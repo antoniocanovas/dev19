@@ -424,3 +424,13 @@ Diferencias resueltas a mano en dev20:
 - `touch_screen.{js,xml}.orig` versionados, restaurados con `git checkout HEAD --`.
 
 Resultado: dev20 `test_mercas_touch20`, 48 tests de `mercas_touch`, 0 fallos (tours saltados). Demo reinstalada en dev19 (`test_mercas_demo_pesos19`) con los pesos esperados. Commiteado en dev20 como `7c192b1`.
+
+## 19. Cajas devueltas como saldo a favor o pagadas, y saldo a favor en Cobros, llevados a dev20 (23/11/2026)
+
+Commit de dev19 `0f90bff`, trasladado con `git diff 66d7f31 0f90bff -- mercas_touch` + `patch -p1` (sin rechazos).
+
+- **`mercas_touch`:** al devolver cajas un cliente (F3) se elige *Saldo para próximas facturas* (`action_compensate` de `mercas_base`, con el diario de compensación de la compañía) o *Pagar ahora* (caja o banco); en Cobros (F5), el saldo a favor del cliente se aplica primero a las facturas marcadas y se cobra el resto.
+
+Diferencias resueltas a mano en dev20: iconos Material en los botones nuevos (`swap_horiz`, `payments`, `account_balance`); copias `.orig` y `.rej` sin versionar que deja `patch`, borradas; `touch_screen.{js,xml}.orig` versionados, restaurados.
+
+Resultado: dev19 y dev20, 50 tests de `mercas_touch` cada uno, 0 fallos (tours saltados). Commiteado en dev20 como `61fe9b0`.
