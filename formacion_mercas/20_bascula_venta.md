@@ -84,8 +84,6 @@ Pulsa **Vender y entregar**. El pedido se confirma y el albarán queda validado 
 > **Cliente de fin de mes (Cliente1):** aquí termina. Se lleva el albarán y el encargado le facturará a fin de mes ([capítulo 12](12_encargado_facturacion.md)).
 > **Cliente de contado:** sigue en el [capítulo 21](21_bascula_contado.md).
 
-## Para más adelante
+## Pedidos con palets, transporte o envío por correo
 
-- **Palets:** reparte las cajas en palets y saca el packing list.
-- **DeCA:** documento de control del transporte.
-- **Enviar por correo:** manda el albarán, la DeCA y la factura al cliente.
+Los **palets** y el **packing list**, la **DeCA** (documento de control del transporte) y el **envío por correo** de los documentos se explican en el [capítulo 24](24_bascula_palets_deca_correo.md).

@@ -18,7 +18,7 @@ Todas las capturas están hechas en la base de pruebas, a tamaño tablet, con da
 | Puesto | Tareas | Capítulos |
 |---|---|---|
 | **Encargado** | Compra la mercancía, factura a los clientes de fin de mes, pone los precios especiales y liquida a los proveedores. | 10, 11 y 12 |
-| **Báscula** | Vende: despacha a los clientes que vienen y prepara los pedidos, cobra a los de contado y recoge las cajas devueltas. | 20, 21, 22 y 23 |
+| **Báscula** | Vende: despacha a los clientes que vienen y prepara los pedidos, cobra a los de contado y recoge las cajas devueltas. | 20 a 24 |
 
 Todos deberían leer primero los capítulos 01 y 02.
 
@@ -39,6 +39,7 @@ Todos deberían leer primero los capítulos 01 y 02.
 - [21 · Venta de contado: facturar y cobrar (F1 + F5)](21_bascula_contado.md)
 - [22 · El cliente devuelve cajas (F3)](22_bascula_cajas.md)
 - [23 · Etiqueta dañada (F6)](23_bascula_etiqueta.md)
+- [24 · Palets, DeCA y envío por correo](24_bascula_palets_deca_correo.md)
 
 **Para todos**
 
