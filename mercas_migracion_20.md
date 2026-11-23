@@ -452,3 +452,12 @@ Solo documentación. Cada commit de dev19 se trasladó con `git diff <commit>~1 
 | `mercas_base` | `4e10b2c` | `b0cc248` | Bruto y tara como columnas opcionales ocultas; saldo de la devolución de envases (compensar o pagar); saldo a favor en *Cobros* del táctil; peso del producto caja como tara. |
 | `mercas_touch` | `5907530` | `971e1a1` | Importe de las cajas y saldo a favor en el resumen de modos; F5 (y Ctrl/Mayús+F5) abre *Cobros* sin recargar; métodos del servidor y tests que faltaban. |
 | `mercas_demo` | `52a75ca` | `4eeb6aa` | Tabla de precios; 2,00 € de saldo de las cajas compensadas; cuándo se crean los pedidos de demo. En dev20 dice «igual en Odoo 19» en lugar de «igual en Odoo 20». |
+
+## 22. Resumen de un pedido sin factura, llevado a dev20 (23/11/2026)
+
+Commit de dev19 `79f45c6` (solo la parte de `mercas_touch`; el borrado de `sale_order_lot_selection` del mismo commit no se lleva: dev20 tiene su propia versión portada), aplicado a mano en dev20 (dos líneas, mismo código en las dos versiones).
+
+- **Táctil:** `_get_last_invoice` devuelve `False` cuando el pedido no tiene factura publicada. Antes devolvía un recordset vacío, que llegaba a la pantalla como `[]` (verdadero en JS): el resumen de una venta sin facturar mostraba «Factura : 0 € por cobrar» y el botón *Cobrar*.
+- **Test:** `test_draft_filters_and_summary` exige `assertIs(summary['invoice'], False)`; el `assertFalse` anterior aceptaba el recordset vacío.
+
+Resultado: 50 tests de `mercas_touch` en verde en dev19 (`test_mercas_touch19`) y dev20 (`test_mercas_touch20`). En las dos versiones, la primera ejecución sobre una base recién instalada (`-i`) da un fallo en `test_pallets` que no se repite al volver a pasar los tests con `-u`, y que no depende de este cambio. Commiteado en dev20 como `813b578`.
