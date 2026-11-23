@@ -17,7 +17,7 @@ Todas las capturas están hechas en la base de pruebas, a tamaño tablet, con da
 
 | Puesto | Tareas | Capítulos |
 |---|---|---|
-| **Encargado** | Compra la mercancía, factura a los clientes de fin de mes, pone los precios especiales y liquida a los proveedores. | 10, 11 y 12 |
+| **Encargado** | Compra la mercancía, factura a los clientes de fin de mes, pone los precios especiales y liquida a los proveedores. Decide las promociones y las caducidades y sigue el resumen de Dirección. | 10 a 13 |
 | **Báscula** | Vende: despacha a los clientes que vienen y prepara los pedidos, cobra a los de contado y recoge las cajas devueltas. | 20 a 24 |
 
 Todos deberían leer primero los capítulos 01 y 02.
@@ -25,13 +25,14 @@ Todos deberían leer primero los capítulos 01 y 02.
 ## Índice
 
 1. [Conceptos básicos](01_conceptos.md): lote, caja, tara, bruto y neto, firme o liquidación, saldo a favor.
-2. [El Mostrador](02_mostrador.md): pantalla de inicio, teclas F1–F6, teclado numérico y calculadora.
+2. [El Mostrador](02_mostrador.md): pantalla de inicio y cuadro de mandos, teclas F1–F6, teclado numérico y calculadora.
 
 **Encargado**
 
 - [10 · Comprar y recibir (F2)](10_encargado_compras.md)
 - [11 · Lotes: stock, desechos y liquidación al proveedor (F4)](11_encargado_lotes.md)
 - [12 · Facturación de fin de mes y cobro con saldo a favor](12_encargado_facturacion.md)
+- [13 · Cuadro de mandos: promociones, caducidades y Dirección](13_encargado_cuadro_de_mandos.md)
 
 **Báscula**
 

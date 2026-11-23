@@ -24,11 +24,19 @@ Arriba, junto al nombre, se ven en cuanto existen:
 
 Toca el producto, búscalo, o **escanea la etiqueta de una caja**: se abre directamente su lote.
 
+![Productos en promoción, los primeros](img/102_venta_favoritos.jpg)
+
+Los productos **en promoción** llevan una ⭐ y salen **los primeros** en cada familia: son los que el encargado quiere que se ofrezcan antes ([capítulo 13](13_encargado_cuadro_de_mandos.md)).
+
 ## 3. Lote
 
 ![Lotes del producto](img/22_venta_lote.jpg)
 
 Se ven los lotes con stock, **el más antiguo primero**: kg disponibles, proveedor, fecha, origen y si es **Firme**. Elige el que vas a despachar (normalmente el primero).
+
+![Lote que caduca hoy](img/103_venta_lote_caduca.jpg)
+
+Si un lote **caduca pronto o ya ha caducado**, lleva una etiqueta de color: **Caducado** (rojo), **Hoy**, **Mañana** o **En N días**. Se puede vender igualmente, pero fíjate antes de elegirlo y, si tienes dudas, pregunta al encargado.
 
 ## 4. La línea: bruto, cajas y precio
 

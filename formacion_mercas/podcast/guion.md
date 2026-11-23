@@ -109,6 +109,14 @@ Para generar el audio:
 
 **LUCÍA:** Si el lote ya se ha acabado, «Liquidar». Si aún queda género pero el proveedor quiere cobrar algo, «Facturar adelanto». Y una cosa que confunde: si le das a «Liquidar» a un lote que todavía tiene stock, sale «No hay lotes que facturar». No es un error del programa: ese lote no está terminado.
 
+**ANDRÉS:** ¿Y lo que sale a la derecha de las teclas, en la pantalla de inicio?
+
+**LUCÍA:** Es el cuadro de mandos, míralo cada vez que vuelvas al inicio. Arriba, lo vendido en el día. Luego los mensajes que te mandemos, que los tocas y contestas. Después, lo que está en promoción, con una estrella: esos productos son los que hay que ofrecer primero, y en la venta te salen los primeros. Y abajo, los lotes que caducan pronto, los caducados primero.
+
+**ANDRÉS:** ¿Y si un lote está caducado, no me deja venderlo?
+
+**LUCÍA:** Te deja, pero te avisa: al elegir el lote verás «Caducado», «Hoy» o «Mañana». Si tienes otro lote, coge el otro; si no, pregúntame. Y si ves un lote sin fecha de caducidad, tócalo: se abre su ficha y le pones la fecha, o le marcas que no caduca.
+
 **[Pausa]**
 
 **ANDRÉS:** Resumiendo, para que me quede…

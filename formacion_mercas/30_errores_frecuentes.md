@@ -21,6 +21,7 @@
 | He salido a mitad de una venta. | No pasa nada: está en **F1 › En curso**. |
 | He vendido y me he equivocado de precio. | Si aún no está facturado, el encargado lo corrige desde **Abrir**. Si ya está facturado, hace falta un abono. |
 | El cliente supera su riesgo. | El pedido se queda en presupuesto y aparece un aviso. Solo un responsable de riesgo puede dejarlo continuar. |
+| Un lote sale como **Caducado** al elegirlo. | Se puede vender, pero mejor elige otro lote si lo hay, o pregunta al encargado. |
 
 ## Cobros
 
@@ -45,3 +46,14 @@
 | **Factura firme** da error. | Algún lote marcado no es de facturación firme. |
 | La liquidación paga el precio de venta íntegro. | El margen del proveedor (o el general de la empresa) está a 0 %. |
 | Se ha dejado el **lote** vacío en una compra que traía lote del proveedor. | Se crea un lote nuevo, lo cual es correcto. Solo hay que escribir el lote si interesa conservar el del proveedor. |
+| Un lote sale en **Lotes sin fecha de caducidad** y no caduca nunca. | Márcalo como **Sin caducidad** en su ficha, o en el producto para todos sus lotes ([capítulo 13](13_encargado_cuadro_de_mandos.md)). |
+| Un lote **no avisa** antes de caducar. | El producto tiene **Aviso de caducidad (días)** a 0: solo avisa el mismo día. Pon los días en su ficha. |
+
+## Cuadro de mandos y Dirección
+
+| Error | Solución |
+|---|---|
+| No se ve el cuadro de mandos en el Mostrador. | Está oculto en esa tablet: toca el botón del **cuentakilómetros**, junto al de descarga. |
+| Un producto no sale en **En promoción con stock**. | No tiene la estrella o no tiene stock. |
+| No veo el menú **Mercas › Dirección**. | Hace falta ser administrador de ventas o de facturación, o tener el permiso *Mercas: Dirección*. |
+| No me llega el **correo de Dirección**. | Activa **Resumen de Dirección por correo: Cada tarde** en tu usuario y comprueba que tienes correo electrónico. |
