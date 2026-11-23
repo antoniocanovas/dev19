@@ -409,3 +409,18 @@ Diferencias resueltas a mano en dev20:
 - Copias `.orig` sin versionar que deja `patch`, borradas; los `touch_screen.{js,xml}.orig` versionados, restaurados con `git checkout HEAD --`.
 
 Resultado: dev19 `test_mercas_touch19`, 133 tests de `mercas_base` y `mercas_touch`, 0 fallos. dev20 `test_mercas_touch20`, 139 tests (con los de `stock_picking_report_valued`), 0 fallos. Tours saltados (falta `websocket-client`). Commiteado en dev20 como `a23eea7`, junto con los apartados 15 y 16.
+
+## 18. Resolución especial para móvil, cajas y total en gris y pesos brutos en la demo, llevados a dev20 (23/11/2026)
+
+Commit de dev19 `66d7f31`, trasladado con `git diff ad957a0 66d7f31 -- 'mercas_*'` + `patch -p1`.
+
+- **`mercas_touch`:** con el ticket debajo de los productos (menos de 992 px, `ui.size < SIZES.LG`), barra fija al pie con *Ocultar / Ver productos*, cajas, total y los botones del pedido (plantilla `TouchScreenOrderActions`, con la etiqueta *Palets*); en el móvil (menos de 768 px, `ui.isSmall`), sin teclado numérico en pantalla y con el teclado del sistema en el precio rápido y en *Cajas a mover*. Cajas y total del ticket sobre gris (`o_mercas_touch_summary`) en todas las resoluciones. Todo marcado *Resolución especial para móvil*.
+- **Demo:** pesos brutos de báscula en la compra y la venta de palets.
+
+Diferencias resueltas a mano en dev20:
+
+- Rechazos del parche: los botones del pedido (`TouchScreenOrderActions`) y el campo *Cajas a mover*, por los iconos Material; también los iconos nuevos (`visibility`, `visibility_off`, `add`).
+- Owl 3: `proxy(useService("ui"))` en vez de `useState`; `SIZES` se importa de `@web/core/ui/ui_utils` (en 20 no hay `ui_service.js`).
+- `touch_screen.{js,xml}.orig` versionados, restaurados con `git checkout HEAD --`.
+
+Resultado: dev20 `test_mercas_touch20`, 48 tests de `mercas_touch`, 0 fallos (tours saltados). Demo reinstalada en dev19 (`test_mercas_demo_pesos19`) con los pesos esperados. Commiteado en dev20 como `7c192b1`.
