@@ -461,3 +461,18 @@ Commit de dev19 `79f45c6` (solo la parte de `mercas_touch`; el borrado de `sale_
 - **Test:** `test_draft_filters_and_summary` exige `assertIs(summary['invoice'], False)`; el `assertFalse` anterior aceptaba el recordset vacío.
 
 Resultado: 50 tests de `mercas_touch` en verde en dev19 (`test_mercas_touch19`) y dev20 (`test_mercas_touch20`). En las dos versiones, la primera ejecución sobre una base recién instalada (`-i`) da un fallo en `test_pallets` que no se repite al volver a pasar los tests con `-u`, y que no depende de este cambio. Commiteado en dev20 como `813b578`.
+
+## 23. Cuadro de mandos del Mostrador y resumen de Dirección, llevados a dev20 (23/11/2026)
+
+Commits de dev19 `11523fa`, `615e816` y `e90761c`, trasladados con `git diff 79f45c6 e90761c -- mercas_base mercas_touch` (sin `mercas_base.pot` ni `ir.model.access.csv`) + `patch -p1`. Los rechazos (versión del manifiesto, import de `html2plaintext`, botón y columnas del inicio) se resolvieron a mano. Cambios propios de Odoo 20:
+
+| Qué | dev19 | dev20 |
+|---|---|---|
+| Unidad de la línea de compra | `product_uom_id` | `uom_id` |
+| Mermas del resumen | `stock.scrap` (`scrap_qty`, `date_done`) | `stock.move` con `is_scrap` (`quantity`, `date`, `uom_id`) |
+| Gráficos de Dirección | `useRef`/`useEffect` y `loadBundle` | `useChart` (`@web/core/utils/chart_hook`), `useProps`, `t-ref="this.<x>Chart.ref"` y `this.` en la plantilla |
+| Barras del resumen (QWeb) | `t-call` con `t-set` dentro | `t-call` con los parámetros como atributos (la plantilla llamada no ve las variables de quien llama) |
+| Iconos del panel del Mostrador | Font Awesome | Material (`oi` + `data-icon`) |
+| Acceso del modelo | `ir.model.access.csv` | `security/ir.access.csv` |
+
+Resultado: en dev20 (`test_mercas_touch20`), 151 tests de `mercas_base` y `mercas_touch` con solo 2 errores, los de las barras del resumen (`KeyError: 'bar_data'`). Tras arreglar el `t-call`, los 10 tests del resumen pasan; la batería completa no se ha vuelto a pasar. Gráficos y panel revisados en el navegador. Commiteado en dev20 como `31d245a`.
