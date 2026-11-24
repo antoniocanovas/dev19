@@ -121,6 +121,10 @@ class MercasTouch(models.AbstractModel):
                 'state': company.origin_state,
                 'countries': [{'id': country.id, 'name': country.name} for country in countries],
             },
+            # In a sale, the products tracked by lot are only shown with a lot to sell
+            'sellable_product_ids': self.get_sellable_product_ids(),
+            # Keypad on the screen: 'auto' (on a touch screen), 'show' or 'hide'
+            'numpad': self.env.user.mercas_touch_numpad,
             'has_risk': 'risk_exception' in self.env['res.partner']._fields,
             'can_bill': self._can_bill(),
             # The boxes given back can stay as a credit for the next invoices (see move_boxes)
@@ -393,6 +397,9 @@ class MercasTouch(models.AbstractModel):
             'city': partner.city or '',
             'vat': partner.vat or '',
             'firm_negotiation': partner.mercas_firm_negotiation,
+            # Origin proposed for the goods bought to the supplier: where it is
+            **dict(zip(('origin_country_id', 'origin_state_id'),
+                       (record.id or False for record in partner._mercas_default_origin(company)))),
             'debt': self._get_debt(partner),
             'invoices': self._get_open_invoices(partner),
             'credits': self._get_open_credits(partner),
@@ -509,13 +516,14 @@ class MercasTouch(models.AbstractModel):
         )
 
     @api.model
-    def get_line_price(self, kind, partner_id, product_id, qty=0, attribute_value_ids=None):
+    def get_line_price(self, kind, partner_id, product_id, qty=0, attribute_value_ids=None, lot_id=None):
         """ The price proposed for a new line, computed by an order line as in the backend:
 
         - purchase: the vendor price list of the supplier for that quantity, or else the cost
           of the product;
         - sale: the price list of the customer, with the extra price of the attributes chosen
-          (quality, size), or else the sale price of the product.
+          (quality, size), or else the sale price of the product. With the sale price of the
+          lot sold (`lot_id`), if it has one, in place of the one of the product.
 
         Net of the discount of the line: the screen has no discount. """
         if kind not in ('sale', 'purchase'):
@@ -536,6 +544,9 @@ class MercasTouch(models.AbstractModel):
             ).exists().filtered(lambda value: value.product_tmpl_id == product.product_tmpl_id)
             if attribute_values:
                 line_vals['product_no_variant_attribute_value_ids'] = [Command.set(attribute_values.ids)]
+            lot = self.env['stock.lot'].browse(lot_id if is_record_id(lot_id) else []).exists()
+            if lot.product_id == product:
+                line_vals['lot_id'] = lot.id
         else:
             line_vals['product_qty'] = qty
         line = self.env[f'{kind}.order.line'].new(line_vals)
@@ -552,22 +563,37 @@ class MercasTouch(models.AbstractModel):
         product = self.env['product.product'].browse(product_id).exists()
         if not product:
             raise ValidationError(self.env._("The product doesn't exist anymore."))
-        groups = self.env['stock.quant']._read_group(
-            [
-                ('product_id', '=', product.id),
-                ('location_id.usage', '=', 'internal'),
-                ('lot_id', '!=', False),
-                ('company_id', '=', self.env.company.id),
-            ],
-            ['lot_id'], ['quantity:sum', 'reserved_quantity:sum'],
-        )
-        lots = []
-        for lot, quantity, reserved in groups:
-            available = product.uom_id.round(quantity - reserved)
-            if available <= 0 or lot.invoiced:
-                continue
-            lots.append(self._get_lot_data(lot, available))
+        lots = [self._get_lot_data(lot, available) for lot, available in self._get_sellable_lots(product)]
         return sorted(lots, key=lambda lot: (lot['date'], lot['id']))
+
+    @api.model
+    def get_sellable_product_ids(self):
+        """ Products with some lot to sell (see _get_sellable_lots): the screen doesn't offer
+        in a sale the products tracked by lot without any, that couldn't be sold. """
+        return sorted({lot.product_id.id for lot, _available in self._get_sellable_lots()})
+
+    def _get_sellable_lots(self, products=None):
+        """ (lot, available) of the lots with stock available in the warehouse, not completed
+        nor invoiced to their supplier yet: the ones a sale can take, of `products` or of all
+        of them. """
+        domain = [
+            ('location_id.usage', '=', 'internal'),
+            ('lot_id', '!=', False),
+            ('lot_id.completed', '=', False),
+            ('lot_id.invoiced', '=', False),
+            ('company_id', '=', self.env.company.id),
+        ]
+        if products is not None:
+            domain.append(('product_id', 'in', products.ids))
+        groups = self.env['stock.quant']._read_group(
+            domain, ['lot_id'], ['quantity:sum', 'reserved_quantity:sum'],
+        )
+        sellable = []
+        for lot, quantity, reserved in groups:
+            available = lot.product_id.uom_id.round(quantity - reserved)
+            if available > 0:
+                sellable.append((lot, available))
+        return sellable
 
     def _get_lot_data(self, lot, available):
         origin = ', '.join(name for name in (lot.origin_state_id.name, lot.origin_country_id.name) if name)
@@ -586,6 +612,8 @@ class MercasTouch(models.AbstractModel):
             'origin': origin,
             'date': fields.Datetime.to_string(lot.create_date),
             'firm': lot.mercas_firm_negotiation,
+            # Base of the price of the sales of the lot, instead of the price of the product
+            'sale_price': lot.mercas_sale_price,
         }
 
     @api.model
@@ -680,7 +708,23 @@ class MercasTouch(models.AbstractModel):
             'supplier_amount': lot.supplier_amount,
             'completed': lot.completed,
             'invoiceable': lot.invoiceable,
+            'sale_price': lot.mercas_sale_price,
         }
+
+    @api.model
+    def set_lot_sale_price(self, lot_id, price):
+        """ The sale price of the lot (0: the one of the product), base of the price of its
+        sales from now on. """
+        if not is_record_id(lot_id):
+            raise ValidationError(self.env._("Invalid lot."))
+        if not is_number(price) or price < 0:
+            raise ValidationError(self.env._("The price can't be negative."))
+        lot = self.env['stock.lot'].browse(lot_id).exists()
+        if not lot:
+            raise ValidationError(self.env._("The lot doesn't exist anymore."))
+        lot.mercas_sale_price = price
+        self._notify_lots_changed(lot.product_id)
+        return self._get_lot_summary(lot)
 
     # ------------------------------------------------------------------
     # Operations
@@ -922,7 +966,8 @@ class MercasTouch(models.AbstractModel):
                        'box_product_id': int (optional), 'note': str (only when it changed),
                        sale: 'lot_id': int, 'attribute_value_ids': [int] (values of the
                        attributes chosen on the line, see `_get_product_attributes`) (optional),
-                       purchase: 'lot_name': str, 'firm': bool, 'origin_country_id': int,
+                       purchase: 'lot_name': str, 'firm': bool, 'sale_price': float (0: the
+                       one of the product), 'origin_country_id': int,
                        'origin_state_id': int (all optional)}],
         }
         :return: the draft, with the id of each line in the order of the lines sent
@@ -1093,6 +1138,8 @@ class MercasTouch(models.AbstractModel):
         )
         if 'firm' in line:
             vals['mercas_firm_negotiation'] = line['firm']
+        if 'sale_price' in line:
+            vals['mercas_lot_sale_price'] = line['sale_price']
         # The lot asked for is kept by name until the purchase is received; a lot set in the
         # backend stays while the screen shows the same name
         lot_name = line.get('lot_name') or ''
@@ -1154,6 +1201,7 @@ class MercasTouch(models.AbstractModel):
                     qty=line.product_qty,
                     lot_name=line.lot_id.name or line.mercas_touch_lot_name or '',
                     firm=line.mercas_firm_negotiation,
+                    sale_price=line.mercas_lot_sale_price,
                     origin_country_id=line.origin_country_id.id,
                     origin_state_id=line.origin_state_id.id,
                 )
@@ -1712,7 +1760,10 @@ class MercasTouch(models.AbstractModel):
         if any(not documents[kind] for kind in kinds):
             raise UserError(self.env._("Some of the documents chosen aren't available anymore: reload the sale."))
         kinds = [kind for kind in SALE_DOCUMENT_REPORTS if kind in kinds]
-        action = self.env.ref('mercas_touch.action_report_sale_documents').report_action(order, data={'kinds': kinds})
+        # The sale goes also in `data`: with `data`, the web client asks for the report without
+        # the ids of its records (see _mercas_sale_document_parts)
+        action = self.env.ref('mercas_touch.action_report_sale_documents').report_action(
+            order, data={'kinds': kinds, 'order_ids': order.ids})
         return self._get_client_action(action)
 
     def _get_sale_mail_partners(self, order):
@@ -1933,6 +1984,10 @@ class MercasTouch(models.AbstractModel):
                 if not isinstance(line['firm'], bool):
                     raise ValidationError(self.env._("Invalid line."))
                 vals['firm'] = line['firm']
+            if 'sale_price' in line:
+                if not is_number(line['sale_price']) or line['sale_price'] < 0:
+                    raise ValidationError(self.env._("The price can't be negative."))
+                vals['sale_price'] = line['sale_price']
             lot_name = line.get('lot_name')
             if lot_name:
                 if not isinstance(lot_name, str) or len(lot_name.strip()) > 128:

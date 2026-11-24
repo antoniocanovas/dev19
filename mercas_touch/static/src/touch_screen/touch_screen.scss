@@ -69,6 +69,57 @@
         }
     }
 
+    // Without the keypad on the screen (mouse and keyboard): the ticket shares the width with the
+    // catalog, and each line takes a single row when it fits, so that more lines are seen
+    .o_mercas_touch_compact {
+        @include media-breakpoint-up(lg) {
+            > .o_mercas_touch_work,
+            > .o_mercas_touch_ticket {
+                flex: 1 1 0;
+                width: auto;
+                min-width: 0;
+            }
+        }
+
+        .o_mercas_touch_line {
+            align-items: center !important;
+            padding-top: map-get($spacers, 1) !important;
+            padding-bottom: map-get($spacers, 1) !important;
+        }
+
+        // Product, then lot, quantity and boxes on the same row
+        .o_mercas_touch_line_info {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            column-gap: map-get($spacers, 2);
+
+            > .text-truncate {
+                max-width: 100%;
+            }
+
+            > .o_mercas_touch_line_note {
+                flex-basis: 100%;
+            }
+        }
+
+        // Price and amount side by side, the amount in a column of its own
+        .o_mercas_touch_line_amounts {
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: map-get($spacers, 2) !important;
+
+            > :last-child {
+                min-width: 6rem;
+                text-align: end;
+            }
+        }
+
+        .o_mercas_touch_line_price {
+            padding: 0.125rem map-get($spacers, 2);
+        }
+    }
+
     // Boxes and total of the order (ticket and bar of the phone): a grey that stands out from
     // the white of the screen; the dark theme recompiles $gray-* for its own grey
     .o_mercas_touch_summary {

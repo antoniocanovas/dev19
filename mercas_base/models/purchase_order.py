@@ -96,6 +96,7 @@ class PurchaseOrder(models.Model):
                     "origin_country_id": line.origin_country_id.id,
                     "origin_state_id": line.origin_state_id.id,
                     "mercas_firm_negotiation": line.mercas_firm_negotiation,
+                    "mercas_sale_price": line.mercas_lot_sale_price,
                 })
 
     def action_mercas_box_receive_and_invoice(self):
@@ -240,11 +241,26 @@ class PurchaseOrderLine(models.Model):
     origin_country_id = fields.Many2one(
         comodel_name="res.country",
         string="Country of Origin",
+        compute="_compute_origin",
+        store=True,
+        readonly=False,
+        help="Defaults to the country of the supplier, but can be changed here.",
     )
     origin_state_id = fields.Many2one(
         comodel_name="res.country.state",
         string="State of Origin",
         domain="[('country_id', '=', origin_country_id)]",
+        compute="_compute_origin",
+        store=True,
+        readonly=False,
+        help="Defaults to the state of the supplier, but can be changed here.",
+    )
+    mercas_lot_sale_price = fields.Float(
+        string="Lot Sale Price",
+        digits="Product Price",
+        help="Sale price of the goods of this line, carried over to its lot: "
+             "the base of the price lists in the sales of the lot. Empty, the "
+             "sale price of the product.",
     )
     mercas_firm_negotiation = fields.Boolean(
         string="Firm Negotiation",
@@ -300,6 +316,19 @@ class PurchaseOrderLine(models.Model):
                 line.order_id.partner_id.commercial_partner_id.mercas_firm_negotiation
             )
 
+    @api.depends("order_id.partner_id", "product_id")
+    def _compute_origin(self):
+        # The origin of the goods: by default, where the supplier is. Not for
+        # the sections and notes, nor for the boxes
+        for line in self:
+            if line.display_type or line.box_purchase_line_id or line.product_id.is_box:
+                line.origin_country_id = line.origin_state_id = False
+                continue
+            company = line.company_id or line.order_id.company_id or self.env.company
+            country, state = line.order_id.partner_id._mercas_default_origin(company)
+            line.origin_country_id = country
+            line.origin_state_id = state
+
     @api.depends("product_id")
     def _compute_box_product_id(self):
         for line in self:
@@ -351,6 +380,10 @@ class PurchaseOrderLine(models.Model):
                 if line.origin_state_id:
                     update["origin_state_id"] = line.origin_state_id.id
                 line.lot_id.write(update)
+        if vals.get("lot_id") or "mercas_lot_sale_price" in vals:
+            # The sale price of the lot; without one on the line, the lot keeps its own
+            for line in self.filtered(lambda l: l.lot_id and l.mercas_lot_sale_price):
+                line.lot_id.mercas_sale_price = line.mercas_lot_sale_price
         if "origin_country_id" in vals or "origin_state_id" in vals:
             for line in self.filtered(lambda l: l.lot_id):
                 update = {}

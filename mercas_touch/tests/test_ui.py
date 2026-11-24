@@ -31,6 +31,8 @@ class TestMercasTouchUi(HttpCase):
             groups='sales_team.group_sale_salesman_all_leads,purchase.group_purchase_user,'
                    'stock.group_stock_user,stock.group_production_lot,account.group_account_invoice',
         )
+        # The tours tap the keypad of the screen: the browser of the tests has a mouse
+        cls.user.mercas_touch_numpad = 'show'
         cls.env['mercas.touch'].with_user(cls.user).purchase({
             'uuid': str(uuid.uuid4()), 'partner_id': cls.supplier.id,
             'lines': [{'product_id': cls.pear.id, 'qty': 100.0, 'price_unit': 1.0, 'lot_name': 'TOUR-LOT'}],
@@ -80,6 +82,14 @@ class TestMercasTouchUi(HttpCase):
         lines = order.order_line.filtered(lambda l: l.product_id == self.pear).sorted('id')
         self.assertEqual(lines.mapped('product_uom_qty'), [10, 5])
         self.assertEqual(lines.mapped('price_unit'), [2.5, 3.0])
+
+    def test_without_numpad(self):
+        """ With the keypad hidden in the preferences, everything is typed with the keyboard. """
+        self.user.mercas_touch_numpad = 'hide'
+        self.start_tour('/odoo/mercas-touch', 'mercas_touch_no_numpad_tour', login='touch_tour')
+        line = self.env['sale.order'].search([('partner_id', '=', self.customer.id)]).order_line.filtered(
+            lambda l: l.product_id == self.pear)
+        self.assertEqual((line.product_uom_qty, line.price_unit), (4, 2.5))
 
     def test_resume_quotation(self):
         order = self.env['sale.order'].create({

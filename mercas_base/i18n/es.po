@@ -2508,3 +2508,33 @@ msgstr "Cada tarde"
 #: model:res.groups,comment:mercas_base.group_mercas_summary_mail
 msgid "Receives the management summary of the day by email each evening."
 msgstr "Recibe por correo cada tarde el resumen de dirección del día."
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_purchase_order_line__origin_country_id
+msgid "Defaults to the country of the supplier, but can be changed here."
+msgstr "Por defecto, el país del proveedor; se puede cambiar aquí."
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_purchase_order_line__origin_state_id
+msgid "Defaults to the state of the supplier, but can be changed here."
+msgstr "Por defecto, la provincia del proveedor; se puede cambiar aquí."
+
+#. module: mercas_base
+#: model:ir.model.fields,field_description:mercas_base.field_purchase_order_line__mercas_lot_sale_price
+msgid "Lot Sale Price"
+msgstr "Precio venta lote"
+
+#. module: mercas_base
+#: model:ir.model.fields,field_description:mercas_base.field_stock_lot__mercas_sale_price
+msgid "Sale Price"
+msgstr "Precio de venta"
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_stock_lot__mercas_sale_price
+msgid "Price of the goods of this lot, in the unit of the product. When set, it takes the place of the sale price of the product in the sales of the lot: the price lists apply their discounts and formulas on it, while their fixed prices still win."
+msgstr "Precio de la mercancía de este lote, en la unidad del producto. Si se indica, sustituye al precio de venta del producto en las ventas del lote: las tarifas aplican sobre él sus descuentos y fórmulas, y sus precios fijos siguen mandando."
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_purchase_order_line__mercas_lot_sale_price
+msgid "Sale price of the goods of this line, carried over to its lot: the base of the price lists in the sales of the lot. Empty, the sale price of the product."
+msgstr "Precio de venta de la mercancía de esta línea, que pasa a su lote: la base de las tarifas en las ventas del lote. Vacío, el precio de venta del producto."

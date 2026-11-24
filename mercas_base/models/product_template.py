@@ -32,6 +32,29 @@ class ProductTemplate(models.Model):
 class ProductProduct(models.Model):
     _inherit = "product.product"
 
+    def _price_compute(self, price_type, uom=None, currency=None, company=None, date=False):
+        """The sale price of a lot (mercas_lot_id in the context, see
+        sale.order.line._get_product_price_context) is the base of the price
+        lists instead of the sale price of the product, with the extra price
+        of the attributes chosen."""
+        lot_id = self.env.context.get("mercas_lot_id")
+        if price_type != "list_price" or not lot_id:
+            return super()._price_compute(price_type, uom=uom, currency=currency, company=company, date=date)
+        lot = self.env["stock.lot"].browse(lot_id).exists()
+        priced = self.filtered(lambda p: lot.mercas_sale_price and lot.product_id == p)
+        prices = super(ProductProduct, self - priced)._price_compute(
+            price_type, uom=uom, currency=currency, company=company, date=date)
+        company = company or self.env.company
+        for product in priced.with_company(company):
+            price = lot.mercas_sale_price + product._get_attributes_extra_price()
+            if uom:
+                price = product.uom_id._compute_price(price, uom)
+            if currency:
+                price = product.currency_id._convert(
+                    price, currency, company, date or fields.Date.context_today(self))
+            prices[product.id] = price
+        return prices
+
     def _mercas_is_weighed(self, uom):
         """Whether `uom` is a unit of weight: the quantity of the product in
         it is its net weight."""

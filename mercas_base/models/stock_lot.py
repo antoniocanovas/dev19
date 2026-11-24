@@ -159,6 +159,14 @@ class StockLot(models.Model):
         ),
     )
 
+    mercas_sale_price = fields.Float(
+        string="Sale Price",
+        digits="Product Price",
+        help="Price of the goods of this lot, in the unit of the product. When "
+             "set, it takes the place of the sale price of the product in the "
+             "sales of the lot: the price lists apply their discounts and "
+             "formulas on it, while their fixed prices still win.",
+    )
     mercas_margin = fields.Float(
         string="Margin (%)",
         digits=(10, 2),

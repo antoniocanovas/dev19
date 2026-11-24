@@ -188,7 +188,35 @@ class SaleOrderLine(models.Model):
             ]
         return result
 
+    # The sale price of the lot is the base of the price lists (see
+    # product.product._price_compute)
+
+    def _get_product_price_context(self):
+        context = super()._get_product_price_context()
+        if self.lot_id:
+            context["mercas_lot_id"] = self.lot_id.id
+        return context
+
+    @api.depends("lot_id")
+    def _compute_price_unit(self):
+        return super()._compute_price_unit()
+
+    @api.depends("lot_id")
+    def _compute_discount(self):
+        return super()._compute_discount()
+
     def write(self, vals):
+        if "lot_id" in vals and not {"price_unit", "discount"} & set(vals):
+            # The lot of a confirmed sale is corrected (stock_lot_change_wizard,
+            # restricted lot...): what was sold keeps its price
+            confirmed = self.filtered(lambda l: l.order_id.state not in ("draft", "sent"))
+            if confirmed:
+                fields_to_keep = [self._fields[name] for name in ("price_unit", "technical_price_unit", "discount")]
+                with self.env.protecting(fields_to_keep, confirmed):
+                    return self._mercas_write(vals)
+        return self._mercas_write(vals)
+
+    def _mercas_write(self, vals):
         changed_qty_lines = self.env["sale.order.line"]
         if "product_uom_qty" in vals:
             changed_qty_lines = self.filtered(

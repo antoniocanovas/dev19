@@ -68,6 +68,7 @@
                                 <field name="mercas_firm_negotiation"
                                        widget="boolean_toggle"
                                        readonly="not can_edit_firm_negotiation"/>
+                                <field name="mercas_sale_price"/>
                             </group>
                             <group string="Quantities">
                                 <field name="purchase_kg" readonly="1"/>
@@ -176,6 +177,7 @@
             <xpath expr="//list/field[@name='product_id']" position="after">
                 <field name="partner_id" optional="show"/>
                 <field name="mercas_firm_negotiation" optional="show"/>
+                <field name="mercas_sale_price" optional="show"/>
                 <field name="mercas_no_expiration" optional="hide"/>
             </xpath>
             <!-- Added by product_expiry, hidden by default -->

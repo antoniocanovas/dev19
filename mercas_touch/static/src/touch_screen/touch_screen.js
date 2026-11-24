@@ -20,6 +20,8 @@ import { localization } from "@web/core/l10n/localization";
 const MODEL = "mercas.touch";
 // Sent by the server when the stock of some lots changes
 const LOTS_CHANGED = "mercas_touch/lots_changed";
+// Fields of numbers with decimals: quantities, weights, prices and amounts
+const DECIMAL_INPUTS = 'input[inputmode="decimal"], .o_mercas_touch_price_edit_input';
 // Sent by Discuss: a new message in a channel of the user, and the read messages
 const NEW_MESSAGE = "discuss.channel/new_message";
 const MAIL_RECORDS = "mail.record/insert";
@@ -132,6 +134,8 @@ export class TouchScreen extends Component {
             lotList: [],
             lotSelection: {},
             scrap: null,
+            // Sale price of a lot being changed on the screen of the lots: { lot, price }
+            lotPrice: null,
             // Damaged label: the lots found by the code scanned or typed
             labelSearch: "",
             labelLots: [],
@@ -216,7 +220,13 @@ export class TouchScreen extends Component {
 
     onKeydown(ev) {
         const mode = this.modes.find((mode) => mode.fkey === ev.key);
-        if (mode) {
+        if (this.isNumpadDecimalPoint(ev)) {
+            // The point of the numeric keypad of the keyboard is the decimal comma, in Spain
+            ev.preventDefault();
+            const input = ev.target;
+            input.setRangeText(localization.decimalPoint, input.selectionStart, input.selectionEnd, "end");
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+        } else if (mode) {
             ev.preventDefault();
             ev.stopImmediatePropagation();
             this.openMode(mode.key);
@@ -232,6 +242,20 @@ export class TouchScreen extends Component {
         }
     }
 
+    /** The decimal key of the numeric keypad of the keyboard in a field of numbers, when it
+     * doesn't write the decimal point of the user (a point, with a comma as decimal point). */
+    isNumpadDecimalPoint(ev) {
+        const input = ev.target;
+        return (
+            ev.code === "NumpadDecimal" &&
+            ev.key !== localization.decimalPoint &&
+            !ev.ctrlKey && !ev.metaKey && !ev.altKey &&
+            input instanceof HTMLInputElement &&
+            !input.readOnly &&
+            input.matches(DECIMAL_INPUTS)
+        );
+    }
+
     async openMode(mode) {
         if (this.state.sending) {
             return;
@@ -242,6 +266,10 @@ export class TouchScreen extends Component {
         this.state.partnerSearch = "";
         this.state.partners = [];
         this.state.mode = mode;
+        if (mode === "sale") {
+            // Lots received or sold elsewhere since the screen was opened
+            this.loadSellableProducts();
+        }
         if (mode === "lots") {
             await this.loadLots();
         } else if (mode === "labels") {
@@ -274,6 +302,7 @@ export class TouchScreen extends Component {
         this.state.amount = "";
         this.state.memo = "";
         this.state.scrap = null;
+        this.state.lotPrice = null;
         this.state.lotSelection = {};
         this.state.order = null;
         this.state.saveState = false;
@@ -302,6 +331,8 @@ export class TouchScreen extends Component {
             this.state.lots = [];
         } else if (this.state.scrap) {
             this.state.scrap = null;
+        } else if (this.state.lotPrice) {
+            this.state.lotPrice = null;
         } else if (this.hasDrafts() && (this.state.partner || this.state.choosingCustomer)) {
             // The draft is saved: back to the list, to resume it or another one later
             await this.flushSave();
@@ -530,6 +561,7 @@ export class TouchScreen extends Component {
             originStateId: line.origin_state_id || false,
             firm: Boolean(line.firm),
             lotName: line.lot_name || "",
+            salePrice: line.sale_price || 0,
         }));
     }
 
@@ -596,6 +628,7 @@ export class TouchScreen extends Component {
             ...(isPurchase
                 ? {
                       firm: line.firm,
+                      sale_price: line.salePrice || 0,
                       ...(line.lotName ? { lot_name: line.lotName } : {}),
                       ...(line.originCountryId ? { origin_country_id: line.originCountryId } : {}),
                       ...(line.originStateId ? { origin_state_id: line.originStateId } : {}),
@@ -771,7 +804,16 @@ export class TouchScreen extends Component {
         if (product.is_box) {
             return false;
         }
-        return this.state.mode === "purchase" ? product.purchase_ok : product.sale_ok;
+        if (this.state.mode === "purchase") {
+            return product.purchase_ok;
+        }
+        // Tracked by lot, only with a lot to sell: otherwise it couldn't be sold
+        return product.sale_ok && (!product.tracking || this.state.data.sellable_product_ids.includes(product.id));
+    }
+
+    /** Products with a lot to sell, after a sale, a purchase or a reception changed them. */
+    async loadSellableProducts() {
+        this.state.data.sellable_product_ids = await this.orm.call(MODEL, "get_sellable_product_ids", []);
     }
 
     categories() {
@@ -878,7 +920,7 @@ export class TouchScreen extends Component {
             lot,
             qty: line ? this.formatInput(line.qty) : "",
             // The price of the order line for the partner (see loadLinePrice)
-            price: line ? this.formatInput(line.price) : partner ? "" : this.formatInput(product.price),
+            price: line ? this.formatInput(line.price) : partner ? "" : this.formatInput(lot?.sale_price || product.price),
             boxQty: line ? line.boxQty : 0,
             boxProductId: line ? line.boxProductId : defaultBox,
             // Weight on the scale, with the boxes: the net weight (qty) is worked out from it.
@@ -888,10 +930,13 @@ export class TouchScreen extends Component {
             boxSearch: null,
             note: line ? line.note : "",
             showNote: Boolean(line?.note),
-            originCountryId: line ? line.originCountryId : false,
-            originStateId: line ? line.originStateId : false,
+            // A new line of a purchase: from where the supplier is
+            originCountryId: line ? line.originCountryId : partner?.origin_country_id || false,
+            originStateId: line ? line.originStateId : partner?.origin_state_id || false,
             firm: line ? line.firm : Boolean(partner?.firm_negotiation),
             lotName: line ? line.lotName : "",
+            // On a purchase, the sale price of the lot received; empty: the one of the product
+            salePrice: line?.salePrice ? this.formatInput(line.salePrice) : "",
             attributeValueIds: line ? [...(line.attributeValueIds || [])] : [],
             // Field written by the keypad: a new line of goods sold by weight starts with the
             // weight on the scale
@@ -909,7 +954,9 @@ export class TouchScreen extends Component {
 
     /** What the proposed price depends on, besides the partner and the product. */
     linePriceKey(entry) {
-        return JSON.stringify([this.parseNumber(entry.qty) || 1, [...entry.attributeValueIds].sort()]);
+        return JSON.stringify([
+            this.parseNumber(entry.qty) || 1, [...entry.attributeValueIds].sort(), entry.lot?.id || false,
+        ]);
     }
 
     /**
@@ -929,6 +976,7 @@ export class TouchScreen extends Component {
             entry.product.id,
             this.parseNumber(entry.qty) || 1,
             entry.attributeValueIds,
+            entry.lot?.id || false,
         ]);
         if (this.state.entry !== entry || entry.price !== proposed) {
             return false;
@@ -1031,6 +1079,8 @@ export class TouchScreen extends Component {
             }
         } else if (this.state.scrap) {
             this.state.scrap.qty = applyNumpadKey(this.state.scrap.qty, key);
+        } else if (this.state.lotPrice) {
+            this.state.lotPrice.price = applyNumpadKey(this.state.lotPrice.price, key);
         } else if (this.state.mode === "payment") {
             this.state.amount = applyNumpadKey(this.state.amount, key);
         }
@@ -1235,6 +1285,12 @@ export class TouchScreen extends Component {
             );
             return;
         }
+        const salePrice = this.parseNumber(entry.salePrice);
+        if (this.state.mode === "purchase" && !(salePrice >= 0)) {
+            this.notification.add(_t("Enter a valid sale price."), { type: "warning" });
+            entry.field = "salePrice";
+            return;
+        }
         const values = {
             product: entry.product,
             lot: entry.lot,
@@ -1247,6 +1303,7 @@ export class TouchScreen extends Component {
             originStateId: entry.originStateId,
             firm: entry.firm,
             lotName: entry.lotName.trim(),
+            salePrice: this.state.mode === "purchase" ? salePrice : 0,
             attributeValueIds: [...entry.attributeValueIds],
         };
         if (entry.line) {
@@ -1384,6 +1441,22 @@ export class TouchScreen extends Component {
     /** A phone (under 768 px): no on-screen numpad, the keyboard of the phone instead. */
     isMobile() {
         return this.ui.isSmall;
+    }
+
+    /** The keypad on the screen, as chosen in the preferences of the user: automatically, only
+     * on a touch screen (a finger as main pointer), not with a mouse and a keyboard. */
+    showNumpad() {
+        const numpad = this.state.data.numpad;
+        if (numpad === "auto") {
+            return Boolean(browser.matchMedia?.("(pointer: coarse)").matches);
+        }
+        return numpad !== "hide";
+    }
+
+    /** The fields only written with the keypad of the screen (to keep the keyboard of a tablet
+     * hidden) are written with the keyboard of the device without it, or on a phone. */
+    keypadOnly() {
+        return this.showNumpad() && !this.isMobile();
     }
 
     /** The ticket under the products, not on their right: the screen is narrower than the
@@ -2293,6 +2366,34 @@ export class TouchScreen extends Component {
         }
     }
 
+    onLotPrice(lot) {
+        this.state.lotPrice = { lot, price: lot.sale_price ? this.formatInput(lot.sale_price) : "" };
+    }
+
+    onLotPriceInput(value) {
+        this.state.lotPrice.price = value;
+    }
+
+    async onConfirmLotPrice() {
+        const lotPrice = this.state.lotPrice;
+        const price = this.parseNumber(lotPrice.price);
+        if (!(price >= 0)) {
+            this.notification.add(_t("Enter a valid price."), { type: "warning" });
+            return;
+        }
+        const lot = await this.run("set_lot_sale_price", [lotPrice.lot.id, price]);
+        if (lot) {
+            this.state.lotPrice = null;
+            this.notification.add(
+                price
+                    ? _t("The lot %(lot)s is sold from %(price)s.", { lot: lot.name, price: this.formatAmount(price) })
+                    : _t("The lot %s is sold at the price of the product.", lot.name),
+                { type: "success" }
+            );
+            await this.loadLots();
+        }
+    }
+
     async onInvoiceLots(mode) {
         const lotIds = this.selectedLotIds();
         if (!lotIds.length) {
@@ -2494,9 +2595,12 @@ export class TouchScreen extends Component {
             return;
         }
         const product = this.state.product;
+        if (this.state.mode === "sale") {
+            await this.loadSellableProducts();
+        }
         if (this.state.mode === "sale" && product?.tracking && payload.product_ids.includes(product.id)) {
             await this.loadProductLots();
-        } else if (this.state.mode === "lots" && !this.state.scrap) {
+        } else if (this.state.mode === "lots" && !this.state.scrap && !this.state.lotPrice) {
             await this.loadLots();
         } else if (!this.state.mode) {
             await this.loadHome();

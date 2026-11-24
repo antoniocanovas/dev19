@@ -80,6 +80,12 @@ class TestMercasTouch(MercasTouchCommon):
         self.assertEqual(products[self.pear.id]['categ_id'], self.pear.categ_id.id)
         self.assertTrue(data['journals'])
 
+    def test_numpad_preference(self):
+        """ Each user chooses in their preferences the keypad of the screen. """
+        self.assertEqual(self.Touch.get_screen_data()['numpad'], 'auto')
+        self.user.with_user(self.user).write({'mercas_touch_numpad': 'hide'})
+        self.assertEqual(self.Touch.get_screen_data()['numpad'], 'hide')
+
     def test_screen_data_only_market_goods(self):
         """ The catalog of sales and purchases has only the products of the categories of
         market goods; the boxes are still there, whatever their category, to choose them. """
@@ -166,6 +172,42 @@ class TestMercasTouch(MercasTouchCommon):
         self.assertEqual(self.Touch.get_line_price('sale', self.customer.id, self.lettuce.id, 5), 0.8)
         self.assertEqual(self.Touch.get_line_price('sale', self.customer.id, self.lettuce.id, 10), 0.6)
 
+    def test_lot_sale_price(self):
+        """ The sale price of a lot, given on the purchase or on the screen of the lots, is
+        the base of the price proposed in its sales, with the discounts of the price lists. """
+        self._buy(50.0, lot_name='PRICED', sale_price=2.5)
+        self._buy(50.0, lot_name='PLAIN')
+        Lot = self.env['stock.lot']
+        priced = Lot.search([('name', '=', 'PRICED'), ('product_id', '=', self.pear.id)])
+        plain = Lot.search([('name', '=', 'PLAIN'), ('product_id', '=', self.pear.id)])
+        self.assertEqual(priced.mercas_sale_price, 2.5)
+        self.assertFalse(plain.mercas_sale_price)
+        lots = {lot['name']: lot for lot in self.Touch.get_product_lots(self.pear.id)}
+        self.assertEqual((lots['PRICED']['sale_price'], lots['PLAIN']['sale_price']), (2.5, 0.0))
+        price = self.Touch.get_line_price
+        self.assertEqual(price('sale', self.customer.id, self.pear.id, 5, [], priced.id), 2.5)
+        self.assertEqual(price('sale', self.customer.id, self.pear.id, 5, [], plain.id), 2.0)
+        self.assertEqual(price('sale', self.customer.id, self.pear.id, 5), 2.0, "Without lot, the product")
+
+        summary = self.Touch.set_lot_sale_price(plain.id, 3.0)
+        self.assertEqual(summary['sale_price'], 3.0)
+        self.assertEqual(price('sale', self.customer.id, self.pear.id, 5, [], plain.id), 3.0)
+        with self.assertRaises(ValidationError):
+            self.Touch.set_lot_sale_price(plain.id, -1)
+
+        self.env['res.config.settings'].create({'group_product_pricelist': True}).execute()
+        self.customer.property_product_pricelist = self.env['product.pricelist'].create({
+            'name': 'Touch Lot Discount',
+            'item_ids': [Command.create({
+                'applied_on': '0_product_variant',
+                'product_id': self.pear.id,
+                'compute_price': 'percentage',
+                'percent_price': 10,
+            })],
+        })
+        self.assertAlmostEqual(price('sale', self.customer.id, self.pear.id, 5, [], priced.id), 2.25)
+        self.assertAlmostEqual(price('sale', self.customer.id, self.pear.id, 5), 1.8)
+
     def test_purchase_with_lot_name_and_origin(self):
         spain = self.env.ref('base.es')
         result = self._buy(50.0, lot_name='PEAR-001', origin_country_id=spain.id)
@@ -209,6 +251,16 @@ class TestMercasTouch(MercasTouchCommon):
         # A lot already invoiced to its supplier isn't sold anymore
         self.env['stock.lot'].search([('name', '=', 'OLD')]).invoiced = True
         self.assertEqual([lot['name'] for lot in self.Touch.get_product_lots(self.pear.id)], ['NEW'])
+
+    def test_sellable_products(self):
+        """ A sale only offers the products tracked by lot with some lot to sell: with stock,
+        not completed nor invoiced to its supplier. """
+        self.assertNotIn(self.pear.id, self.Touch.get_screen_data()['sellable_product_ids'])
+        self._buy(30.0, lot_name='SELLABLE')
+        self.assertIn(self.pear.id, self.Touch.get_screen_data()['sellable_product_ids'])
+        lot = self.env['stock.lot'].search([('name', '=', 'SELLABLE')])
+        lot.invoiced = True
+        self.assertNotIn(self.pear.id, self.Touch.get_sellable_product_ids())
 
     def test_sell_with_lot_boxes_price_and_note(self):
         self._buy(100.0, lot_name='SELL-1')
@@ -605,6 +657,9 @@ class TestMercasTouch(MercasTouchCommon):
         positions = [html.find(marker) for marker in markers]
         self.assertTrue(all(position >= 0 for position in positions), positions)
         self.assertEqual(positions, sorted(positions), "In the order they print")
+        # As the web client asks for it: with `data`, the URL of the report has no ids
+        html = Report._render_qweb_html(action['report_name'], None, data=action['data'])[0].decode()
+        self.assertTrue(all(marker in html for marker in markers), "The sale goes in the data")
         html = Report._render_qweb_html(action['report_name'], order.ids, data={'kinds': ['packing']})[0].decode()
         self.assertNotIn(markers[0], html)
         self.assertNotIn(markers[2], html)
@@ -1049,6 +1104,17 @@ class TestMercasTouch(MercasTouchCommon):
         self.assertEqual({c['id'] for c in origin['countries']}, {spain.id, france.id})
         self.assertEqual(self.Touch.get_origin_states(spain.id), states)
         self.assertEqual(self.Touch.get_origin_states(self.env.ref('base.it').id), [])
+
+    def test_partner_default_origin(self):
+        """ A new line of a purchase proposes the origin of the supplier. """
+        self.company.origin_filter = False
+        spain, murcia = self.env.ref('base.es'), self.env.ref('base.state_es_mu')
+        self.supplier.write({'country_id': spain.id, 'state_id': murcia.id})
+        info = self.Touch.get_partner_info(self.supplier.id)
+        self.assertEqual((info['origin_country_id'], info['origin_state_id']), (spain.id, murcia.id))
+        self.supplier.write({'country_id': False, 'state_id': False})
+        info = self.Touch.get_partner_info(self.supplier.id)
+        self.assertEqual((info['origin_country_id'], info['origin_state_id']), (False, False))
 
     def test_draft_filters_and_summary(self):
         """ Besides the drafts in progress, the confirmed orders still to invoice and all of

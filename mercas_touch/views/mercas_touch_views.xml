@@ -13,6 +13,29 @@
               web_icon="mercas_touch,static/description/icon.png"
               groups="stock.group_stock_user" sequence="2"/>
 
+    <!-- The keypad of the counter, chosen by each user in their preferences -->
+    <record id="view_users_form_simple_modif_mercas_touch" model="ir.ui.view">
+        <field name="name">res.users.preferences.form.mercas_touch</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <group name="other_preferences" position="inside">
+                <field name="mercas_touch_numpad" readonly="0"/>
+            </group>
+        </field>
+    </record>
+
+    <record id="view_users_form_mercas_touch" model="ir.ui.view">
+        <field name="name">res.users.form.mercas_touch</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <group name="other_preferences" position="inside">
+                <field name="mercas_touch_numpad"/>
+            </group>
+        </field>
+    </record>
+
     <record id="view_order_form_inherit_mercas_touch" model="ir.ui.view">
         <field name="name">sale.order.form.inherit.mercas_touch</field>
         <field name="model">sale.order</field>

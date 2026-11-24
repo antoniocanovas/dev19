@@ -69,6 +69,17 @@ class ResPartner(models.Model):
         values["mercas_firm_negotiation"] = self.mercas_firm_negotiation
         return values
 
+    def _mercas_default_origin(self, company):
+        """(country, state) proposed as the origin of the goods bought to this
+        supplier: those of its address (of the company, also for one of its
+        contacts). Only the ones allowed by the origin filter of `company`."""
+        partner = self.commercial_partner_id
+        country = partner.country_id
+        state = partner.state_id
+        if company.origin_filter and not country.mercas_origin:
+            country = country.browse()
+        return country, state.filtered(lambda s: s.country_id == country)
+
     def _mercas_box_locations(self, company):
         """Dedicated customer/supplier locations of this partner, excluding the
         company's generic parent locations."""

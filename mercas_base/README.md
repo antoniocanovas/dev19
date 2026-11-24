@@ -84,6 +84,22 @@ El pedido de venta tiene el campo **Comentarios** (`mercas_comment`, encima de l
 
 Al confirmar un pedido de venta se verifica si el cliente tiene una sub-ubicación propia bajo el **Almacén clientes** configurado en la empresa. Si no existe, se crea automáticamente con el nombre del partner y se asigna como `property_stock_customer` del cliente (campo dependiente de empresa).
 
+### Ventas — Precio de venta del lote
+
+Cada lote puede tener su **Precio de venta** (`mercas_sale_price`, en la unidad del producto), en la ficha del lote (pestaña *General*) y en la lista de lotes. Se pone al comprar (columna **Precio venta lote** de la línea de compra, `mercas_lot_sale_price`, que pasa al lote al crearlo o asignarlo y cada vez que cambia en la línea; vacía, el lote conserva el suyo) o después en el lote (también desde *F4 · Lotes* del táctil).
+
+En las ventas de ese lote es la **base de la tarifa** en lugar del precio de venta del producto:
+
+- Sin regla de tarifa: el precio del lote (más el extra de la calidad y el calibre).
+- Reglas de **descuento** y de **fórmula** sobre el precio de venta: se aplican sobre el precio del lote.
+- Reglas de **precio fijo** (precios especiales): mandan, sea cual sea el lote.
+- Reglas sobre el **coste**: no cambian.
+- Lote sin precio, o línea sin lote: como siempre, sobre el precio del producto.
+
+El precio se recalcula al elegir o cambiar el lote mientras el pedido está en presupuesto (salvo que se haya escrito a mano). En un pedido **confirmado**, corregir el lote (asistente *Corregir lote*, entrega) **no cambia el precio** de lo ya vendido.
+
+Técnicamente: `sale.order.line._get_product_price_context` pasa el lote en el contexto (`mercas_lot_id`) y `product.product._price_compute('list_price')` toma de él el precio, así que lo usan todos los cálculos de tarifa (también la tarifa basada en otra tarifa).
+
 ### Ventas — Calidad y calibre
 
 La calidad y el calibre de lo vendido se guardan para el análisis de ventas, el lote y la liquidación. Se marcan con el campo **Función en Mercas** (`mercas_role`: *Calidad* o *Calibre*) de los atributos de producto (*Ventas > Configuración > Atributos*). Hay dos casos:
@@ -138,7 +154,7 @@ Cuando la opción **Purchase lot auto** está activa en la empresa, al confirmar
 
 ### Compras — Origen del producto
 
-Las líneas de pedido de compra disponen de los campos **País origen** y **Provincia origen**. Su visibilidad en la vista de pedido se controla mediante los toggles **Columna país origen** y **Columna provincia origen** de la parametrización de empresa.
+Las líneas de pedido de compra disponen de los campos **País origen** y **Provincia origen**. Por defecto toman el país y la provincia de la dirección del proveedor (de la empresa, si la compra va a uno de sus contactos), y se vuelven a proponer al cambiar el proveedor o el producto; se pueden cambiar en cada línea. Con **Filtro origen** activo solo se propone el país si está marcado como *Origen Mercas*. Las líneas de cajas, secciones y notas no llevan origen. Su visibilidad en la vista de pedido se controla mediante los toggles **Columna país origen** y **Columna provincia origen** de la parametrización de empresa.
 
 Cuando una línea tiene lote asignado, cualquier cambio en el país o provincia de origen se propaga automáticamente al lote correspondiente (`stock.lot`).
 
@@ -249,6 +265,7 @@ El módulo extiende el lote de stock con las siguientes capacidades:
 |---|---|
 | **Proveedor** (`partner_id`) | Partner proveedor del lote. Se asigna automáticamente al confirmar el pedido de compra y puede editarse manualmente. |
 | **País origen** / **Provincia origen** | Origen geográfico del producto. Se propagan desde las líneas de compra. |
+| **Precio de venta** (`mercas_sale_price`) | Base de la tarifa en las ventas del lote, en lugar del precio del producto (ver *Ventas — Precio de venta del lote*). Se propaga desde la línea de compra o se pone en el lote. |
 
 Un lote solo puede tener líneas de compra de un único proveedor (`_check_single_purchase_partner`, por trazabilidad alimentaria): si se intenta vincular a un lote líneas de pedidos de compra de proveedores distintos, salta una validación que lo impide.
 

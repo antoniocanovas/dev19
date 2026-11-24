@@ -2179,3 +2179,82 @@ msgstr "Marcar como leído"
 #: code:addons/mercas_touch/models/mercas_touch.py:0
 msgid "Invalid channels."
 msgstr "Canales no válidos."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "(empty: the one of the product)"
+msgstr "(vacío: el del producto)"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
+msgid "Enter a valid sale price."
+msgstr "Introduce un precio de venta válido."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Price"
+msgstr "Precio"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Sale price of the lot"
+msgstr "Precio de venta del lote"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Sale price per"
+msgstr "Precio de venta por"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
+msgid "The lot %(lot)s is sold from %(price)s."
+msgstr "El lote %(lot)s se vende a partir de %(price)s."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
+msgid "The lot %s is sold at the price of the product."
+msgstr "El lote %s se vende al precio del producto."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "sold at"
+msgstr "venta a"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "· base of the price lists in its sales. Empty or 0: the price of the product."
+msgstr "· base de las tarifas en sus ventas. Vacío o 0: el precio del producto."
+
+#. module: mercas_touch
+#: model:ir.model.fields.selection,name:mercas_touch.selection__res_users__mercas_touch_numpad__auto
+msgid "Automatic"
+msgstr "Automático"
+
+#. module: mercas_touch
+#: model:ir.model.fields.selection,name:mercas_touch.selection__res_users__mercas_touch_numpad__show
+msgid "Show"
+msgstr "Mostrar"
+
+#. module: mercas_touch
+#: model:ir.model.fields.selection,name:mercas_touch.selection__res_users__mercas_touch_numpad__hide
+msgid "Hide"
+msgstr "Ocultar"
+
+#. module: mercas_touch
+#: model:ir.model.fields,field_description:mercas_touch.field_res_users__mercas_touch_numpad
+msgid "Market Counter Keypad"
+msgstr "Teclado numérico del Mostrador"
+
+#. module: mercas_touch
+#: model:ir.model.fields,help:mercas_touch.field_res_users__mercas_touch_numpad
+msgid "Keypad and calculator on the screen of the Market Counter. Automatic: shown on a touch screen, hidden with a mouse and a keyboard."
+msgstr "Teclado numérico y calculadora en la pantalla del Mostrador. Automático: se muestra en una pantalla táctil y se oculta con ratón y teclado."

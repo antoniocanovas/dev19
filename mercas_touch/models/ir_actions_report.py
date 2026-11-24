@@ -26,7 +26,11 @@ class IrActionsReport(models.Model):
         report, as when printed alone: the invoice keeps its PDF, for instance. """
         if self._get_report(report_ref).report_name != SALE_DOCUMENTS_REPORT:
             return None
-        kinds = (data or {}).get('kinds') or list(SALE_DOCUMENT_REPORTS)
+        data = data or {}
+        kinds = data.get('kinds') or list(SALE_DOCUMENT_REPORTS)
+        # Asked for with `data` (the documents chosen), the web client sends the sales in it,
+        # not in the URL of the report
+        res_ids = res_ids or data.get('order_ids') or []
         Touch = self.env['mercas.touch']
         parts = []
         for order in self.env['sale.order'].browse(res_ids):

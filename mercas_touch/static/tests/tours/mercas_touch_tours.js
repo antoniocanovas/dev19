@@ -591,3 +591,65 @@ registry.category("web_tour.tours").add("mercas_touch_to_invoice_tour", {
         },
     ],
 });
+
+registry.category("web_tour.tours").add("mercas_touch_no_numpad_tour", {
+    steps: () => [
+        {
+            trigger: ".o_mercas_touch_mode_sale",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_new_draft",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_partner:contains(Tour Customer)",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_product:contains(Tour Pear)",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_lot:contains(TOUR-LOT)",
+            run: "click",
+        },
+        {
+            content: "Hidden in the preferences of the user: the line without the keypad",
+            trigger: ".o_mercas_touch_qty",
+        },
+        {
+            trigger: ".o_mercas_touch_body:not(:has(.o_mercas_touch_numpad))",
+        },
+        {
+            trigger: ".o_mercas_touch_qty",
+            run: "edit 4",
+        },
+        {
+            trigger: ".o_mercas_touch_add",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_line .o_mercas_touch_line_price",
+            run: "click",
+        },
+        {
+            content: "The price is typed with the keyboard",
+            trigger: ".o_mercas_touch_price_edit_input",
+            run: "edit 2.5 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_body:not(:has(.o_mercas_touch_price_editor))",
+        },
+        {
+            trigger: ".o_mercas_touch_total:contains(10.00)",
+        },
+        {
+            trigger: ".o_mercas_touch_sell:enabled",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_done:contains(delivered)",
+        },
+    ],
+});

@@ -11,3 +11,5 @@ from . import test_firm_negotiation_default
 from . import test_mercas_pallets
 from . import test_mercas_weights
 from . import test_mercas_dashboard
+from . import test_purchase_origin_default
+from . import test_lot_sale_price

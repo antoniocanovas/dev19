@@ -303,8 +303,10 @@
 
     <!-- Sale and purchase: the catalog, the lots or the line being edited, and the ticket -->
     <t t-name="mercas_touch.TouchScreenOrder">
-        <div class="d-flex flex-column flex-lg-row gap-3 h-100">
-            <div class="flex-grow-1 min-w-0">
+        <!-- Without the keypad (mouse and keyboard), the ticket as wide as the rest and its lines
+             denser: more lines on the screen -->
+        <div t-att-class="'d-flex flex-column flex-lg-row gap-3 h-100' + (this.showNumpad() ? '' : ' o_mercas_touch_compact')">
+            <div class="flex-grow-1 min-w-0 o_mercas_touch_work">
                 <t t-if="this.state.priceEdit" t-call="mercas_touch.TouchScreenPriceEdit"/>
                 <t t-elif="this.state.entry" t-call="mercas_touch.TouchScreenEntry"/>
                 <t t-elif="this.state.product" t-call="mercas_touch.TouchScreenProductLots"/>
@@ -386,6 +388,9 @@
                     <span t-out="this.formatDate(lot.date)"/>
                     <span t-if="lot.origin" t-out="lot.origin"/>
                     <span t-if="lot.firm" class="badge text-bg-info">Firm</span>
+                    <span t-if="lot.sale_price" class="fw-bold text-body o_mercas_touch_lot_sale_price">
+                        <t t-out="this.formatAmount(lot.sale_price)"/>/<t t-out="this.state.product.uom"/>
+                    </span>
                 </div>
             </button>
         </div>
@@ -511,6 +516,15 @@
                                    t-att-value="entry.lotName" t-on-input="(ev) => this.onEntryInput('lotName', ev)"/>
                         </div>
                         <div class="col-sm-6">
+                            <label class="form-label mb-0">Sale price per <t t-out="entry.product.uom"/> (empty: the one of the product)</label>
+                            <input type="text" inputmode="decimal" autocomplete="off"
+                                   t-att-class="'form-control form-control-lg o_mercas_touch_sale_price ' + (entry.field === 'salePrice' ? 'border-primary border-2' : '')"
+                                   t-att-value="entry.salePrice" t-on-focus="() => this.onEntryField('salePrice')"
+                                   t-on-input="(ev) => this.onEntryInput('salePrice', ev)"
+                                   t-on-change="() => this.onFloatChange(entry, 'salePrice')"
+                                   t-on-keydown="(ev) => this.onFloatKeydown(ev, entry, 'salePrice')"/>
+                        </div>
+                        <div class="col-sm-6">
                             <div class="form-check form-switch fs-5">
                                 <input class="form-check-input o_mercas_touch_firm" type="checkbox" role="switch" id="mercas_touch_firm"
                                        t-att-checked="entry.firm" t-on-change="this.onEntryFirm"/>
@@ -533,7 +547,7 @@
                     </button>
                 </div>
             </div>
-            <TouchNumpad onKey="(key) => this.onNumpadKey(key)" decimals="this.state.entry.field !== 'boxQty'"/>
+            <TouchNumpad t-if="this.showNumpad()" onKey="(key) => this.onNumpadKey(key)" decimals="this.state.entry.field !== 'boxQty'"/>
         </div>
     </t>
 
@@ -556,7 +570,7 @@
                 </div>
                 <label class="form-label mb-0">Price per <t t-out="line.product.uom"/></label>
                 <!-- Resolución especial para móvil: the keyboard of the phone, without the numpad -->
-                <input type="text" t-att-inputmode="this.isMobile() ? 'decimal' : 'none'" autocomplete="off"
+                <input type="text" t-att-inputmode="this.keypadOnly() ? 'none' : 'decimal'" autocomplete="off"
                        class="form-control form-control-lg fs-2 border-primary border-2 o_mercas_touch_price_edit_input"
                        t-att-value="this.state.priceEdit.value" t-on-input="this.onPriceInput"
                        t-on-change="() => this.onFloatChange(this.state.priceEdit, 'value')"
@@ -580,7 +594,7 @@
                             t-on-click="this.onClosePriceEdit">Done</button>
                 </div>
             </div>
-            <TouchNumpad onKey="(key) => this.onNumpadKey(key)"/>
+            <TouchNumpad t-if="this.showNumpad()" onKey="(key) => this.onNumpadKey(key)"/>
         </div>
     </t>
 
@@ -602,7 +616,7 @@
             </div>
             <div t-foreach="this.state.lines" t-as="line" t-key="line.key"
                  t-att-class="'d-flex align-items-start gap-2 border-bottom py-2 o_mercas_touch_line' + (this.state.priceEdit?.key === line.key ? ' o_mercas_touch_line_price_edit bg-primary-subtle' : '')">
-                <div class="flex-grow-1 min-w-0" role="button" t-on-click="() => this.onEditLine(line)">
+                <div class="flex-grow-1 min-w-0 o_mercas_touch_line_info" role="button" t-on-click="() => this.onEditLine(line)">
                     <div class="fw-bold text-truncate" t-out="line.product.name"/>
                     <div class="small text-muted">
                         <t t-if="line.lot">Lot <t t-out="line.lot.name"/> · </t>
@@ -611,10 +625,11 @@
                         <t t-if="attributes"><span class="fw-semibold text-body o_mercas_touch_line_attributes" t-out="attributes"/> · </t>
                         <t t-out="this.formatQty(line.qty)"/> <t t-out="line.product.uom"/>
                         <t t-if="line.boxQty"> · <t t-out="line.boxQty"/> <t t-out="this.boxName(line.boxProductId)"/></t>
+                        <t t-if="line.salePrice"> · <span class="o_mercas_touch_line_sale_price">sold at <t t-out="this.formatAmount(line.salePrice)"/></span></t>
                     </div>
                     <div t-if="line.note" class="small fst-italic o_mercas_touch_line_note" t-out="line.note"/>
                 </div>
-                <div class="d-flex flex-column align-items-end gap-1">
+                <div class="d-flex flex-column align-items-end gap-1 o_mercas_touch_line_amounts">
                     <button class="btn btn-outline-primary text-nowrap o_mercas_touch_line_price" title="Change the price"
                             t-att-disabled="this.state.sending" t-on-click="() => this.onEditPrice(line)">
                         <t t-out="this.formatAmount(line.price)"/>/<t t-out="line.product.uom"/>
@@ -1030,12 +1045,12 @@
                         <button class="btn btn-secondary" t-on-click="() => this.onMoveStep(-1)"><i class="fa fa-minus"/></button>
                         <!-- Resolución especial para móvil: typed with the keyboard of the phone -->
                         <input type="text" class="form-control fs-3 text-center o_mercas_touch_pallets_move_qty"
-                               t-att-inputmode="this.isMobile() ? 'numeric' : 'none'" t-att-readonly="!this.isMobile()"
+                               t-att-inputmode="this.keypadOnly() ? 'none' : 'numeric'" t-att-readonly="this.keypadOnly()"
                                t-att-value="p.moveQty" t-on-input="this.onMoveQtyInput"/>
                         <button class="btn btn-secondary" t-on-click="() => this.onMoveStep(1)"><i class="fa fa-plus"/></button>
                     </div>
                     <div class="small text-muted">Tap the pallet to put them on, or "Not on a pallet".</div>
-                    <TouchNumpad onKey="(key) => this.onNumpadKey(key)" decimals="false" calculator="false"/>
+                    <TouchNumpad t-if="this.showNumpad()" onKey="(key) => this.onNumpadKey(key)" decimals="false" calculator="false"/>
                 </div>
             </div>
             <div class="d-flex gap-2 border-top pt-2">
@@ -1158,7 +1173,29 @@
                                 t-att-disabled="this.state.sending" t-on-click="this.onConfirmScrap">Scrap</button>
                     </div>
                 </div>
-                <TouchNumpad onKey="(key) => this.onNumpadKey(key)"/>
+                <TouchNumpad t-if="this.showNumpad()" onKey="(key) => this.onNumpadKey(key)"/>
+            </div>
+        </t>
+        <t t-elif="this.state.lotPrice">
+            <t t-set="lotPrice" t-value="this.state.lotPrice"/>
+            <div class="d-flex flex-column flex-md-row gap-3 o_mercas_touch_lot_price">
+                <div class="flex-grow-1 d-flex flex-column gap-2">
+                    <div class="fs-4 fw-bold">Sale price of the lot <t t-out="lotPrice.lot.name"/></div>
+                    <div class="text-muted">
+                        <t t-out="lotPrice.lot.product"/> · base of the price lists in its sales. Empty or 0: the price of the product.
+                    </div>
+                    <label class="form-label mb-0">Price per <t t-out="lotPrice.lot.uom"/></label>
+                    <input type="text" inputmode="decimal" class="form-control form-control-lg border-primary border-2 o_mercas_touch_lot_price_input"
+                           autocomplete="off" t-att-value="lotPrice.price" t-on-input="(ev) => this.onLotPriceInput(ev.target.value)"
+                           t-on-change="() => this.onFloatChange(lotPrice, 'price')"
+                           t-on-keydown="(ev) => this.onFloatKeydown(ev, lotPrice, 'price')"/>
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn btn-secondary btn-lg" t-on-click="this.onBack">Cancel</button>
+                        <button class="btn btn-primary btn-lg flex-grow-1 o_mercas_touch_confirm_lot_price"
+                                t-att-disabled="this.state.sending" t-on-click="this.onConfirmLotPrice">Save</button>
+                    </div>
+                </div>
+                <TouchNumpad t-if="this.showNumpad()" onKey="(key) => this.onNumpadKey(key)"/>
             </div>
         </t>
         <t t-else="">
@@ -1200,7 +1237,13 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-center mt-2">
                             <span class="small text-muted">Sold amount <t t-out="this.formatAmount(lot.sale_amount)"/></span>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                <button class="btn btn-secondary o_mercas_touch_lot_price_button"
+                                        t-on-click="() => this.onLotPrice(lot)">
+                                    <i class="fa fa-eur"/>
+                                    <t t-if="lot.sale_price"> <t t-out="this.formatAmount(lot.sale_price)"/></t>
+                                    <t t-else=""> Price</t>
+                                </button>
                                 <button class="btn btn-secondary o_mercas_touch_lot_detail"
                                         t-on-click="() => this.onOpenLot(lot)">
                                     <i class="fa fa-info-circle"/> Details
@@ -1322,7 +1365,7 @@
                     <i t-if="this.state.sending" class="spinner-border spinner-border-sm me-1"/>Collect
                 </button>
             </div>
-            <TouchNumpad onKey="(key) => this.onNumpadKey(key)"/>
+            <TouchNumpad t-if="this.showNumpad()" onKey="(key) => this.onNumpadKey(key)"/>
         </div>
     </t>
 
