@@ -485,3 +485,18 @@ Commit de dev19 `a0a7636`, trasladado con `git diff a864b76 a0a7636 -- mercas_to
 - **Plantilla:** la etiqueta de caducidad de los lotes no se encoge (`flex-shrink-0`) y la cabecera de Mensajes parte línea (`flex-wrap`).
 
 Solo cambian CSS y plantilla, así que no se han pasado tests. Revisado en el navegador en dev19 a 375 y 320 px; en dev20 no se ha comprobado en el navegador. Commiteado en dev20 como `74e5ce6`.
+
+## 25. Precio de venta del lote, origen del proveedor y teclado numérico por usuario, llevados a dev20 (24/11/2026)
+
+Commit de dev19 `e4ac8d8`, trasladado con `git diff 0672011 e4ac8d8 -- mercas_base mercas_touch` + `patch -p1`. Un solo hunk rechazado (las cajas a mover entre palets, con iconos Material en dev20), aplicado a mano.
+
+Qué trae: productos con lote para vender en el catálogo de venta; origen por defecto del proveedor en las compras; coma decimal en la tecla del bloque numérico; precio de venta del lote como base de la tarifa (compra, F4 · Lotes, precio propuesto); teclado numérico en pantalla según la preferencia del usuario, con ticket a media pantalla y líneas compactas sin él; y el arreglo de la impresión de los documentos de la venta desde el navegador.
+
+| Qué | dev19 | dev20 |
+|---|---|---|
+| Preferencia que el usuario cambia de sí mismo | `SELF_READABLE_FIELDS` / `SELF_WRITEABLE_FIELDS` | `user_writeable=True` en el campo |
+| `sale.order.line.lot_id` | `precompute=True` (módulo OCA) | La copia propia de `sale_order_lot_selection` no lo tenía: se añade. Sin él, el precio (que ahora depende del lote) no se precalcula y la línea se inserta con `price_unit` nulo |
+| Reglas de tarifa en los tests | `percentage` (`percent_price`) y `formula` | `discount` (`price_discount`, con `price_surcharge`) |
+| Icono del botón de precio en F4 | Font Awesome `fa-eur` | Material `euro` |
+
+Resultado: en dev20 (`test_mercas_touch20`), 168 tests de `sale_order_lot_selection`, `mercas_base` y `mercas_touch` sin fallos (los tours se saltan: falta `websocket-client`); el bundle de JS y CSS compila. En dev19, 161 tests con los mismos 7 errores previos de `TestStockLotChangeWizard`, y los tours en verde. No revisado en el navegador en dev20. Commiteado en dev20 como `0dba18e`.
