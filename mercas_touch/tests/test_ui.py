@@ -107,6 +107,10 @@ class TestMercasTouchUi(HttpCase):
         """ A purchase made with the keyboard: the supplier and the product chosen with the
         arrows and Enter, the line with Enter; then the boxes and the damaged label. """
         self.env['res.partner'].create({'name': 'Tour Supplier Bis', 'supplier_rank': 0})
+        # Two journals to pay the boxes with: the arrows go from one to the other
+        for kind in ('bank', 'cash'):
+            if not self.env['account.journal'].search_count([('type', '=', kind), ('company_id', '=', self.env.company.id)]):
+                self.env['account.journal'].create({'name': f'Tour {kind}', 'code': f'T{kind[:2].upper()}', 'type': kind})
         self.env['product.product'].create({
             'name': 'Tour Plum', 'type': 'consu', 'is_storable': True, 'tracking': 'lot',
             'uom_id': self.uom_kg.id, 'list_price': 3.0, 'categ_id': self.pear.categ_id.id,

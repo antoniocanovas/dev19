@@ -170,6 +170,8 @@ export class TouchScreen extends Component {
         this.focusPrice = false;
         // The code of a damaged label is typed or scanned as soon as its screen opens
         this.focusLabelSearch = false;
+        // An element to focus once the screen is drawn again (see focusAfterRender)
+        this.pendingFocus = null;
         // The screen shown last, to give the focus to the first field of a new one, and the
         // last mode opened, focused back in the main menu
         this.screenKey = null;
@@ -182,6 +184,12 @@ export class TouchScreen extends Component {
                 const input = document.querySelector(".o_mercas_touch_price_edit_input");
                 input?.focus();
                 input?.select();
+            }
+            if (this.pendingFocus) {
+                // The first of the selectors found
+                const element = this.pendingFocus.map((selector) => document.querySelector(selector)).find(Boolean);
+                element?.focus();
+                this.pendingFocus = null;
             }
             if (this.focusLabelSearch) {
                 this.focusLabelSearch = false;
@@ -2463,10 +2471,42 @@ export class TouchScreen extends Component {
         if (settle === "pay" && !this.state.boxJournalId) {
             this.state.boxJournalId = this.state.journalId;
         }
+        // Paid now, the journal is chosen next (the one proposed focused); as a credit, the boxes
+        // can be moved
+        this.focusAfterRender(...(settle === "pay"
+            ? [".o_mercas_touch_box_journal.btn-primary", ".o_mercas_touch_box_journal"]
+            : [".o_mercas_touch_move_boxes:not(:disabled)"]));
     }
 
     onSelectBoxJournal(journalId) {
         this.state.boxJournalId = journalId;
+        this.focusAfterRender(".o_mercas_touch_move_boxes:not(:disabled)");
+    }
+
+    /** Focus the first of `selectors` found once the screen is drawn again, to go on with the
+     * keyboard: what comes next after a choice. Not on a touch screen. */
+    focusAfterRender(...selectors) {
+        if (browser.matchMedia?.("(pointer: coarse)").matches) {
+            return;
+        }
+        this.pendingFocus = selectors;
+        this.render();
+    }
+
+    /** A row of buttons with the keyboard (how to settle the boxes, their journal): the arrows
+     * move between them, going round, and Enter presses the one focused. */
+    onButtonRowKeydown(ev) {
+        const moves = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+        if (!(ev.key in moves)) {
+            return;
+        }
+        const buttons = [...ev.currentTarget.querySelectorAll("button:not(:disabled)")];
+        const index = buttons.indexOf(document.activeElement);
+        if (!buttons.length || index < 0) {
+            return;
+        }
+        ev.preventDefault();
+        buttons[(index + moves[ev.key] + buttons.length) % buttons.length].focus();
     }
 
     boxesReady() {

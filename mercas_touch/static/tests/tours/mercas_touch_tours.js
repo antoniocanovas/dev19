@@ -944,11 +944,38 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
             run: "press ArrowUp",
         },
         {
+            content: "Up from the first box goes to the search, Down back to the box",
             trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "press ArrowDown",
+        },
+        {
+            content: "Enter goes to how to settle the amount: paid now",
+            trigger: ".o_mercas_touch_box_move_qty:focus:value(2)",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_pay:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Then the journal proposed; the arrows go to another one",
+            trigger: ".o_mercas_touch_box_journal.btn-primary:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_box_journal.btn-secondary:focus",
+            run: "press Enter",
+        },
+        {
+            content: "The journal chosen, Enter goes to the button that moves the boxes",
+            trigger: ".o_mercas_touch_box_journal.btn-primary:not(:focus)",
+        },
+        {
+            trigger: ".o_mercas_touch_move_boxes:focus",
         },
         {
             content: "The damaged label: the lots found with the arrows, Enter prints",
-            trigger: ".o_mercas_touch_box_list_search",
+            trigger: ".o_mercas_touch_move_boxes",
             run: "press F6",
         },
         {

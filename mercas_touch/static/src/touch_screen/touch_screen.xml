@@ -1132,7 +1132,7 @@
              paid now; the counter chooses each time -->
         <div t-if="this.state.boxDirection === 'return'" class="border rounded p-2 mt-3 o_mercas_touch_box_settle">
             <div class="fw-bold mb-2">Amount of the boxes</div>
-            <div class="btn-group w-100" role="group">
+            <div class="btn-group w-100" role="group" t-on-keydown="this.onButtonRowKeydown">
                 <button t-att-class="'btn btn-lg o_mercas_touch_box_compensate ' + (this.state.boxSettle === 'compensate' ? 'btn-primary' : 'btn-secondary')"
                         t-att-disabled="!this.state.data.can_compensate"
                         t-on-click="() => this.onBoxSettle('compensate')">
@@ -1146,9 +1146,10 @@
             <div t-if="!this.state.data.can_compensate" class="small text-muted mt-1">
                 To leave it as a credit, set the offsetting journal on the Mercas tab of the company.
             </div>
-            <div t-if="this.state.boxSettle === 'pay'" class="d-flex flex-wrap gap-2 mt-2 o_mercas_touch_box_journals">
+            <div t-if="this.state.boxSettle === 'pay'" class="d-flex flex-wrap gap-2 mt-2 o_mercas_touch_box_journals"
+                 t-on-keydown="this.onButtonRowKeydown">
                 <button t-foreach="this.state.data.journals" t-as="journal" t-key="journal.id"
-                        t-att-class="'btn btn-lg ' + (journal.id === this.state.boxJournalId ? 'btn-primary' : 'btn-secondary')"
+                        t-att-class="'btn btn-lg o_mercas_touch_box_journal ' + (journal.id === this.state.boxJournalId ? 'btn-primary' : 'btn-secondary')"
                         t-on-click="() => this.onSelectBoxJournal(journal.id)">
                     <i t-att-class="'fa ' + (journal.type === 'cash' ? 'fa-money' : 'fa-university')"/> <t t-out="journal.name"/>
                 </button>
