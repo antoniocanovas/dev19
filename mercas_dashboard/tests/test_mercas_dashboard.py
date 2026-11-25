@@ -1,4 +1,3 @@
-import base64
 import json
 from datetime import date, timedelta
 
@@ -131,7 +130,7 @@ class TestMercasDashboards(TransactionCase):
         for dashboard in group.dashboard_ids:
             self.assertEqual(dashboard.group_ids, self.env.ref("mercas_base.group_mercas_management"))
             dashboard._check_spreadsheet_data()
-            data = json.loads(base64.b64decode(dashboard.spreadsheet_binary_data))
+            data = json.loads(dashboard.spreadsheet_data)
             self.assertEqual([sheet["isVisible"] for sheet in data["sheets"]], [True, False],
                              "The sheet Data is hidden")
         # The management sees the data; a salesman doesn't

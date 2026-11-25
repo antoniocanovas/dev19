@@ -500,3 +500,20 @@ Qué trae: productos con lote para vender en el catálogo de venta; origen por d
 | Icono del botón de precio en F4 | Font Awesome `fa-eur` | Material `euro` |
 
 Resultado: en dev20 (`test_mercas_touch20`), 168 tests de `sale_order_lot_selection`, `mercas_base` y `mercas_touch` sin fallos (los tours se saltan: falta `websocket-client`); el bundle de JS y CSS compila. En dev19, 161 tests con los mismos 7 errores previos de `TestStockLotChangeWizard`, y los tours en verde. No revisado en el navegador en dev20. Commiteado en dev20 como `0dba18e`.
+
+## 26. Tableros de Mercas (mercas_dashboard), llevados a dev20 (25/11/2026)
+
+Commits de dev19 `b84b6f1` (menú de Dirección en Tableros) y `07f1c97` (módulo `mercas_dashboard` y retirada de la pantalla Dirección de `mercas_base`), trasladados con `git diff e4ac8d8 07f1c97 -- mercas_base mercas_dashboard` (sin `mercas_base.pot`) + `patch -p1`. Los únicos rechazos fueron los del widget de gráficos de Dirección, que en dev20 es distinto (Owl 3) y se borra entero. El borrado de las copias de OCA spreadsheet de dev19 (`6b02f09`) no se lleva: dev20 no las tiene y OCA aún no tiene rama 20.0.
+
+| Qué | dev19 | dev20 |
+|---|---|---|
+| Vista SQL de los informes | `_table_query` | `_table_sql`, entre paréntesis |
+| Mermas | `stock.scrap` (`scrap_qty`, `product_uom_id`, `date_done`, `lot_id`) | `stock.move` con `is_scrap` (`quantity`, `uom_id`, `date`; el lote, el de su primera línea) |
+| Unidad de la línea de compra | `product_uom_id` | `uom_id` |
+| Cobros | estados `in_process` y `paid` | `paid` y `reconciled` (no hay `in_process`); arreglado también el resumen por correo de dev20, que se dejaba los conciliados |
+| Permisos | `ir.model.access.csv` | `security/ir.access.csv` (operación `r`) |
+| Editar las hojas en Odoo | `spreadsheet_dashboard_oca` (repositorio `19spreadsheet`) | No hay: se cambian en el generador |
+
+Las hojas JSON son las mismas (formato 18.5.10, que Odoo 20 actualiza al abrirlas). `mercas_base.pot` se regeneró en cada versión: con la plantilla vieja, Odoo descartaba al cargar las traducciones nuevas del `es.po`.
+
+Resultado: en dev20 (`test_mercas_touch20`), 108 tests de `mercas_base` y `mercas_dashboard` sin fallos; los tres tableros se abren en el navegador sin errores (base de test, en inglés y sin datos). En dev19, 167 tests con los 7 errores previos de `TestStockLotChangeWizard`, y los tableros revisados en el navegador sobre una copia de `mercas` con 15 meses de historial de prueba. Commiteado en dev20 como `fad2744`.
