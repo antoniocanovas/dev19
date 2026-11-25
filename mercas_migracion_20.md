@@ -535,3 +535,11 @@ Resultado: 61 tests de `mercas_touch` sin fallos en dev20 y dev19, pero **los to
 ## 29. Intro en las cajas pasa al tipo de caja, llevado a dev20 (25/11/2026)
 
 Commit de dev19 `c23d1ea`, trasladado con su `git diff` + `patch -p1`, sin rechazos. 61 tests de `mercas_touch` sin fallos en las dos versiones (los tours, saltados: falta `websocket-client`). Probado a mano en el navegador en dev19. Commiteado en dev20 como `67a0427`.
+
+## 30. Tours ejecutados por primera vez, arreglos llevados a dev20 (25/11/2026)
+
+Instalado `websocket-client` en `venv312`: hasta ahora los tours se saltaban en 19 y en 20 (Odoo lo registra como *skipped*). En la base de test de 19 se desinstaló `export_delete_login_log` (19cybro): consultaba la IP en internet al iniciar sesión y los tests bloquean las peticiones externas.
+
+Al ejecutarlos salieron: un error en consola al añadir la línea con Intro desde el tipo de caja y otro al cerrar con Intro el cambio rápido de precios; un salto a una venta nueva del cliente al volver a la lista tras facturar (`reloadPartner` tardío, visible en 20); y dos tours que dependían de que la base no tuviera otros pedidos o de la velocidad. dev19 `17f08a8` y `61d9784`, dev20 `d5bf0d0`.
+
+Resultado: dev19 (`test_mercas_touch19`), 168 tests de `mercas_base`, `mercas_touch` y `mercas_dashboard`, tours incluidos, con solo los 7 errores previos de `TestStockLotChangeWizard` (en 20 pasan). dev20 (`test_mercas_touch20`), 175 tests de los mismos módulos y `sale_order_lot_selection`, sin fallos. Un fallo suelto de `test_to_invoice` en una ejecución completa de 19 no se repitió en tres ejecuciones más.
