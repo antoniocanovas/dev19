@@ -517,3 +517,11 @@ Commits de dev19 `b84b6f1` (menú de Dirección en Tableros) y `07f1c97` (módul
 Las hojas JSON son las mismas (formato 18.5.10, que Odoo 20 actualiza al abrirlas). `mercas_base.pot` se regeneró en cada versión: con la plantilla vieja, Odoo descartaba al cargar las traducciones nuevas del `es.po`.
 
 Resultado: en dev20 (`test_mercas_touch20`), 108 tests de `mercas_base` y `mercas_dashboard` sin fallos; los tres tableros se abren en el navegador sin errores (base de test, en inglés y sin datos). En dev19, 167 tests con los 7 errores previos de `TestStockLotChangeWizard`, y los tableros revisados en el navegador sobre una copia de `mercas` con 15 meses de historial de prueba. Commiteado en dev20 como `fad2744`.
+
+## 27. Informes de Dirección solo de familias Mercancía de mercado, con las cajas aparte (25/11/2026)
+
+Commit de dev19 `ba551f1`, trasladado con `git diff 376f97e ba551f1 -- mercas_base mercas_dashboard` + `patch -p1`. Rechazados y aplicados a mano: la consulta de `mercas.report.goods` (en dev20 con `_table_sql`, `uom_id` en la compra y las mermas en `stock.move`) y el filtro de familias en las mermas del resumen por correo (en dev20, `stock.move` con `is_scrap`).
+
+Qué trae: los tableros y el resumen por correo cuentan solo los productos de familias *Mercancía de mercado* (`is_merca`, o sin familia); las cajas (`is_box`) van aparte, en tablas propias (vendidas o entregadas; compradas o devueltas); los productos de otras familias no entran. Nota en la cabecera de los tableros y del correo.
+
+Resultado: dev20 (`test_mercas_touch20`), 108 tests de `mercas_base` y `mercas_dashboard` sin fallos; dev19, 167 tests con los 7 errores previos de `TestStockLotChangeWizard`, y revisado en el navegador sobre `mercas_dash`. Commiteado en dev20 como `35c51fc`.
