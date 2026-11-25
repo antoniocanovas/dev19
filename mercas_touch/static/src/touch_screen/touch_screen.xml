@@ -425,7 +425,7 @@
                            t-att-value="entry.gross" t-on-focus="() => this.onEntryField('gross')"
                            t-on-input="(ev) => this.onEntryInput('gross', ev)"
                            t-on-change="() => this.onFloatChange(entry, 'gross')"
-                           t-on-keydown="(ev) => this.onFloatKeydown(ev, entry, 'gross')"/>
+                           t-on-keydown="(ev) => this.onEntryKeydown(ev, 'gross')"/>
                     <label class="form-label mb-0">
                         Net (<t t-out="entry.product.uom"/>)
                         <span t-if="this.entryTare(entry)" class="text-muted small">
@@ -439,14 +439,14 @@
                        t-att-value="entry.qty" t-on-focus="() => this.onEntryField('qty')"
                        t-on-input="(ev) => this.onEntryInput('qty', ev)"
                        t-on-change="() => this.onFloatChange(entry, 'qty')"
-                       t-on-keydown="(ev) => this.onFloatKeydown(ev, entry, 'qty')"/>
+                       t-on-keydown="(ev) => this.onEntryKeydown(ev, 'qty')"/>
                 <label class="form-label mb-0">Price per <t t-out="entry.product.uom"/></label>
                 <input type="text" inputmode="decimal" autocomplete="off"
                        t-att-class="'form-control form-control-lg o_mercas_touch_price ' + (entry.field === 'price' ? 'border-primary border-2' : '')"
                        t-att-value="entry.price" t-on-focus="() => this.onEntryField('price')"
                        t-on-input="(ev) => this.onEntryInput('price', ev)"
                        t-on-change="() => this.onFloatChange(entry, 'price')"
-                       t-on-keydown="(ev) => this.onFloatKeydown(ev, entry, 'price')"/>
+                       t-on-keydown="(ev) => this.onEntryKeydown(ev, 'price')"/>
                 <label class="form-label mb-0">Boxes</label>
                 <div class="d-flex flex-wrap gap-2 align-items-center">
                     <div class="input-group input-group-lg o_mercas_touch_box_qty">
@@ -456,7 +456,8 @@
                         <input type="text" inputmode="numeric" autocomplete="off"
                                t-att-class="'form-control text-center o_mercas_touch_box_qty_input ' + (entry.field === 'boxQty' ? 'border-primary border-2' : '')"
                                t-att-value="entry.boxQty" t-on-focus="() => this.onEntryField('boxQty')"
-                               t-on-input="(ev) => this.onNumpadInput(ev.target.value)"/>
+                               t-on-input="(ev) => this.onNumpadInput(ev.target.value)"
+                               t-on-keydown="(ev) => this.onEntryKeydown(ev, 'boxQty')"/>
                         <button class="btn btn-secondary" title="One box more" t-on-click="() => this.onBoxQtyStep(1)">
                             <i class="fa fa-plus"/>
                         </button>
@@ -513,7 +514,8 @@
                         <div class="col-sm-6">
                             <label class="form-label mb-0">Lot (empty: a new one)</label>
                             <input type="text" class="form-control form-control-lg o_mercas_touch_lot_name" autocomplete="off"
-                                   t-att-value="entry.lotName" t-on-input="(ev) => this.onEntryInput('lotName', ev)"/>
+                                   t-att-value="entry.lotName" t-on-input="(ev) => this.onEntryInput('lotName', ev)"
+                                   t-on-keydown="(ev) => this.onEntryKeydown(ev, 'lotName')"/>
                         </div>
                         <div class="col-sm-6">
                             <label class="form-label mb-0">Sale price per <t t-out="entry.product.uom"/> (empty: the one of the product)</label>
@@ -522,7 +524,7 @@
                                    t-att-value="entry.salePrice" t-on-focus="() => this.onEntryField('salePrice')"
                                    t-on-input="(ev) => this.onEntryInput('salePrice', ev)"
                                    t-on-change="() => this.onFloatChange(entry, 'salePrice')"
-                                   t-on-keydown="(ev) => this.onFloatKeydown(ev, entry, 'salePrice')"/>
+                                   t-on-keydown="(ev) => this.onEntryKeydown(ev, 'salePrice')"/>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-check form-switch fs-5">

@@ -20,6 +20,17 @@ import { localization } from "@web/core/l10n/localization";
 const MODEL = "mercas.touch";
 // Sent by the server when the stock of some lots changes
 const LOTS_CHANGED = "mercas_touch/lots_changed";
+// The fields of the line being added or changed, as Enter goes through them (see
+// entryFieldOrder), and the inputs of each one
+const ENTRY_INPUTS = {
+    gross: ".o_mercas_touch_entry .o_mercas_touch_gross",
+    qty: ".o_mercas_touch_entry .o_mercas_touch_qty",
+    price: ".o_mercas_touch_entry .o_mercas_touch_price",
+    boxQty: ".o_mercas_touch_entry .o_mercas_touch_box_qty_input",
+    lotName: ".o_mercas_touch_entry .o_mercas_touch_lot_name",
+    salePrice: ".o_mercas_touch_entry .o_mercas_touch_sale_price",
+};
+const ENTRY_FLOAT_FIELDS = ["gross", "qty", "price", "salePrice"];
 // Fields of numbers with decimals: quantities, weights, prices and amounts
 const DECIMAL_INPUTS = 'input[inputmode="decimal"], .o_mercas_touch_price_edit_input';
 // Sent by Discuss: a new message in a channel of the user, and the read messages
@@ -1229,6 +1240,47 @@ export class TouchScreen extends Component {
         if (record === this.state.entry && key === "gross") {
             this.onEntryWeightChanged(key);
         }
+    }
+
+    /** Fields of the line in the order Enter goes through them: the gross weight of the goods
+     * weighed, the quantity, the price and the boxes; on a purchase, the lot and its sale
+     * price. */
+    entryFieldOrder() {
+        const fields = this.state.entry.product.weighed ? ["gross"] : [];
+        fields.push("qty", "price", "boxQty");
+        if (this.state.mode === "purchase") {
+            fields.push("lotName", "salePrice");
+        }
+        return fields;
+    }
+
+    /**
+     * Enter in a field of the line works out the operation typed ("12,5*3") and goes to the
+     * next field; in the last one, it adds the line, as the button. Shift+Enter goes back.
+     * A whole line is entered with the keyboard (or a scale that ends with Enter).
+     */
+    onEntryKeydown(ev, field) {
+        if (ev.key !== "Enter") {
+            return;
+        }
+        ev.preventDefault();
+        const entry = this.state.entry;
+        if (ENTRY_FLOAT_FIELDS.includes(field)) {
+            this.onFloatChange(entry, field);
+        }
+        const order = this.entryFieldOrder();
+        const index = order.indexOf(field) + (ev.shiftKey ? -1 : 1);
+        if (index < 0) {
+            return;
+        }
+        if (index >= order.length) {
+            this.onAddEntry();
+            return;
+        }
+        entry.field = order[index];
+        const input = document.querySelector(ENTRY_INPUTS[order[index]]);
+        input?.focus();
+        input?.select();
     }
 
     /** Enter in a float field works out the operation typed, without leaving the field. */

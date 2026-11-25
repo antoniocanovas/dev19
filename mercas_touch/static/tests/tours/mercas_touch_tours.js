@@ -653,3 +653,73 @@ registry.category("web_tour.tours").add("mercas_touch_no_numpad_tour", {
         },
     ],
 });
+
+registry.category("web_tour.tours").add("mercas_touch_enter_tour", {
+    steps: () => [
+        {
+            trigger: ".o_mercas_touch_mode_sale",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_new_draft",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_partner:contains(Tour Customer)",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_product:contains(Tour Pear)",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_lot:contains(TOUR-LOT)",
+            run: "click",
+        },
+        {
+            content: "The gross weight of the scale, and Enter goes to the net weight",
+            trigger: ".o_mercas_touch_gross",
+            run: "edit 6*2 && press Enter",
+        },
+        {
+            content: "The operation is worked out on the way",
+            trigger: ".o_mercas_touch_gross:value(12)",
+        },
+        {
+            trigger: ".o_mercas_touch_qty:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Then the price",
+            trigger: ".o_mercas_touch_price:focus",
+            run: "edit 2.5 && press Enter",
+        },
+        {
+            content: "Shift+Enter goes back to the price",
+            trigger: ".o_mercas_touch_box_qty_input:focus",
+            run: "press Shift+Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_price:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Enter in the last field adds the line",
+            trigger: ".o_mercas_touch_box_qty_input:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_line:contains(Tour Pear)",
+        },
+        {
+            trigger: ".o_mercas_touch_total:contains(30.00)",
+        },
+        {
+            trigger: ".o_mercas_touch_sell:enabled",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_done:contains(delivered)",
+        },
+    ],
+});

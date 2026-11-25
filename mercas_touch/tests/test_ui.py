@@ -83,6 +83,13 @@ class TestMercasTouchUi(HttpCase):
         self.assertEqual(lines.mapped('product_uom_qty'), [10, 5])
         self.assertEqual(lines.mapped('price_unit'), [2.5, 3.0])
 
+    def test_enter_goes_through_the_line(self):
+        """ Enter goes from a field of the line to the next one, and adds it in the last. """
+        self.start_tour('/odoo/mercas-touch', 'mercas_touch_enter_tour', login='touch_tour')
+        line = self.env['sale.order'].search([('partner_id', '=', self.customer.id)]).order_line.filtered(
+            lambda l: l.product_id == self.pear)
+        self.assertEqual((line.product_uom_qty, line.price_unit), (12, 2.5))
+
     def test_without_numpad(self):
         """ With the keypad hidden in the preferences, everything is typed with the keyboard. """
         self.user.mercas_touch_numpad = 'hide'
