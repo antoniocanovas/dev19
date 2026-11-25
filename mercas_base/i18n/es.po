@@ -2280,9 +2280,9 @@ msgstr "Kg desechados"
 #. module: mercas_base
 #: model:res.groups,comment:mercas_base.group_mercas_management
 msgid ""
-"Sees the management summary (Mercas > Management): sales and\n"
+"Sees the management summary (Dashboards > Mercas > Management): sales and\n"
 "            purchases in amount and kg, scrap, debt and payments."
-msgstr "Ve el resumen de dirección (Mercas > Dirección): ventas y compras en importe y kg, mermas, deuda y cobros."
+msgstr "Ve el resumen de dirección (Tableros > Mercas > Dirección): ventas y compras en importe y kg, mermas, deuda y cobros."
 
 #. module: mercas_base
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_mercas_management_dashboard_form

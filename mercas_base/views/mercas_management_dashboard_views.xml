@@ -275,13 +275,22 @@
         <field name="target">current</field>
     </record>
 
+    <!-- In the Dashboards app, in a section of its own -->
+    <menuitem
+        id="menu_mercas_dashboards"
+        name="Mercas"
+        parent="spreadsheet_dashboard.spreadsheet_dashboard_menu_root"
+        groups="group_mercas_management"
+        sequence="100"
+    />
+
     <menuitem
         id="menu_mercas_management"
         name="Management"
-        parent="menu_mercas_root"
+        parent="menu_mercas_dashboards"
         action="action_mercas_management_dashboard"
         groups="group_mercas_management"
-        sequence="5"
+        sequence="10"
     />
 
 </odoo>

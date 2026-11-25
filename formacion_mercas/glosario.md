@@ -11,7 +11,7 @@
 | **Cuadro de mandos** | Parte derecha de la pantalla de inicio del Mostrador: ventas del día, mensajes, promociones y lotes que caducan. |
 | **DeCA** | Documento de control del transporte de mercancía. |
 | **Desechar** | Dar de baja kg estropeados de un lote. |
-| **Dirección (resumen de)** | Menú *Mercas › Dirección*: ventas, compras, mermas y deuda comparadas con otros periodos. Se puede recibir cada tarde por correo. |
+| **Dirección (resumen de)** | Menú *Tableros › Mercas › Dirección*: ventas, compras, mermas y deuda comparadas con otros periodos. Se puede recibir cada tarde por correo. |
 | **Facturación firme** | Trato con el proveedor: se le paga todo lo recibido. |
 | **Liquidación por venta** | Trato con el proveedor: se le paga lo vendido menos nuestro margen. |
 | **Liquidar** | Factura final al proveedor de un lote en liquidación ya agotado. |

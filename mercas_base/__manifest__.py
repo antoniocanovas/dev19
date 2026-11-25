@@ -22,6 +22,8 @@
         "product",
         # Inventory > Settings > Expiration Dates: the dates of the lots
         "product_expiry",
+        # Dashboards app: the management summary goes in its section Mercas
+        "spreadsheet_dashboard",
     ],
     "data": [
         "security/mercas_security.xml",

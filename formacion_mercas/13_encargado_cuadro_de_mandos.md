@@ -3,7 +3,7 @@
 El cuadro de mandos tiene dos partes:
 
 - **En el Mostrador**, para la báscula: ventas del día, mensajes, productos en promoción y lotes que caducan ([capítulo 02](02_mostrador.md#el-cuadro-de-mandos-a-la-derecha)). El encargado decide qué sale ahí.
-- **En Odoo, menú Mercas › Dirección**, para el encargado y la dirección: cómo van las ventas, las compras, las mermas y la deuda.
+- **En Odoo, menú Tableros › Mercas › Dirección**, para el encargado y la dirección: cómo van las ventas, las compras, las mermas y la deuda.
 
 ## 1. Productos en promoción: la estrella
 
@@ -31,7 +31,7 @@ La **fecha de caducidad** se pone **en cada lote**: en su ficha (F4 › *Detalle
 - La báscula ve el aviso también **al elegir el lote** en una venta: «Caducado», «Hoy», «Mañana» o «En N días».
 - **Un lote caducado se puede vender igualmente**: el Mostrador avisa, pero no lo impide. La decisión es de quien vende.
 
-## 3. Mercas › Dirección
+## 3. Tableros › Mercas › Dirección
 
 Lo ven los **administradores de ventas** y los **administradores de facturación**. A otra persona se le puede dar el permiso *Mercas: Dirección* (con el modo desarrollador).
 

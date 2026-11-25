@@ -11,7 +11,7 @@
 
     <record id="group_mercas_management" model="res.groups">
         <field name="name">Mercas: Management</field>
-        <field name="comment">Sees the management summary (Mercas > Management): sales and
+        <field name="comment">Sees the management summary (Dashboards > Mercas > Management): sales and
             purchases in amount and kg, scrap, debt and payments.</field>
     </record>
 
