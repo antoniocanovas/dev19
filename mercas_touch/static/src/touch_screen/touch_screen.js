@@ -513,6 +513,8 @@ export class TouchScreen extends Component {
         const state = this.state;
         return JSON.stringify([
             state.mode, state.partner?.id || false, state.choosingCustomer, state.product?.id || false,
+            // The lots of the product arrive after it is chosen
+            state.product ? state.lots.length : 0,
             state.entry ? [state.entry.product.id, state.entry.line?.key || false] : false,
             Boolean(state.priceEdit), Boolean(state.pallets), Boolean(state.scrap), Boolean(state.lotPrice),
             Boolean(state.done),
@@ -534,8 +536,10 @@ export class TouchScreen extends Component {
         if (this.state.priceEdit || browser.matchMedia?.("(pointer: coarse)").matches) {
             return;
         }
+        // Or, in the lots of a product, the first lot that can be sold (see onLotGridKeydown)
         const field = document.querySelector(".o_mercas_touch_body")?.querySelector(
-            "input:not([type=checkbox]):not([type=radio]):not([readonly]):not([disabled])"
+            "input:not([type=checkbox]):not([type=radio]):not([readonly]):not([disabled]), " +
+            ".o_mercas_touch_lot:not(:disabled)"
         );
         if (field && document.activeElement !== field) {
             field.focus();
@@ -1021,6 +1025,29 @@ export class TouchScreen extends Component {
         } finally {
             this.state.lotsLoading = false;
         }
+    }
+
+    /**
+     * The lots of the product chosen with the keyboard: the arrows move the focus between them
+     * (up and down by a row of the grid), Enter chooses the one focused (its button). The lots
+     * without stock left are skipped.
+     */
+    onLotGridKeydown(ev) {
+        const moves = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: "row", ArrowUp: "-row" };
+        if (!(ev.key in moves)) {
+            return;
+        }
+        ev.preventDefault();
+        const tiles = [...ev.currentTarget.querySelectorAll(".o_mercas_touch_lot:not(:disabled)")];
+        if (!tiles.length) {
+            return;
+        }
+        // Lots in a row of the grid: those as high as the first one
+        const columns = tiles.filter((tile) => tile.offsetTop === tiles[0].offsetTop).length || 1;
+        const move = { row: columns, "-row": -columns }[moves[ev.key]] ?? moves[ev.key];
+        const index = tiles.indexOf(document.activeElement);
+        const next = index < 0 ? 0 : Math.min(tiles.length - 1, Math.max(0, index + move));
+        tiles[next].focus();
     }
 
     /** Quantity of the lot already in the lines of the sale. */

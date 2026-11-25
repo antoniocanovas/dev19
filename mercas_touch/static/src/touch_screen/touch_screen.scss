@@ -41,6 +41,12 @@
         white-space: normal;
     }
 
+    // The lot chosen with the arrows of the keyboard (see onLotGridKeydown)
+    .o_mercas_touch_lot:focus {
+        border-color: $primary;
+        box-shadow: 0 0 0 0.2rem rgba($primary, 0.35);
+    }
+
     .o_mercas_touch_product_grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));

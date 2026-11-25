@@ -754,8 +754,17 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_tour", {
             run: "edit Tour Pe && press Enter",
         },
         {
-            trigger: ".o_mercas_touch_lot:contains(TOUR-LOT)",
-            run: "click",
+            content: "The lots of the product: the first one has the focus, the arrows move to the next",
+            trigger: ".o_mercas_touch_lot:focus:contains(TOUR-LOT)",
+            run: "press ArrowRight",
+        },
+        {
+            content: "Enter chooses the lot focused",
+            trigger: ".o_mercas_touch_lot:focus:contains(TOUR-LOT-2)",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_entry:contains(TOUR-LOT-2)",
         },
         {
             content: "The line starts in the gross weight",

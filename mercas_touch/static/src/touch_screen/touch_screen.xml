@@ -373,7 +373,8 @@
         </div>
         <div t-if="this.state.lotsLoading" class="text-muted"><i class="spinner-border spinner-border-sm"/> Loading lots...</div>
         <div t-elif="!this.state.lots.length" class="alert alert-warning o_mercas_touch_no_lots">There is no lot with stock of this product.</div>
-        <div class="o_mercas_touch_grid">
+        <!-- Chosen also with the keyboard: the arrows move between the lots, Enter chooses -->
+        <div class="o_mercas_touch_grid o_mercas_touch_lot_grid_sale" t-on-keydown="this.onLotGridKeydown">
             <button t-foreach="this.state.lots" t-as="lot" t-key="lot.id"
                     class="btn btn-outline-secondary o_mercas_touch_tile o_mercas_touch_lot"
                     t-att-disabled="this.lotAvailable(lot) &lt;= 0"

@@ -94,9 +94,14 @@ class TestMercasTouchUi(HttpCase):
     def test_keyboard(self):
         """ The first field of each screen has the focus, and Enter in a search chooses the only
         record found: a sale made with the keyboard. """
+        # A second lot, newer: the arrows go from the first one to it
+        self.env['mercas.touch'].with_user(self.user).purchase({
+            'uuid': str(uuid.uuid4()), 'partner_id': self.supplier.id,
+            'lines': [{'product_id': self.pear.id, 'qty': 50.0, 'price_unit': 1.0, 'lot_name': 'TOUR-LOT-2'}],
+        })
         self.start_tour('/odoo/mercas-touch', 'mercas_touch_keyboard_tour', login='touch_tour')
         line = self.env['sale.order'].search([('partner_id', '=', self.customer.id)]).order_line
-        self.assertEqual((line.product_id, line.product_uom_qty), (self.pear, 3))
+        self.assertEqual((line.product_id, line.lot_id.name, line.product_uom_qty), (self.pear, 'TOUR-LOT-2', 3))
 
     def test_without_numpad(self):
         """ With the keypad hidden in the preferences, everything is typed with the keyboard. """
