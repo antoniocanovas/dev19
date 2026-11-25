@@ -525,3 +525,9 @@ Commit de dev19 `ba551f1`, trasladado con `git diff 376f97e ba551f1 -- mercas_ba
 Qué trae: los tableros y el resumen por correo cuentan solo los productos de familias *Mercancía de mercado* (`is_merca`, o sin familia); las cajas (`is_box`) van aparte, en tablas propias (vendidas o entregadas; compradas o devueltas); los productos de otras familias no entran. Nota en la cabecera de los tableros y del correo.
 
 Resultado: dev20 (`test_mercas_touch20`), 108 tests de `mercas_base` y `mercas_dashboard` sin fallos; dev19, 167 tests con los 7 errores previos de `TestStockLotChangeWizard`, y revisado en el navegador sobre `mercas_dash`. Commiteado en dev20 como `35c51fc`.
+
+## 28. Intro pasa al campo siguiente de la línea, llevado a dev20 (25/11/2026)
+
+Commit de dev19 `fcbca71`, trasladado con `git diff 60afa07 fcbca71 -- mercas_touch` + `patch -p1`, sin rechazos (mismo código en las dos versiones).
+
+Resultado: 61 tests de `mercas_touch` sin fallos en dev20 y dev19, pero **los tours no se ejecutan en ninguna de las dos**: ni `venv312` ni el `python3` del sistema tienen `websocket-client`, y Odoo los salta. Probado a mano en el navegador en dev19 (copia `mercas_dash`): bruto `5*2` → 10, neto, precio, cajas, Mayús+Intro vuelve, e Intro en las cajas añade la línea. En dev20 solo se ha comprobado que el bundle compila. Commiteado en dev20 como `28b0d23`.
