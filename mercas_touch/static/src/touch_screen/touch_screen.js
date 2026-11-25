@@ -27,6 +27,7 @@ const ENTRY_INPUTS = {
     qty: ".o_mercas_touch_entry .o_mercas_touch_qty",
     price: ".o_mercas_touch_entry .o_mercas_touch_price",
     boxQty: ".o_mercas_touch_entry .o_mercas_touch_box_qty_input",
+    boxProduct: ".o_mercas_touch_entry .o_mercas_touch_box_search",
     lotName: ".o_mercas_touch_entry .o_mercas_touch_lot_name",
     salePrice: ".o_mercas_touch_entry .o_mercas_touch_sale_price",
 };
@@ -1135,13 +1136,22 @@ export class TouchScreen extends Component {
         this.state.entry.boxSearch = ev.target.value;
     }
 
+    /** Enter chooses the first box of the search, or keeps the one chosen when nothing is
+     * typed, and goes on to the next field of the line (see onEntryKeydown). */
     onBoxSearchKeydown(ev) {
-        if (ev.key === "Enter") {
-            const [box] = this.boxChoices().boxes;
-            if (box) {
-                this.onSelectBox(box.id);
-            }
+        if (ev.key !== "Enter") {
+            return;
         }
+        const entry = this.state.entry;
+        if (!ev.shiftKey && (entry.boxSearch || "").trim()) {
+            const [box] = this.boxChoices().boxes;
+            if (!box) {
+                ev.preventDefault();
+                return;
+            }
+            this.onSelectBox(box.id);
+        }
+        this.onEntryKeydown(ev, "boxProduct");
     }
 
     onSelectBox(boxProductId) {
@@ -1243,11 +1253,15 @@ export class TouchScreen extends Component {
     }
 
     /** Fields of the line in the order Enter goes through them: the gross weight of the goods
-     * weighed, the quantity, the price and the boxes; on a purchase, the lot and its sale
-     * price. */
+     * weighed, the quantity, the price, the boxes and, with boxes, their kind; on a purchase,
+     * the lot and its sale price. */
     entryFieldOrder() {
-        const fields = this.state.entry.product.weighed ? ["gross"] : [];
+        const entry = this.state.entry;
+        const fields = entry.product.weighed ? ["gross"] : [];
         fields.push("qty", "price", "boxQty");
+        if (entry.boxQty) {
+            fields.push("boxProduct");
+        }
         if (this.state.mode === "purchase") {
             fields.push("lotName", "salePrice");
         }
@@ -1269,7 +1283,12 @@ export class TouchScreen extends Component {
             this.onFloatChange(entry, field);
         }
         const order = this.entryFieldOrder();
-        const index = order.indexOf(field) + (ev.shiftKey ? -1 : 1);
+        let position = order.indexOf(field);
+        if (position < 0 && field === "boxProduct") {
+            // The kind of box chosen without boxes: as from the boxes
+            position = order.indexOf("boxQty");
+        }
+        const index = position + (ev.shiftKey ? -1 : 1);
         if (index < 0) {
             return;
         }
@@ -1277,7 +1296,10 @@ export class TouchScreen extends Component {
             this.onAddEntry();
             return;
         }
-        entry.field = order[index];
+        // The kind of box isn't written with the keypad: the keypad stays on the boxes
+        if (order[index] !== "boxProduct") {
+            entry.field = order[index];
+        }
         const input = document.querySelector(ENTRY_INPUTS[order[index]]);
         input?.focus();
         input?.select();

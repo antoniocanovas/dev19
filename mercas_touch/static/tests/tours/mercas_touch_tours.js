@@ -704,8 +704,13 @@ registry.category("web_tour.tours").add("mercas_touch_enter_tour", {
             run: "press Enter",
         },
         {
-            content: "Enter in the last field adds the line",
+            content: "With boxes, Enter goes to their kind",
             trigger: ".o_mercas_touch_box_qty_input:focus",
+            run: "edit 2 && press Enter",
+        },
+        {
+            content: "Enter keeps the kind of box of the product and, as the last field, adds the line",
+            trigger: ".o_mercas_touch_box_search:focus",
             run: "press Enter",
         },
         {

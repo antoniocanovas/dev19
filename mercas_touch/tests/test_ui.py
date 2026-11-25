@@ -88,7 +88,8 @@ class TestMercasTouchUi(HttpCase):
         self.start_tour('/odoo/mercas-touch', 'mercas_touch_enter_tour', login='touch_tour')
         line = self.env['sale.order'].search([('partner_id', '=', self.customer.id)]).order_line.filtered(
             lambda l: l.product_id == self.pear)
-        self.assertEqual((line.product_uom_qty, line.price_unit), (12, 2.5))
+        self.assertEqual((line.product_uom_qty, line.price_unit, line.box_qty, line.box_product_id),
+                         (12, 2.5, 2, self.box))
 
     def test_without_numpad(self):
         """ With the keypad hidden in the preferences, everything is typed with the keyboard. """
