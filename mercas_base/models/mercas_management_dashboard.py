@@ -7,6 +7,14 @@ from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models
 from odoo.tools import format_amount, format_date, formatLang
 
+# What the summary is about: the goods of the categories of market goods (without category, as
+# in the catalog of the counter); the boxes go apart (_mercas_box_figures), the products of
+# other categories are left out
+MERCA_GOODS_DOMAIN = [
+    ("product_id.is_box", "=", False),
+    "|", ("product_id.categ_id", "=", False), ("product_id.categ_id.is_merca", "=", True),
+]
+
 # Customers listed by their debt in the summary
 TOP_DEBTORS = 10
 # Days overdue of each column of the debt: up to 30, 31-60, 61-90 and more
@@ -85,8 +93,8 @@ class MercasManagementDashboard(models.TransientModel):
 
     @api.model
     def _mercas_sales_figures(self, date_from, date_to):
-        """ Confirmed sales of the goods (not the boxes) dated in the period: untaxed amount,
-        net kg, number of sales and of boxes. """
+        """ Confirmed sales of the goods (of the categories of market goods, not the boxes) dated
+        in the period: untaxed amount, net kg, number of sales and of boxes. """
         start, end = self._mercas_utc_bounds(date_from, date_to)
         order_domain = [
             ("state", "=", "sale"),
@@ -98,7 +106,7 @@ class MercasManagementDashboard(models.TransientModel):
             [
                 *(("order_id." + field, op, value) for field, op, value in order_domain),
                 ("display_type", "=", False),
-                ("product_id.is_box", "=", False),
+                *MERCA_GOODS_DOMAIN,
             ],
             ["product_id", "product_uom_id"],
             ["product_uom_qty:sum", "price_subtotal:sum", "box_qty:sum"],
@@ -122,7 +130,7 @@ class MercasManagementDashboard(models.TransientModel):
                 ("order_id.date_order", "<", end),
                 ("company_id", "=", company.id),
                 ("display_type", "=", False),
-                ("product_id.is_box", "=", False),
+                *MERCA_GOODS_DOMAIN,
             ],
             ["product_id", "product_uom_id"],
             ["product_qty:sum", "price_subtotal:sum"],
@@ -130,6 +138,7 @@ class MercasManagementDashboard(models.TransientModel):
         scraps = self.env["stock.scrap"]._read_group(
             [
                 ("state", "=", "done"),
+                *MERCA_GOODS_DOMAIN,
                 ("date_done", ">=", start),
                 ("date_done", "<", end),
                 ("company_id", "=", company.id),
@@ -142,6 +151,31 @@ class MercasManagementDashboard(models.TransientModel):
             "kg": self._mercas_kg((product, uom, qty) for product, uom, qty, _amount in groups),
             "scrap_kg": self._mercas_kg(scraps),
         }
+
+    @api.model
+    def _mercas_box_figures(self, date_from, date_to):
+        """ The boxes (box products) of the confirmed sales and purchases dated in the period,
+        apart from the goods: boxes and untaxed amount sold or delivered, and bought or
+        returned. """
+        start, end = self._mercas_utc_bounds(date_from, date_to)
+        company = self.env.company
+        figures = {}
+        for key, model, qty_field in (("out", "sale.order.line", "product_uom_qty"),
+                                      ("in", "purchase.order.line", "product_qty")):
+            states = ("sale",) if key == "out" else ("purchase", "done")
+            groups = self.env[model]._read_group(
+                [
+                    ("order_id.state", "in", states),
+                    ("order_id.date_order", ">=", start),
+                    ("order_id.date_order", "<", end),
+                    ("order_id.company_id", "=", company.id),
+                    ("display_type", "=", False),
+                    ("product_id.is_box", "=", True),
+                ],
+                [], ["%s:sum" % qty_field, "price_subtotal:sum"],
+            )
+            figures[key] = {"boxes": groups[0][0] or 0.0, "amount": groups[0][1] or 0.0}
+        return figures
 
     @api.model
     def _mercas_same_week_last_year(self, date):
@@ -279,7 +313,7 @@ class MercasManagementDashboard(models.TransientModel):
     @api.model
     def _mercas_summary_values(self, date):
         company = self.env.company
-        sales, purchases = [], []
+        sales, purchases, boxes = [], [], []
         period_names = {
             "day": self.env._("Day"),
             "week": self.env._("Week"),
@@ -309,6 +343,7 @@ class MercasManagementDashboard(models.TransientModel):
                 figures["amount"], sales[-1]["year_before"]["amount"],
                 chart_reference["amount"] if chart_reference else 0.0)
             purchases.append({"name": period_names[key], "figures": self._mercas_purchase_figures(*current)})
+            boxes.append({"name": period_names[key], "figures": self._mercas_box_figures(*current)})
         sales_by_key = {row["key"]: row for row in sales}
         month_start = date.replace(day=1)
         year_start = date.replace(month=1, day=1)
@@ -357,6 +392,7 @@ class MercasManagementDashboard(models.TransientModel):
             "sales": sales,
             "pace": pace,
             "purchases": purchases,
+            "boxes": boxes,
             "balances": [
                 {"name": self.env._("Customers owe us"), "values": [
                     (name, self._mercas_balance("asset_receivable", day)) for name, day in balance_dates]},
@@ -469,6 +505,7 @@ class MercasManagementDashboard(models.TransientModel):
             "format_date": lambda day: format_date(env, day),
             "money": money,
             "kg": kg,
+            "formatLang": lambda value: formatLang(env, value, digits=0),
             "price_kg": price_kg,
             "change": change,
             "scrap_percent": scrap_percent,

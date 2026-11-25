@@ -4,9 +4,10 @@ from odoo.tools import SQL
 
 class MercasReportGoods(models.Model):
     """ The goods sold, bought and scrapped, line by line: the data of the dashboards of Mercas
-    (Dashboards > Mercas). Amounts untaxed and net kg, without the boxes, as the management
-    summary (mercas.management.dashboard): confirmed sales and purchases at the date of their
-    order, scraps at the date they were done. """
+    (Dashboards > Mercas). Only the products of the categories of market goods (is_merca), and the
+    boxes (is_box) apart: the lines of boxes are marked is_box, with no kg. Amounts untaxed and
+    net kg, as the management summary (mercas.management.dashboard): confirmed sales and
+    purchases at the date of their order, scraps at the date they were done. """
     _name = "mercas.report.goods"
     _description = "Mercas: Goods Sold, Bought and Scrapped"
     _auto = False
@@ -33,9 +34,17 @@ class MercasReportGoods(models.Model):
     purchase_order_id = fields.Many2one(
         "purchase.order", string="Purchases", readonly=True, aggregator="count_distinct",
     )
+    is_box = fields.Boolean(
+        string="Box", readonly=True,
+        help="A line of boxes (box products): its amount apart from the goods, its boxes the "
+             "quantity, no kg.",
+    )
     amount = fields.Float(string="Amount", readonly=True)
     kg = fields.Float(string="Net Kg", readonly=True)
-    boxes = fields.Float(string="Boxes", readonly=True)
+    boxes = fields.Float(
+        string="Boxes", readonly=True,
+        help="The boxes of a line of goods, or the boxes of a line of boxes.",
+    )
 
     @api.model
     def _mercas_weight_uom(self):
@@ -66,44 +75,60 @@ class MercasReportGoods(models.Model):
             SELECT sol.id * 3 AS id, 'sale' AS kind, so.date_order AS date, so.company_id,
                    partner.commercial_partner_id AS partner_id, sol.product_id, pt.categ_id,
                    sol.lot_id, so.user_id, so.id AS sale_order_id, NULL::integer AS purchase_order_id,
-                   sol.price_subtotal AS amount, %(sale_kg)s AS kg, sol.box_qty AS boxes
+                   COALESCE(pt.is_box, FALSE) AS is_box, sol.price_subtotal AS amount,
+                   CASE WHEN pt.is_box THEN 0 ELSE %(sale_kg)s END AS kg,
+                   CASE WHEN pt.is_box THEN sol.product_uom_qty ELSE sol.box_qty END AS boxes
               FROM sale_order_line sol
               JOIN sale_order so ON so.id = sol.order_id
               JOIN res_partner partner ON partner.id = so.partner_id
               JOIN product_product pp ON pp.id = sol.product_id
               JOIN product_template pt ON pt.id = pp.product_tmpl_id
+              LEFT JOIN product_category categ ON categ.id = pt.categ_id
               JOIN uom_uom u ON u.id = sol.product_uom_id
               JOIN uom_uom pu ON pu.id = pt.uom_id
-             WHERE so.state = 'sale' AND sol.display_type IS NULL AND NOT COALESCE(pt.is_box, FALSE)
+             WHERE so.state = 'sale' AND sol.display_type IS NULL AND %(scope)s
             UNION ALL
             SELECT pol.id * 3 + 1, 'purchase', po.date_order, po.company_id,
                    partner.commercial_partner_id, pol.product_id, pt.categ_id,
                    pol.lot_id, po.user_id, NULL, po.id,
-                   pol.price_subtotal, %(purchase_kg)s, pol.box_qty
+                   COALESCE(pt.is_box, FALSE), pol.price_subtotal,
+                   CASE WHEN pt.is_box THEN 0 ELSE %(purchase_kg)s END,
+                   CASE WHEN pt.is_box THEN pol.product_qty ELSE pol.box_qty END
               FROM purchase_order_line pol
               JOIN purchase_order po ON po.id = pol.order_id
               JOIN res_partner partner ON partner.id = po.partner_id
               JOIN product_product pp ON pp.id = pol.product_id
               JOIN product_template pt ON pt.id = pp.product_tmpl_id
+              LEFT JOIN product_category categ ON categ.id = pt.categ_id
               JOIN uom_uom u ON u.id = pol.product_uom_id
               JOIN uom_uom pu ON pu.id = pt.uom_id
-             WHERE po.state IN ('purchase', 'done') AND pol.display_type IS NULL
-                   AND NOT COALESCE(pt.is_box, FALSE)
+             WHERE po.state IN ('purchase', 'done') AND pol.display_type IS NULL AND %(scope)s
             UNION ALL
             SELECT scrap.id * 3 + 2, 'scrap', scrap.date_done, scrap.company_id,
                    lot_partner.commercial_partner_id, scrap.product_id, pt.categ_id,
                    scrap.lot_id, NULL, NULL, NULL,
-                   0, %(scrap_kg)s, 0
+                   COALESCE(pt.is_box, FALSE), 0,
+                   CASE WHEN pt.is_box THEN 0 ELSE %(scrap_kg)s END,
+                   CASE WHEN pt.is_box THEN scrap.scrap_qty ELSE 0 END
               FROM stock_scrap scrap
               JOIN product_product pp ON pp.id = scrap.product_id
               JOIN product_template pt ON pt.id = pp.product_tmpl_id
+              LEFT JOIN product_category categ ON categ.id = pt.categ_id
               JOIN uom_uom u ON u.id = scrap.product_uom_id
               JOIN uom_uom pu ON pu.id = pt.uom_id
               LEFT JOIN stock_lot lot ON lot.id = scrap.lot_id
               LEFT JOIN res_partner lot_partner ON lot_partner.id = lot.partner_id
-             WHERE scrap.state = 'done'
+             WHERE scrap.state = 'done' AND %(scope)s
             """,
             sale_kg=kg(SQL("sol.product_uom_qty"), SQL("u"), SQL("pu"), SQL("pt")),
             purchase_kg=kg(SQL("pol.product_qty"), SQL("u"), SQL("pu"), SQL("pt")),
             scrap_kg=kg(SQL("scrap.scrap_qty"), SQL("u"), SQL("pu"), SQL("pt")),
+            scope=self._mercas_scope_sql(),
         )
+
+    @api.model
+    def _mercas_scope_sql(self):
+        """ What the reports are about: the goods of the categories of market goods
+        (product.category.is_merca; without category, as in the catalog of the counter) and the
+        boxes, whatever their category. The products of other categories are left out. """
+        return SQL("(COALESCE(pt.is_box, FALSE) OR categ.id IS NULL OR categ.is_merca)")

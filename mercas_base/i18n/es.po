@@ -2555,3 +2555,22 @@ msgid ""
 "Sent each evening to the users with Management Summary by Email. The\n"
 "                            figures are in Dashboards &gt; Dashboards &gt; Mercas."
 msgstr "Se envía cada tarde a los usuarios con Resumen de Dirección por correo. Las cifras están en Tableros &gt; Tableros &gt; Mercas."
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.management_summary
+msgid "Boxes sold or delivered"
+msgstr "Cajas vendidas o entregadas"
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.management_summary
+msgid "Boxes bought or returned"
+msgstr "Cajas compradas o devueltas"
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.management_summary
+msgid ""
+"Only the products of the categories of market goods (Market Goods); the "
+"boxes apart. The products of other categories aren't counted."
+msgstr ""
+"Solo los productos de las familias de mercancía de mercado (Mercancía de "
+"mercado); las cajas, aparte. Los productos de otras familias no cuentan."

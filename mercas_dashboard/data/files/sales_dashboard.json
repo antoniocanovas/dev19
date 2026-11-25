@@ -44,6 +44,7 @@
    "cells": {
     "A1": "=_t(\"Sales\")",
     "A2": "=_t(\"Untaxed amounts; net kg, without the boxes. All the figures follow the filters of the dashboard.\")",
+    "A3": "=_t(\"Only the products of the categories of market goods (Market Goods); the boxes apart. The products of other categories aren't counted.\")",
     "A4": "=_t(\"How we are doing, up to today\")",
     "A11": "=_t(\"Period\")",
     "B11": "=_t(\"Sales\")",
@@ -110,11 +111,15 @@
     "A85": "=_t(\"Best products\")",
     "A86": "=PIVOT(5,10,FALSE,FALSE)",
     "A98": "=_t(\"By product category\")",
-    "A99": "=PIVOT(6,10,FALSE,FALSE)"
+    "A99": "=PIVOT(6,10,FALSE,FALSE)",
+    "A111": "=_t(\"Boxes sold or delivered\")",
+    "A112": "=_t(\"Box products, apart from the goods: boxes and amount.\")",
+    "A113": "=PIVOT(7,10,FALSE,FALSE)"
    },
    "styles": {
     "A1": 3,
     "A2": 4,
+    "A3": 4,
     "A4": 5,
     "A11": 6,
     "B11": 2,
@@ -191,7 +196,12 @@
     "A99": 6,
     "B99": 2,
     "C99": 2,
-    "D99": 2
+    "D99": 2,
+    "A111": 5,
+    "A112": 4,
+    "A113": 6,
+    "B113": 2,
+    "C113": 2
    },
    "formats": {
     "B12": 2,
@@ -319,7 +329,27 @@
     "D108": 6,
     "B109": 2,
     "C109": 3,
-    "D109": 6
+    "D109": 6,
+    "B114": 6,
+    "C114": 2,
+    "B115": 6,
+    "C115": 2,
+    "B116": 6,
+    "C116": 2,
+    "B117": 6,
+    "C117": 2,
+    "B118": 6,
+    "C118": 2,
+    "B119": 6,
+    "C119": 2,
+    "B120": 6,
+    "C120": 2,
+    "B121": 6,
+    "C121": 2,
+    "B122": 6,
+    "C122": 2,
+    "B123": 6,
+    "C123": 2
    },
    "borders": {
     "A12": 1,
@@ -941,6 +971,11 @@
          "kind",
          "=",
          "sale"
+        ],
+        [
+         "is_box",
+         "=",
+         false
         ]
        ],
        "groupBy": [
@@ -1659,6 +1694,11 @@
      "kind",
      "=",
      "sale"
+    ],
+    [
+     "is_box",
+     "=",
+     false
     ]
    ],
    "context": {},
@@ -1723,6 +1763,11 @@
      "kind",
      "=",
      "sale"
+    ],
+    [
+     "is_box",
+     "=",
+     false
     ]
    ],
    "context": {},
@@ -1786,6 +1831,11 @@
      "kind",
      "=",
      "sale"
+    ],
+    [
+     "is_box",
+     "=",
+     false
     ]
    ],
    "context": {},
@@ -1849,6 +1899,11 @@
      "kind",
      "=",
      "sale"
+    ],
+    [
+     "is_box",
+     "=",
+     false
     ],
     [
      "partner_id",
@@ -1922,6 +1977,11 @@
      "sale"
     ],
     [
+     "is_box",
+     "=",
+     false
+    ],
+    [
      "product_id",
      "!=",
      false
@@ -1993,6 +2053,11 @@
      "sale"
     ],
     [
+     "is_box",
+     "=",
+     false
+    ],
+    [
      "categ_id",
      "!=",
      false
@@ -2050,9 +2115,75 @@
      "type": "many2one"
     }
    }
+  },
+  "7": {
+   "type": "ODOO",
+   "id": "7",
+   "formulaId": "7",
+   "name": "Cajas",
+   "model": "mercas.report.goods",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "sale"
+    ],
+    [
+     "is_box",
+     "=",
+     true
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "boxes:sum",
+     "fieldName": "boxes",
+     "aggregator": "sum"
+    },
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "product_id"
+    }
+   ],
+   "columns": [],
+   "sortedColumn": {
+    "measure": "boxes:sum",
+    "order": "desc",
+    "domain": []
+   },
+   "fieldMatching": {
+    "mercas-period": {
+     "chain": "date",
+     "type": "datetime",
+     "offset": 0
+    },
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    },
+    "mercas-product": {
+     "chain": "product_id",
+     "type": "many2one"
+    },
+    "mercas-category": {
+     "chain": "categ_id",
+     "type": "many2one"
+    },
+    "mercas-user": {
+     "chain": "user_id",
+     "type": "many2one"
+    }
+   }
   }
  },
- "pivotNextId": 7,
+ "pivotNextId": 8,
  "customTableStyles": {},
  "globalFilters": [
   {

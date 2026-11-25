@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 07:47+0000\n"
-"PO-Revision-Date: 2026-11-25 07:47+0000\n"
+"POT-Creation-Date: 2026-11-25 08:09+0000\n"
+"PO-Revision-Date: 2026-11-25 08:09+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -36,6 +36,15 @@ msgstr "31-60 días"
 #: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_balance__age__3_90
 msgid "61-90 days"
 msgstr "61-90 días"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,help:mercas_dashboard.field_mercas_report_goods__is_box
+msgid ""
+"A line of boxes (box products): its amount apart from the goods, its boxes "
+"the quantity, no kg."
+msgstr ""
+"Una línea de cajas (productos caja): su importe va aparte de la mercancía, "
+"sus cajas son la cantidad, sin kg."
 
 #. module: mercas_dashboard
 #. odoo-javascript
@@ -131,12 +140,36 @@ msgid "Best products"
 msgstr "Productos más vendidos"
 
 #. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__is_box
+msgid "Box"
+msgstr "Caja"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Box products, apart from the goods: boxes and amount."
+msgstr "Productos caja, aparte de la mercancía: cajas e importe."
+
+#. module: mercas_dashboard
 #. odoo-javascript
 #: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
 #: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
 #: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__boxes
 msgid "Boxes"
 msgstr "Cajas"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Boxes bought or returned"
+msgstr "Cajas compradas o devueltas"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Boxes sold or delivered"
+msgstr "Cajas vendidas o entregadas"
 
 #. module: mercas_dashboard
 #. odoo-javascript
@@ -245,6 +278,16 @@ msgstr "Días de retraso"
 #: model:spreadsheet.dashboard,name:mercas_dashboard.spreadsheet_dashboard_debt
 msgid "Debt and Payments"
 msgstr "Deuda y cobros"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid ""
+"Debt, invoicing and payments of all the invoices, not only of the goods: "
+"they don't depend on the category of the products."
+msgstr ""
+"La deuda, lo pendiente de facturar y los cobros son de todas las facturas, "
+"no solo de la mercancía: no dependen de la familia de los productos."
 
 #. module: mercas_dashboard
 #. odoo-javascript
@@ -516,6 +559,17 @@ msgstr "Oct"
 #. odoo-javascript
 #: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
 #: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid ""
+"Only the products of the categories of market goods (Market Goods); the "
+"boxes apart. The products of other categories aren't counted."
+msgstr ""
+"Solo los productos de las familias de mercancía de mercado (Mercancía de "
+"mercado); las cajas, aparte. Los productos de otras familias no cuentan."
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
 msgid "Orders"
 msgstr "Pedidos"
 
@@ -757,6 +811,11 @@ msgid "Suppliers we owe"
 msgstr "Proveedores a los que debemos"
 
 #. module: mercas_dashboard
+#: model:ir.model.fields,help:mercas_dashboard.field_mercas_report_goods__boxes
+msgid "The boxes of a line of goods, or the boxes of a line of boxes."
+msgstr "Las cajas de una línea de mercancía, o las de una línea de cajas."
+
+#. module: mercas_dashboard
 #: model:ir.model.fields,help:mercas_dashboard.field_mercas_report_goods__partner_id
 msgid ""
 "The customer of a sale, the supplier of a purchase or of the lot scrapped."
@@ -815,6 +874,12 @@ msgstr "Jue"
 #: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
 msgid "To"
 msgstr "Hasta"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "To invoice"
+msgstr "Por facturar"
 
 #. module: mercas_dashboard
 #. odoo-javascript
@@ -955,9 +1020,3 @@ msgstr "vs. anterior"
 #: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
 msgid "vs. the period before"
 msgstr "vs. periodo anterior"
-
-#. module: mercas_dashboard
-#. odoo-javascript
-#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
-msgid "To invoice"
-msgstr "Por facturar"

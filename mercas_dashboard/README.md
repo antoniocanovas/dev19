@@ -6,6 +6,8 @@ Se instala solo (`auto_install`) cuando están `mercas_base` y `spreadsheet_dash
 
 ## Tableros
 
+**Qué entra:** solo los productos de las familias marcadas como *Mercancía de mercado* (`product.category.is_merca`; también los que no tienen familia, como en el catálogo del Mostrador) y, **aparte**, las **cajas** (productos `is_box`, sea cual sea su familia). Los productos de otras familias (material, servicios…) no son objeto de estos informes. La deuda, lo pendiente de facturar y los cobros sí son de todas las facturas. Cada tablero lo indica en su cabecera.
+
 Importes sin impuestos y kg netos, sin las cajas, como el resumen por correo. Las ventas y compras confirmadas cuentan en la fecha del pedido; las mermas, en la fecha en que se hicieron.
 
 ### Ventas
@@ -15,12 +17,12 @@ Importes sin impuestos y kg netos, sin las cajas, como el resumen por correo. La
   - La semana, el mes y el año, con el periodo anterior hasta el mismo día y con el mismo periodo de hace un año (la semana, con la semana entera de hace 52 semanas).
 - **Ritmo:** el mes y el año hasta hoy, hace un año hasta el mismo día y en total, y la previsión de cierre al ritmo de los días transcurridos.
 - **Ventas hasta hoy:** la semana día a día (esta, la anterior y la de hace un año), el mes acumulado (este, el anterior y el de hace un año) y el año acumulado por meses (este y el anterior).
-- **En el periodo** (el del filtro *Periodo*, por defecto el mes hasta la fecha): ventas, kg, precio/kg y pedidos frente al periodo anterior; las ventas por día; los mejores clientes, productos y categorías.
+- **En el periodo** (el del filtro *Periodo*, por defecto el mes hasta la fecha): ventas, kg, precio/kg y pedidos frente al periodo anterior; las ventas por día; los mejores clientes, productos y categorías; y las **cajas vendidas o entregadas** (por tipo de caja: cajas e importe), aparte de la mercancía.
 - **Filtros:** periodo, cliente, producto, categoría y comercial. Todas las cifras siguen los filtros; las de *hasta hoy* no dependen del periodo, porque hacen sus propios periodos.
 
 ### Compras y mermas
 
-Lo mismo para las compras (sin el gráfico del año), con los **kg de merma** y el **% de merma** (kg desechados sobre los kg comprados) de cada periodo; los proveedores, los productos comprados y las mermas por producto del periodo; y los **lotes por liquidar**: vendidos del todo, en liquidación por venta y aún sin liquidar al proveedor. Filtros: periodo, proveedor, producto y categoría.
+Lo mismo para las compras (sin el gráfico del año), con las **cajas compradas o devueltas** aparte, los **kg de merma** y el **% de merma** (kg desechados sobre los kg comprados) de cada periodo; los proveedores, los productos comprados y las mermas por producto del periodo; y los **lotes por liquidar**: vendidos del todo, en liquidación por venta y aún sin liquidar al proveedor. Filtros: periodo, proveedor, producto y categoría.
 
 ### Deuda y cobros
 
@@ -32,7 +34,7 @@ Las hojas leen tres informes (vistas SQL, solo lectura, para el grupo *Mercas: D
 
 | Modelo | Contenido |
 |---|---|
-| `mercas.report.goods` | Una fila por línea de venta o compra confirmada de mercancía (sin cajas) y por merma hecha: tipo, fecha, contacto (la empresa), producto, categoría, lote, comercial/comprador, pedido, importe, kg netos y cajas. Los kg se calculan como `product.product._mercas_net_weight`: la cantidad convertida si la unidad es de peso, o por el peso del producto si no. |
+| `mercas.report.goods` | Una fila por línea de venta o compra confirmada y por merma hecha, de los productos de familias *Mercancía de mercado* y de las cajas: tipo, fecha, contacto (la empresa), producto, categoría, lote, comercial/comprador, pedido, si es de cajas (`is_box`), importe, kg netos y cajas (las de la línea de mercancía, o la cantidad de la línea de cajas, que no lleva kg). Los kg se calculan como `product.product._mercas_net_weight`: la cantidad convertida si la unidad es de peso, o por el peso del producto si no. Los tableros separan la mercancía (`is_box = False`) de las cajas. |
 | `mercas.report.balance` | Los apuntes de clientes y proveedores publicados y sin conciliar (lo pendiente, con los días de retraso y su antigüedad) y las líneas de venta confirmadas con importe pendiente de facturar. |
 | `mercas.report.payment` | Los cobros de clientes en proceso o pagados: fecha, cliente, diario e importe. |
 
@@ -54,4 +56,4 @@ Los textos van en inglés con `_t()` en las celdas, y su traducción al español
 
 ## Tests
 
-Los informes dan las cifras del resumen (importe y kg de ventas y compras, sin cajas, en gramos y por unidades; mermas; deuda por antigüedad; cobros), y las hojas usan modelos y campos que existen y solo las ve la dirección.
+Los informes dan las cifras del resumen (importe y kg de ventas y compras, sin cajas, en gramos y por unidades; los productos de otras familias fuera; las cajas aparte; mermas; deuda por antigüedad; cobros), y las hojas usan modelos y campos que existen y solo las ve la dirección.

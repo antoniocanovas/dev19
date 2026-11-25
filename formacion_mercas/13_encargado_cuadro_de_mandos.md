@@ -39,6 +39,8 @@ En la aplicación **Tableros**, a la izquierda, el grupo **Mercas** tiene tres t
 
 Todos los importes son **sin impuestos**, y los kg son **netos**, sin las cajas.
 
+**Solo cuenta la mercancía de las familias marcadas como *Mercancía de mercado*.** Las **cajas** van aparte (cuántas y por cuánto se venden o entregan, y se compran o devuelven), y los productos de otras familias (material, servicios…) no entran. La deuda y los cobros sí son de todas las facturas. Cada tablero, y el resumen por correo, lo recuerdan en su cabecera.
+
 ### Ventas: cómo vamos, hasta hoy
 
 ![Tablero de ventas](img/104_tableros_ventas.jpg)

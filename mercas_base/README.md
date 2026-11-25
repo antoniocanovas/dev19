@@ -474,7 +474,7 @@ El módulo crea un menú raíz **Mercas** con accesos directos a las pantallas e
 
 Las cifras de **Dirección** (ventas y compras en importe y kg, mermas, deuda y cobros, comparados con otros periodos) no están en este menú sino en la aplicación **Tableros**, en el grupo **Mercas** (*Tableros › Tableros › Mercas*), del módulo `mercas_dashboard`. Las ven los usuarios del grupo **Mercas: Dirección** (`group_mercas_management`).
 
-El **resumen de Dirección por correo** (`mercas.management.dashboard`) sigue en este módulo: se envía cada tarde a los usuarios con *Resumen de Dirección por correo* y, en el momento, con **Enviar el resumen ahora** en la pestaña *Mercas* de la compañía.
+El **resumen de Dirección por correo** (`mercas.management.dashboard`) sigue en este módulo: se envía cada tarde a los usuarios con *Resumen de Dirección por correo* y, en el momento, con **Enviar el resumen ahora** en la pestaña *Mercas* de la compañía. Como los tableros, cuenta solo los productos de familias *Mercancía de mercado* (o sin familia) y las **cajas aparte** (cajas e importe vendidas o entregadas, y compradas o devueltas); los productos de otras familias no entran. Lo dice en su cabecera.
 
 ## Instalación
 

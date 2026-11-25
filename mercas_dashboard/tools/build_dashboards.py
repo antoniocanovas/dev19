@@ -555,6 +555,8 @@ NOTE_PERIODS = ("Up to today: the day against yesterday and the same weekday a y
                 "The week, the month and the year against the period before up to the same day, and the same "
                 "one a year before (the week, the whole week).")
 NOTE_FILTERS = "Untaxed amounts; net kg, without the boxes. All the figures follow the filters of the dashboard."
+NOTE_SCOPE = ("Only the products of the categories of market goods (Market Goods); the boxes apart. The "
+              "products of other categories aren't counted.")
 
 
 # ----------------------------------------------------------------------
@@ -572,7 +574,7 @@ def build_sales():
     ]
     chains = {F_PERIOD: ("date", "datetime"), F_PARTNER: "partner_id", F_PRODUCT: "product_id",
               F_CATEGORY: "categ_id", F_USER: "user_id"}
-    sale_domain = [["kind", "=", "sale"]]
+    sale_domain = [["kind", "=", "sale"], ["is_box", "=", False]]
     measures = [("amount", "sum"), ("kg", "sum"), ("boxes", "sum"), ("sale_order_id", "count_distinct")]
     model = "mercas.report.goods"
     # 1: the sales of each day, the whole history (the periods are made in the sheet Data)
@@ -591,6 +593,10 @@ def build_sales():
         book.add_pivot(pivot_id, name, model, sale_domain + [[field, "!=", False]],
                        [("amount", "sum"), ("kg", "sum"), ("sale_order_id", "count_distinct")],
                        rows=[{"fieldName": field}], matching=matching(chains), sorted_measure="amount:sum")
+    # 7: the boxes of the period (box products), apart from the goods
+    book.add_pivot(7, "Cajas", model, [["kind", "=", "sale"], ["is_box", "=", True]],
+                   [("boxes", "sum"), ("amount", "sum")], rows=[{"fieldName": "product_id"}],
+                   matching=matching(chains), sorted_measure="boxes:sum")
 
     sheet = dashboard_sheet(book, (230, 120, 100, 120, 110, 100, 90, 80))
     data = book.sheet("data", "Data", cols=40, rows=DATA_ROWS, visible=False)
@@ -598,6 +604,7 @@ def build_sales():
 
     sheet.set("A1", t("Sales"), TITLE)
     sheet.set("A2", t(NOTE_FILTERS), SUBTITLE)
+    sheet.set("A3", t(NOTE_SCOPE), SUBTITLE)
     sheet.set("A4", t("How we are doing, up to today"), SECTION)
     row = cards(sheet, 5, [(Periods.NAMES[key], "Data!O%s" % (Periods.FIRST_ROW + index),
                             "Data!S%s" % (Periods.FIRST_ROW + index))
@@ -641,7 +648,9 @@ def build_sales():
     formats = (MONEY, KG, INTEGER)
     row = pivot_table(sheet, row, t("Best customers"), 4, 10, formats)
     row = pivot_table(sheet, row, t("Best products"), 5, 10, formats)
-    pivot_table(sheet, row, t("By product category"), 6, 10, formats)
+    row = pivot_table(sheet, row, t("By product category"), 6, 10, formats)
+    pivot_table(sheet, row, t("Boxes sold or delivered"), 7, 10, (INTEGER, MONEY),
+                note=t("Box products, apart from the goods: boxes and amount."))
     return book
 
 
@@ -724,8 +733,8 @@ def build_purchases():
     chains = {F_PERIOD: ("date", "datetime"), F_PARTNER: "partner_id", F_PRODUCT: "product_id",
               F_CATEGORY: "categ_id"}
     model = "mercas.report.goods"
-    purchase_domain = [["kind", "=", "purchase"]]
-    scrap_domain = [["kind", "=", "scrap"]]
+    purchase_domain = [["kind", "=", "purchase"], ["is_box", "=", False]]
+    scrap_domain = [["kind", "=", "scrap"], ["is_box", "=", False]]
     measures = [("amount", "sum"), ("kg", "sum"), ("boxes", "sum"), ("purchase_order_id", "count_distinct")]
     book.add_pivot(1, "Purchases by day", model, purchase_domain, measures,
                    rows=[{"fieldName": "date", "granularity": "day", "order": "asc"}],
@@ -747,6 +756,10 @@ def build_purchases():
     book.add_pivot(8, "Scrap in the period", model, scrap_domain, [("kg", "sum")], matching=matching(chains))
     book.add_pivot(9, "Scrap in the period before", model, scrap_domain, [("kg", "sum")],
                    matching=matching(chains, offset=-1))
+    # 10: the boxes bought or returned in the period, apart from the goods
+    book.add_pivot(10, "Cajas", model, [["kind", "=", "purchase"], ["is_box", "=", True]],
+                   [("boxes", "sum"), ("amount", "sum")], rows=[{"fieldName": "product_id"}],
+                   matching=matching(chains), sorted_measure="boxes:sum")
     # Lots sold out, under sale settlement, still to settle with their supplier
     lot_fields = ["name", "product_id", "partner_id", "sale_kg", "sale_amount", "supplier_amount"]
     book.add_list(1, "Lots to settle", "stock.lot",
@@ -777,6 +790,7 @@ def build_purchases():
 
     sheet.set("A1", t("Purchases and Scrap"), TITLE)
     sheet.set("A2", t(NOTE_FILTERS), SUBTITLE)
+    sheet.set("A3", t(NOTE_SCOPE), SUBTITLE)
     sheet.set("A4", t("How we are doing, up to today"), SECTION)
     row = cards(sheet, 5, [(Periods.NAMES[key], "Data!O%s" % (Periods.FIRST_ROW + index),
                             "Data!S%s" % (Periods.FIRST_ROW + index))
@@ -804,6 +818,8 @@ def build_purchases():
     row = pivot_table(sheet, row, t("Suppliers"), 4, 10, (MONEY, KG, INTEGER))
     row = pivot_table(sheet, row, t("Products bought"), 5, 10, (MONEY, KG))
     row = pivot_table(sheet, row, t("Scrap by product"), 6, 10, (KG,))
+    row = pivot_table(sheet, row, t("Boxes bought or returned"), 10, 10, (INTEGER, MONEY),
+                      note=t("Box products, apart from the goods: boxes and amount."))
 
     sheet.set("A%s" % row, t("Lots to settle"), SECTION)
     sheet.set("A%s" % (row + 1), t("Sold out, under sale settlement, not yet settled with the supplier."),
@@ -887,6 +903,8 @@ def build_debt():
     sheet.set("A1", t("Debt and Payments"), TITLE)
     sheet.set("A2", t("What is owed today, by days overdue; the payments collected in the period of the "
                       "filter."), SUBTITLE)
+    sheet.set("A3", t("Debt, invoicing and payments of all the invoices, not only of the goods: they don't "
+                      "depend on the category of the products."), SUBTITLE)
     row = cards(sheet, 4, [("Customers owe us", "Data!B1", None), ("Overdue", "Data!B2", None),
                            ("We owe suppliers", "Data!B3", None), ("To invoice", "Data!B4", None)],
                 background="#FFF7ED")

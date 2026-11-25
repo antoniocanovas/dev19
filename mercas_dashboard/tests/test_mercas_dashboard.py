@@ -33,6 +33,12 @@ class TestMercasDashboards(TransactionCase):
         })
         # Sold in grams: converted to kg
         cls.gram = cls.env.ref("uom.product_uom_gram")
+        # Not market goods: out of the reports
+        cls.supplies = cls.env["product.category"].create({"name": "Board Supplies", "is_merca": False})
+        cls.gloves = cls.env["product.product"].create({
+            "name": "Board Gloves", "categ_id": cls.supplies.id, "taxes_id": [Command.clear()],
+        })
+        cls.box.categ_id = cls.supplies
 
     def _figures(self, domain):
         groups = self.Goods._read_group(domain, [], ["amount:sum", "kg:sum"])
@@ -50,6 +56,7 @@ class TestMercasDashboards(TransactionCase):
                                 "product_uom_id": self.gram.id, "price_unit": 2.0}),
                 Command.create({"product_id": self.melon.id, "product_uom_qty": 3, "price_unit": 4.0}),
                 Command.create({"product_id": self.box.id, "product_uom_qty": 5, "price_unit": 1.0}),
+                Command.create({"product_id": self.gloves.id, "product_uom_qty": 2, "price_unit": 9.0}),
             ],
         })
         order.action_confirm()
@@ -62,13 +69,19 @@ class TestMercasDashboards(TransactionCase):
         sales = self.Summary._mercas_sales_figures(date(2000, 1, 1), today)
         purchases = self.Summary._mercas_purchase_figures(date(2000, 1, 1), today)
 
-        amount, kg = self._figures([("kind", "=", "sale"), ("sale_order_id", "=", order.id)])
+        amount, kg = self._figures([("kind", "=", "sale"), ("is_box", "=", False), ("sale_order_id", "=", order.id)])
         self.assertAlmostEqual(amount, sales["amount"] - sales_before["amount"], places=2)
         self.assertAlmostEqual(kg, 40 + 0.5 + 6, msg="Without the boxes; grams in kg; units by their weight")
         self.assertAlmostEqual(kg, sales["kg"] - sales_before["kg"])
         lines = self.Goods.search([("sale_order_id", "=", order.id)])
         self.assertEqual(lines.partner_id, self.customer, "The company of the contact")
-        self.assertNotIn(self.box, lines.product_id)
+        self.assertNotIn(self.gloves, lines.product_id, "Other categories aren't in the reports")
+        # The boxes apart, whatever their category: their boxes and amount, no kg
+        box_line = lines.filtered("is_box")
+        self.assertEqual((box_line.product_id, box_line.boxes, box_line.amount, box_line.kg), (self.box, 5, 5.0, 0))
+        boxes = self.Summary._mercas_box_figures(today, today)["out"]
+        self.assertGreaterEqual(boxes["boxes"], 5)
+        self.assertGreaterEqual(boxes["amount"], 5.0)
 
         amount, kg = self._figures([("kind", "=", "purchase"), ("purchase_order_id", "=", purchase.id)])
         self.assertAlmostEqual(amount, purchases["amount"] - purchases_before["amount"])

@@ -37,6 +37,7 @@
    "cells": {
     "A1": "=_t(\"Debt and Payments\")",
     "A2": "=_t(\"What is owed today, by days overdue; the payments collected in the period of the filter.\")",
+    "A3": "=_t(\"Debt, invoicing and payments of all the invoices, not only of the goods: they don't depend on the category of the products.\")",
     "A21": "=_t(\"Customers that owe the most, by days overdue\")",
     "A22": "=PIVOT(2,15,FALSE,TRUE,100,FALSE)",
     "A39": "=_t(\"To invoice to customers\")",
@@ -50,6 +51,7 @@
    "styles": {
     "A1": 3,
     "A2": 4,
+    "A3": 4,
     "A21": 5,
     "A22": 6,
     "B22": 2,

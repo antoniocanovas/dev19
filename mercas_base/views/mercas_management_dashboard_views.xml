@@ -28,6 +28,7 @@
                 <t t-out="company.name"/> · <t t-out="format_date(date)"/>
             </h1>
             <div style="color:#6c757d;font-size:13px;">Untaxed amounts; net kg, without the boxes.</div>
+            <div style="color:#6c757d;font-size:13px;" class="o_mercas_summary_scope">Only the products of the categories of market goods (Market Goods); the boxes apart. The products of other categories aren't counted.</div>
 
             <!-- How we are doing: the sales of each period against the same one a year before and,
                  but for the year, against the day of the week before, the whole week or month before -->
@@ -166,6 +167,24 @@
                     <td t-att-style="td" t-out="kg(row['figures']['kg'])"/>
                     <td t-att-style="td" t-out="kg(row['figures']['scrap_kg'])"/>
                     <td t-att-style="td" t-out="scrap_percent(row['figures'])"/>
+                </tr>
+            </table>
+
+            <h2 t-att-style="h2">Boxes</h2>
+            <table t-att-style="table" class="o_mercas_summary_boxes">
+                <tr>
+                    <th t-att-style="th_left">Period</th>
+                    <th t-att-style="th">Boxes sold or delivered</th>
+                    <th t-att-style="th">Amount</th>
+                    <th t-att-style="th">Boxes bought or returned</th>
+                    <th t-att-style="th">Amount</th>
+                </tr>
+                <tr t-foreach="boxes" t-as="row">
+                    <td t-att-style="td_left"><b t-out="row['name']"/></td>
+                    <td t-att-style="td" t-out="formatLang(row['figures']['out']['boxes'])"/>
+                    <td t-att-style="td" t-out="money(row['figures']['out']['amount'])"/>
+                    <td t-att-style="td" t-out="formatLang(row['figures']['in']['boxes'])"/>
+                    <td t-att-style="td" t-out="money(row['figures']['in']['amount'])"/>
                 </tr>
             </table>
 
