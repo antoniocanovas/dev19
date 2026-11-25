@@ -1,4 +1,4 @@
-import { Component, onPatched, onWillStart, onWillUnmount, useExternalListener, useState } from "@odoo/owl";
+import { Component, onMounted, onPatched, onWillStart, onWillUnmount, useExternalListener, useState } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
 import { ConfirmationDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { isDisplayStandalone } from "@web/core/browser/feature_detection";
@@ -170,8 +170,11 @@ export class TouchScreen extends Component {
         this.focusPrice = false;
         // The code of a damaged label is typed or scanned as soon as its screen opens
         this.focusLabelSearch = false;
-        // The screen shown last, to give the focus to the first field of a new one
+        // The screen shown last, to give the focus to the first field of a new one, and the
+        // last mode opened, focused back in the main menu
         this.screenKey = null;
+        this.lastMode = null;
+        onMounted(() => this.focusFirstField());
         onPatched(() => {
             this.focusFirstField();
             if (this.focusPrice) {
@@ -537,6 +540,15 @@ export class TouchScreen extends Component {
             return;
         }
         // Or, in the lots of a product, the first lot that can be sold (see onLotGridKeydown)
+        if (!this.state.mode) {
+            // The main menu: the mode left (back from it), or the first one
+            const modes = document.querySelector(".o_mercas_touch_home_menu");
+            const mode = (this.lastMode && modes?.querySelector(`.o_mercas_touch_mode_${this.lastMode}`)) ||
+                modes?.querySelector(".o_mercas_touch_mode");
+            mode?.focus();
+            return;
+        }
+        this.lastMode = this.state.mode;
         const field = document.querySelector(".o_mercas_touch_body")?.querySelector(
             "input:not([type=checkbox]):not([type=radio]):not([readonly]):not([disabled]), " +
             ".o_mercas_touch_lot:not(:disabled)"
@@ -1025,6 +1037,20 @@ export class TouchScreen extends Component {
         } finally {
             this.state.lotsLoading = false;
         }
+    }
+
+    /** The modes of the main menu chosen with the keyboard: the arrows move between them, Enter
+     * (on the button focused) opens it. */
+    onModeMenuKeydown(ev) {
+        const moves = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
+        if (!(ev.key in moves)) {
+            return;
+        }
+        ev.preventDefault();
+        const modes = [...ev.currentTarget.querySelectorAll(".o_mercas_touch_mode")];
+        const index = modes.indexOf(document.activeElement);
+        const next = index < 0 ? 0 : (index + moves[ev.key] + modes.length) % modes.length;
+        modes[next]?.focus();
     }
 
     /**

@@ -92,7 +92,8 @@
                        title="Install the app on this device" aria-label="Install the app on this device"
                        class="btn btn-secondary d-flex align-items-center justify-content-center fa fa-download o_mercas_touch_pwa_install" t-on-click.prevent="this.onInstall"/>
                 </header>
-                <footer class="d-grid gap-2 mb-3">
+                <!-- Chosen also with the keyboard: the arrows move between the modes, Enter opens -->
+                <footer class="d-grid gap-2 mb-3" t-on-keydown="this.onModeMenuKeydown">
                     <button t-foreach="this.modes" t-as="mode" t-key="mode.key"
                             t-attf-class="btn btn-primary d-flex align-items-center gap-3 text-start p-3 o_mercas_touch_mode o_mercas_touch_mode_{{ mode.key }}"
                             t-on-click="() => this.openMode(mode.key)">

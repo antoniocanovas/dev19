@@ -41,6 +41,12 @@
         white-space: normal;
     }
 
+    // The mode of the main menu chosen with the arrows of the keyboard (see onModeMenuKeydown)
+    .o_mercas_touch_mode:focus {
+        box-shadow: 0 0 0 0.25rem rgba($primary, 0.5);
+        filter: brightness(1.15);
+    }
+
     // The lot chosen with the arrows of the keyboard (see onLotGridKeydown)
     .o_mercas_touch_lot:focus {
         border-color: $primary;

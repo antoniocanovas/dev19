@@ -732,8 +732,18 @@ registry.category("web_tour.tours").add("mercas_touch_enter_tour", {
 registry.category("web_tour.tours").add("mercas_touch_keyboard_tour", {
     steps: () => [
         {
-            trigger: ".o_mercas_touch_mode_sale",
-            run: "click",
+            content: "The main menu has the focus on its first mode; the arrows move between them",
+            trigger: ".o_mercas_touch_mode_sale:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_mode_purchase:focus",
+            run: "press ArrowUp",
+        },
+        {
+            content: "Enter opens the mode focused",
+            trigger: ".o_mercas_touch_mode_sale:focus",
+            run: "press Enter",
         },
         {
             content: "The first field of the screen has the focus: the search of the quotations",
