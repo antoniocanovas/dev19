@@ -413,8 +413,8 @@ registry.category("web_tour.tours").add("mercas_touch_quotation_tour", {
         },
         ...addPearLine(4),
         {
-            content: "Each change is saved in the quotation",
-            trigger: ".o_mercas_touch_save_state:contains(Saved in)",
+            content: "Each change is saved in the quotation (once the line is added)",
+            trigger: ".o_mercas_touch_ticket:has(.o_mercas_touch_line:eq(1)) .o_mercas_touch_save_state:contains(Saved in)",
         },
         {
             content: "Leave it, to go on later",

@@ -775,8 +775,15 @@ export class TouchScreen extends Component {
     }
 
     async reloadPartner() {
-        if (this.state.partner) {
-            this.state.partner = await this.orm.call(MODEL, "get_partner_info", [this.state.partner.id]);
+        const partner = this.state.partner;
+        if (!partner) {
+            return;
+        }
+        const info = await this.orm.call(MODEL, "get_partner_info", [partner.id]);
+        // Only if the screen is still on that partner: back to the list meanwhile, it would
+        // open a new operation for them
+        if (this.state.partner === partner) {
+            this.state.partner = info;
         }
     }
 
