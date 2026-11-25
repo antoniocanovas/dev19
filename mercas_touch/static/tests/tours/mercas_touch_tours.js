@@ -444,7 +444,7 @@ registry.category("web_tour.tours").add("mercas_touch_quotation_tour", {
             trigger: ".o_mercas_touch_new_draft",
         },
         {
-            trigger: ".o_mercas_touch_body:not(:has(.o_mercas_touch_draft))",
+            trigger: ".o_mercas_touch_body:not(:has(.o_mercas_touch_draft:contains(Tour Customer)))",
         },
     ],
 });
@@ -557,7 +557,7 @@ registry.category("web_tour.tours").add("mercas_touch_to_invoice_tour", {
             trigger: ".o_mercas_touch_draft_filters .btn-primary:contains(To invoice)",
         },
         {
-            trigger: ".o_mercas_touch_body:not(:has(.o_mercas_touch_draft))",
+            trigger: ".o_mercas_touch_body:not(:has(.o_mercas_touch_draft:contains(Tour Customer)))",
         },
         {
             content: "All the sales",

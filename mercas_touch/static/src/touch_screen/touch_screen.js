@@ -1126,7 +1126,8 @@ export class TouchScreen extends Component {
         const entry = this.state.entry;
         const input = ev.target;
         browser.setTimeout(() => {
-            if (this.state.entry === entry && document.activeElement !== input) {
+            // No line any more when the field is left because the line was added (Enter)
+            if (entry && this.state.entry === entry && document.activeElement !== input) {
                 entry.boxSearch = null;
             }
         }, 200);
@@ -1246,6 +1247,10 @@ export class TouchScreen extends Component {
 
     /** A float field left: `record[key]` gets the result of the operation it holds. */
     onFloatChange(record, key) {
+        // The editor may be closed already (Enter on the last price), its field leaving
+        if (!record) {
+            return;
+        }
         record[key] = this.resolveFloatInput(record[key]);
         if (record === this.state.entry && key === "gross") {
             this.onEntryWeightChanged(key);
