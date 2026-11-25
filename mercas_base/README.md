@@ -472,7 +472,9 @@ El módulo crea un menú raíz **Mercas** con accesos directos a las pantallas e
 | **Facturas** | **Facturas de cliente**, **Facturas rectificativas**, **Facturas de proveedor** y **Reembolsos** — mismas etiquetas que usa el estándar de Odoo para estas acciones. |
 | **Liquidaciones** | Asistente de facturación de lotes a proveedor. Visible solo para el grupo **Contabilidad/Gestor de contabilidad** (`account.group_account_manager`). |
 
-El resumen de **Dirección** (ventas y compras en importe y kg, mermas, deuda y cobros, comparados con otros periodos) no está en este menú sino en la aplicación **Tableros** (`spreadsheet_dashboard`), en su sección **Mercas**: *Tableros › Mercas › Dirección*. Lo ven los usuarios del grupo **Mercas: Dirección** (`group_mercas_management`); a los demás no les aparece la sección.
+Las cifras de **Dirección** (ventas y compras en importe y kg, mermas, deuda y cobros, comparados con otros periodos) no están en este menú sino en la aplicación **Tableros**, en el grupo **Mercas** (*Tableros › Tableros › Mercas*), del módulo `mercas_dashboard`. Las ven los usuarios del grupo **Mercas: Dirección** (`group_mercas_management`).
+
+El **resumen de Dirección por correo** (`mercas.management.dashboard`) sigue en este módulo: se envía cada tarde a los usuarios con *Resumen de Dirección por correo* y, en el momento, con **Enviar el resumen ahora** en la pestaña *Mercas* de la compañía.
 
 ## Instalación
 

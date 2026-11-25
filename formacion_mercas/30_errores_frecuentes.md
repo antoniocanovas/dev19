@@ -55,5 +55,5 @@
 |---|---|
 | No se ve el cuadro de mandos en el Mostrador. | Está oculto en esa tablet: toca el botón del **cuentakilómetros**, junto al de descarga. |
 | Un producto no sale en **En promoción con stock**. | No tiene la estrella o no tiene stock. |
-| No veo el menú **Tableros › Mercas › Dirección**. | Hace falta ser administrador de ventas o de facturación, o tener el permiso *Mercas: Dirección*. |
+| No veo el grupo **Mercas** en **Tableros › Tableros**. | Hace falta ser administrador de ventas o de facturación, o tener el permiso *Mercas: Dirección*. |
 | No me llega el **correo de Dirección**. | Activa **Resumen de Dirección por correo: Cada tarde** en tu usuario y comprueba que tienes correo electrónico. |

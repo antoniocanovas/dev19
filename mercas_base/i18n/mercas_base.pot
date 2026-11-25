@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-23 16:27+0000\n"
-"PO-Revision-Date: 2026-11-23 16:27+0000\n"
+"POT-Creation-Date: 2026-11-25 07:53+0000\n"
+"PO-Revision-Date: 2026-11-25 07:53+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -504,11 +504,6 @@ msgid ""
 msgstr ""
 
 #. module: mercas_base
-#: model:ir.model.fields,field_description:mercas_base.field_mercas_management_dashboard__chart_data
-msgid "Chart Data"
-msgstr ""
-
-#. module: mercas_base
 #. odoo-python
 #: code:addons/mercas_base/models/stock_lot.py:0
 msgid "Choose an internal location to count the lot %s."
@@ -716,8 +711,6 @@ msgid "Customers with sales not invoiced yet"
 msgstr ""
 
 #. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
 #: model_terms:ir.ui.view,arch_db:mercas_base.management_summary
 msgid "Customers' open debt"
 msgstr ""
@@ -773,6 +766,16 @@ msgstr ""
 msgid ""
 "Default value of the 'Firm Negotiation' field on new purchase order lines "
 "for this supplier. It can be changed manually on each line."
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_purchase_order_line__origin_country_id
+msgid "Defaults to the country of the supplier, but can be changed here."
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_purchase_order_line__origin_state_id
+msgid "Defaults to the state of the supplier, but can be changed here."
 msgstr ""
 
 #. module: mercas_base
@@ -921,12 +924,6 @@ msgstr ""
 #. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_account_move_line__mercas_is_firm_line
 msgid "Firm Supply Line"
-msgstr ""
-
-#. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "Forecast"
 msgstr ""
 
 #. module: mercas_base
@@ -1242,8 +1239,6 @@ msgid "Last week"
 msgstr ""
 
 #. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
 #: model_terms:ir.ui.view,arch_db:mercas_base.management_summary
 msgid "Last year"
 msgstr ""
@@ -1304,6 +1299,11 @@ msgid "Lot Invoicing Line"
 msgstr ""
 
 #. module: mercas_base
+#: model:ir.model.fields,field_description:mercas_base.field_purchase_order_line__mercas_lot_sale_price
+msgid "Lot Sale Price"
+msgstr ""
+
+#. module: mercas_base
 #. odoo-python
 #: code:addons/mercas_base/wizard/stock_lot_change_wizard.py:0
 msgid ""
@@ -1337,10 +1337,12 @@ msgstr ""
 #. module: mercas_base
 #. odoo-python
 #: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-#: model:ir.actions.act_window,name:mercas_base.action_mercas_management_dashboard
-#: model:ir.ui.menu,name:mercas_base.menu_mercas_management
-#: model_terms:ir.ui.view,arch_db:mercas_base.view_mercas_management_dashboard_form
 msgid "Management"
+msgstr ""
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.view_company_form_mercas
+msgid "Management Summary"
 msgstr ""
 
 #. module: mercas_base
@@ -1442,6 +1444,11 @@ msgid "Mercas: Management"
 msgstr ""
 
 #. module: mercas_base
+#: model:ir.actions.server,name:mercas_base.ir_cron_mercas_management_summary_ir_actions_server
+msgid "Mercas: management summary by email"
+msgstr ""
+
+#. module: mercas_base
 #: model:ir.model.fields,help:mercas_base.field_res_company__compensation_journal_id
 msgid ""
 "Miscellaneous operations journal used to offset purchase invoices against "
@@ -1453,12 +1460,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/mercas_base/models/mercas_management_dashboard.py:0
 msgid "Month"
-msgstr ""
-
-#. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "Month, accumulated"
 msgstr ""
 
 #. module: mercas_base
@@ -1519,12 +1520,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:mercas_base.field_stock_lot__mercas_no_expiration
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_product_template_search_mercas
 msgid "No Expiry Date"
-msgstr ""
-
-#. module: mercas_base
-#. odoo-javascript
-#: code:addons/mercas_base/static/src/management/management_charts.xml:0
-msgid "No customer owes us anything."
 msgstr ""
 
 #. module: mercas_base
@@ -1776,6 +1771,15 @@ msgstr ""
 #. module: mercas_base
 #: model_terms:ir.ui.view,arch_db:mercas_base.management_summary
 msgid "Period"
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_stock_lot__mercas_sale_price
+msgid ""
+"Price of the goods of this lot, in the unit of the product. When set, it "
+"takes the place of the sale price of the product in the sales of the lot: "
+"the price lists apply their discounts and formulas on it, while their fixed "
+"prices still win."
 msgstr ""
 
 #. module: mercas_base
@@ -2044,6 +2048,19 @@ msgid "Sale Order Line"
 msgstr ""
 
 #. module: mercas_base
+#: model:ir.model.fields,field_description:mercas_base.field_stock_lot__mercas_sale_price
+msgid "Sale Price"
+msgstr ""
+
+#. module: mercas_base
+#: model:ir.model.fields,help:mercas_base.field_purchase_order_line__mercas_lot_sale_price
+msgid ""
+"Sale price of the goods of this line, carried over to its lot: the base of "
+"the price lists in the sales of the lot. Empty, the sale price of the "
+"product."
+msgstr ""
+
+#. module: mercas_base
 #: model:ir.ui.menu,name:mercas_base.menu_mercas_ventas
 #: model_terms:ir.ui.view,arch_db:mercas_base.management_summary
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_form_mercas
@@ -2074,18 +2091,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/mercas_base/models/mercas_management_dashboard.py:0
 msgid "Same day last week"
-msgstr ""
-
-#. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "Same month last year"
-msgstr ""
-
-#. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "Same week last year"
 msgstr ""
 
 #. module: mercas_base
@@ -2139,7 +2144,7 @@ msgstr ""
 #. module: mercas_base
 #: model:res.groups,comment:mercas_base.group_mercas_management
 msgid ""
-"Sees the management summary (Mercas > Management): sales and\n"
+"Sees the dashboards of Mercas (Dashboards > Dashboards > Mercas): sales and\n"
 "            purchases in amount and kg, scrap, debt and payments."
 msgstr ""
 
@@ -2166,8 +2171,15 @@ msgid "Self-Billing Journal"
 msgstr ""
 
 #. module: mercas_base
-#: model_terms:ir.ui.view,arch_db:mercas_base.view_mercas_management_dashboard_form
-msgid "Send by Email"
+#: model_terms:ir.ui.view,arch_db:mercas_base.view_company_form_mercas
+msgid "Send the Summary Now"
+msgstr ""
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.view_company_form_mercas
+msgid ""
+"Sent each evening to the users with Management Summary by Email. The\n"
+"                            figures are in Dashboards &gt; Dashboards &gt; Mercas."
 msgstr ""
 
 #. module: mercas_base
@@ -2561,24 +2573,6 @@ msgid "This invoice is already paid or in the process of being paid."
 msgstr ""
 
 #. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "This month"
-msgstr ""
-
-#. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "This week"
-msgstr ""
-
-#. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "This year"
-msgstr ""
-
-#. module: mercas_base
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_stock_lot_invoice_wizard_form
 msgid "To Invoice"
 msgstr ""
@@ -2671,12 +2665,6 @@ msgid "Week"
 msgstr ""
 
 #. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "Week, day by day"
-msgstr ""
-
-#. module: mercas_base
 #: model:ir.model.fields,field_description:mercas_base.field_mercas_weighed_line_mixin__mercas_weighed
 #: model:ir.model.fields,field_description:mercas_base.field_purchase_order_line__mercas_weighed
 #: model:ir.model.fields,field_description:mercas_base.field_sale_order_line__mercas_weighed
@@ -2734,12 +2722,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/mercas_base/models/mercas_management_dashboard.py:0
 msgid "Year"
-msgstr ""
-
-#. module: mercas_base
-#. odoo-python
-#: code:addons/mercas_base/models/mercas_management_dashboard.py:0
-msgid "Year, accumulated by month"
 msgstr ""
 
 #. module: mercas_base

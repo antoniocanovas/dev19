@@ -1,0 +1,2096 @@
+{
+ "version": "18.5.10",
+ "sheets": [
+  {
+   "id": "dashboard",
+   "name": "Dashboard",
+   "colNumber": 8,
+   "rowNumber": 150,
+   "rows": {
+    "10": {
+     "size": 36
+    },
+    "19": {
+     "size": 36
+    }
+   },
+   "cols": {
+    "0": {
+     "size": 230
+    },
+    "1": {
+     "size": 120
+    },
+    "2": {
+     "size": 100
+    },
+    "3": {
+     "size": 120
+    },
+    "4": {
+     "size": 110
+    },
+    "5": {
+     "size": 100
+    },
+    "6": {
+     "size": 90
+    },
+    "7": {
+     "size": 80
+    }
+   },
+   "merges": [],
+   "cells": {
+    "A1": "=_t(\"Sales\")",
+    "A2": "=_t(\"Untaxed amounts; net kg, without the boxes. All the figures follow the filters of the dashboard.\")",
+    "A4": "=_t(\"How we are doing, up to today\")",
+    "A11": "=_t(\"Period\")",
+    "B11": "=_t(\"Sales\")",
+    "C11": "=_t(\"vs. before\")",
+    "D11": "=_t(\"vs. a year before\")",
+    "E11": "=_t(\"Net kg\")",
+    "F11": "=_t(\"Price/kg\")",
+    "G11": "=_t(\"Orders\")",
+    "H11": "=_t(\"Boxes\")",
+    "A12": "=_t(\"Today\")",
+    "B12": "=Data!O4",
+    "C12": "=Data!W4",
+    "D12": "=Data!X4",
+    "E12": "=Data!P4",
+    "F12": "=Data!Q4",
+    "G12": "=Data!R4",
+    "H12": "=Data!N4",
+    "A13": "=_t(\"Week\")",
+    "B13": "=Data!O5",
+    "C13": "=Data!W5",
+    "D13": "=Data!X5",
+    "E13": "=Data!P5",
+    "F13": "=Data!Q5",
+    "G13": "=Data!R5",
+    "H13": "=Data!N5",
+    "A14": "=_t(\"Month\")",
+    "B14": "=Data!O6",
+    "C14": "=Data!W6",
+    "D14": "=Data!X6",
+    "E14": "=Data!P6",
+    "F14": "=Data!Q6",
+    "G14": "=Data!R6",
+    "H14": "=Data!N6",
+    "A15": "=_t(\"Year\")",
+    "B15": "=Data!O7",
+    "D15": "=Data!X7",
+    "E15": "=Data!P7",
+    "F15": "=Data!Q7",
+    "G15": "=Data!R7",
+    "H15": "=Data!N7",
+    "A16": "=_t(\"Up to today: the day against yesterday and the same weekday a year before.\")",
+    "A17": "=_t(\"The week, the month and the year against the period before up to the same day, and the same one a year before (the week, the whole week).\")",
+    "A19": "=_t(\"Pace\")",
+    "A20": "",
+    "B20": "=_t(\"Up to today\")",
+    "C20": "=_t(\"A year before, up to today\")",
+    "D20": "=_t(\"A year before, in all\")",
+    "E20": "=_t(\"Forecast at this pace\")",
+    "A21": "=_t(\"Month\")",
+    "B21": "=Data!O6",
+    "C21": "=Data!S6",
+    "D21": "=Data!Y6",
+    "E21": "=Data!Z6",
+    "A22": "=_t(\"Year\")",
+    "B22": "=Data!O7",
+    "C22": "=Data!S7",
+    "D22": "=Data!Y7",
+    "E22": "=Data!Z7",
+    "A24": "=_t(\"Sales up to today\")",
+    "A52": "=_t(\"In the period\")",
+    "B52": "=_t(\"The period of the filter, against the period before.\")",
+    "A72": "=_t(\"Best customers\")",
+    "A73": "=PIVOT(4,10,FALSE,FALSE)",
+    "A85": "=_t(\"Best products\")",
+    "A86": "=PIVOT(5,10,FALSE,FALSE)",
+    "A98": "=_t(\"By product category\")",
+    "A99": "=PIVOT(6,10,FALSE,FALSE)"
+   },
+   "styles": {
+    "A1": 3,
+    "A2": 4,
+    "A4": 5,
+    "A11": 6,
+    "B11": 2,
+    "C11": 2,
+    "D11": 2,
+    "E11": 2,
+    "F11": 2,
+    "G11": 2,
+    "H11": 2,
+    "A12": 1,
+    "B12": 7,
+    "C12": 7,
+    "D12": 7,
+    "E12": 7,
+    "F12": 7,
+    "G12": 7,
+    "H12": 7,
+    "A13": 1,
+    "B13": 7,
+    "C13": 7,
+    "D13": 7,
+    "E13": 7,
+    "F13": 7,
+    "G13": 7,
+    "H13": 7,
+    "A14": 1,
+    "B14": 7,
+    "C14": 7,
+    "D14": 7,
+    "E14": 7,
+    "F14": 7,
+    "G14": 7,
+    "H14": 7,
+    "A15": 1,
+    "B15": 7,
+    "C15": 7,
+    "D15": 7,
+    "E15": 7,
+    "F15": 7,
+    "G15": 7,
+    "H15": 7,
+    "A16": 4,
+    "A17": 4,
+    "A19": 5,
+    "A20": 6,
+    "B20": 2,
+    "C20": 2,
+    "D20": 2,
+    "E20": 2,
+    "A21": 1,
+    "B21": 7,
+    "C21": 7,
+    "D21": 7,
+    "E21": 7,
+    "A22": 1,
+    "B22": 7,
+    "C22": 7,
+    "D22": 7,
+    "E22": 7,
+    "A24": 5,
+    "A52": 5,
+    "B52": 4,
+    "A72": 5,
+    "A73": 6,
+    "B73": 2,
+    "C73": 2,
+    "D73": 2,
+    "A85": 5,
+    "A86": 6,
+    "B86": 2,
+    "C86": 2,
+    "D86": 2,
+    "A98": 5,
+    "A99": 6,
+    "B99": 2,
+    "C99": 2,
+    "D99": 2
+   },
+   "formats": {
+    "B12": 2,
+    "C12": 5,
+    "D12": 5,
+    "E12": 3,
+    "F12": 4,
+    "G12": 6,
+    "H12": 6,
+    "B13": 2,
+    "C13": 5,
+    "D13": 5,
+    "E13": 3,
+    "F13": 4,
+    "G13": 6,
+    "H13": 6,
+    "B14": 2,
+    "C14": 5,
+    "D14": 5,
+    "E14": 3,
+    "F14": 4,
+    "G14": 6,
+    "H14": 6,
+    "B15": 2,
+    "C15": 5,
+    "D15": 5,
+    "E15": 3,
+    "F15": 4,
+    "G15": 6,
+    "H15": 6,
+    "B21": 2,
+    "C21": 2,
+    "D21": 2,
+    "E21": 2,
+    "B22": 2,
+    "C22": 2,
+    "D22": 2,
+    "E22": 2,
+    "B74": 2,
+    "C74": 3,
+    "D74": 6,
+    "B75": 2,
+    "C75": 3,
+    "D75": 6,
+    "B76": 2,
+    "C76": 3,
+    "D76": 6,
+    "B77": 2,
+    "C77": 3,
+    "D77": 6,
+    "B78": 2,
+    "C78": 3,
+    "D78": 6,
+    "B79": 2,
+    "C79": 3,
+    "D79": 6,
+    "B80": 2,
+    "C80": 3,
+    "D80": 6,
+    "B81": 2,
+    "C81": 3,
+    "D81": 6,
+    "B82": 2,
+    "C82": 3,
+    "D82": 6,
+    "B83": 2,
+    "C83": 3,
+    "D83": 6,
+    "B87": 2,
+    "C87": 3,
+    "D87": 6,
+    "B88": 2,
+    "C88": 3,
+    "D88": 6,
+    "B89": 2,
+    "C89": 3,
+    "D89": 6,
+    "B90": 2,
+    "C90": 3,
+    "D90": 6,
+    "B91": 2,
+    "C91": 3,
+    "D91": 6,
+    "B92": 2,
+    "C92": 3,
+    "D92": 6,
+    "B93": 2,
+    "C93": 3,
+    "D93": 6,
+    "B94": 2,
+    "C94": 3,
+    "D94": 6,
+    "B95": 2,
+    "C95": 3,
+    "D95": 6,
+    "B96": 2,
+    "C96": 3,
+    "D96": 6,
+    "B100": 2,
+    "C100": 3,
+    "D100": 6,
+    "B101": 2,
+    "C101": 3,
+    "D101": 6,
+    "B102": 2,
+    "C102": 3,
+    "D102": 6,
+    "B103": 2,
+    "C103": 3,
+    "D103": 6,
+    "B104": 2,
+    "C104": 3,
+    "D104": 6,
+    "B105": 2,
+    "C105": 3,
+    "D105": 6,
+    "B106": 2,
+    "C106": 3,
+    "D106": 6,
+    "B107": 2,
+    "C107": 3,
+    "D107": 6,
+    "B108": 2,
+    "C108": 3,
+    "D108": 6,
+    "B109": 2,
+    "C109": 3,
+    "D109": 6
+   },
+   "borders": {
+    "A12": 1,
+    "B12": 1,
+    "C12": 1,
+    "D12": 1,
+    "E12": 1,
+    "F12": 1,
+    "G12": 1,
+    "H12": 1,
+    "A13": 1,
+    "B13": 1,
+    "C13": 1,
+    "D13": 1,
+    "E13": 1,
+    "F13": 1,
+    "G13": 1,
+    "H13": 1,
+    "A14": 1,
+    "B14": 1,
+    "C14": 1,
+    "D14": 1,
+    "E14": 1,
+    "F14": 1,
+    "G14": 1,
+    "H14": 1,
+    "A15": 1,
+    "B15": 1,
+    "C15": 1,
+    "D15": 1,
+    "E15": 1,
+    "F15": 1,
+    "G15": 1,
+    "H15": 1,
+    "A21": 1,
+    "B21": 1,
+    "C21": 1,
+    "D21": 1,
+    "E21": 1,
+    "A22": 1,
+    "B22": 1,
+    "C22": 1,
+    "D22": 1,
+    "E22": 1
+   },
+   "conditionalFormats": [
+    {
+     "id": "dashboard-C12:D12-isGreaterThan",
+     "ranges": [
+      "C12:D12"
+     ],
+     "rule": {
+      "type": "CellIsRule",
+      "operator": "isGreaterThan",
+      "values": [
+       "0"
+      ],
+      "style": {
+       "textColor": "#198754",
+       "bold": true
+      }
+     }
+    },
+    {
+     "id": "dashboard-C12:D12-isLessThan",
+     "ranges": [
+      "C12:D12"
+     ],
+     "rule": {
+      "type": "CellIsRule",
+      "operator": "isLessThan",
+      "values": [
+       "0"
+      ],
+      "style": {
+       "textColor": "#dc3545",
+       "bold": true
+      }
+     }
+    },
+    {
+     "id": "dashboard-C13:D13-isGreaterThan",
+     "ranges": [
+      "C13:D13"
+     ],
+     "rule": {
+      "type": "CellIsRule",
+      "operator": "isGreaterThan",
+      "values": [
+       "0"
+      ],
+      "style": {
+       "textColor": "#198754",
+       "bold": true
+      }
+     }
+    },
+    {
+     "id": "dashboard-C13:D13-isLessThan",
+     "ranges": [
+      "C13:D13"
+     ],
+     "rule": {
+      "type": "CellIsRule",
+      "operator": "isLessThan",
+      "values": [
+       "0"
+      ],
+      "style": {
+       "textColor": "#dc3545",
+       "bold": true
+      }
+     }
+    },
+    {
+     "id": "dashboard-C14:D14-isGreaterThan",
+     "ranges": [
+      "C14:D14"
+     ],
+     "rule": {
+      "type": "CellIsRule",
+      "operator": "isGreaterThan",
+      "values": [
+       "0"
+      ],
+      "style": {
+       "textColor": "#198754",
+       "bold": true
+      }
+     }
+    },
+    {
+     "id": "dashboard-C14:D14-isLessThan",
+     "ranges": [
+      "C14:D14"
+     ],
+     "rule": {
+      "type": "CellIsRule",
+      "operator": "isLessThan",
+      "values": [
+       "0"
+      ],
+      "style": {
+       "textColor": "#dc3545",
+       "bold": true
+      }
+     }
+    },
+    {
+     "id": "dashboard-C15:D15-isGreaterThan",
+     "ranges": [
+      "C15:D15"
+     ],
+     "rule": {
+      "type": "CellIsRule",
+      "operator": "isGreaterThan",
+      "values": [
+       "0"
+      ],
+      "style": {
+       "textColor": "#198754",
+       "bold": true
+      }
+     }
+    },
+    {
+     "id": "dashboard-C15:D15-isLessThan",
+     "ranges": [
+      "C15:D15"
+     ],
+     "rule": {
+      "type": "CellIsRule",
+      "operator": "isLessThan",
+      "values": [
+       "0"
+      ],
+      "style": {
+       "textColor": "#dc3545",
+       "bold": true
+      }
+     }
+    }
+   ],
+   "dataValidationRules": [],
+   "figures": [
+    {
+     "id": "dashboard-1",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 4,
+     "offset": {
+      "x": 0,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Today",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!O4",
+      "background": "#F8F9FA",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "baseline": "Data!S4",
+      "baselineDescr": {
+       "text": "vs. a year before"
+      },
+      "chartId": "dashboard-1"
+     }
+    },
+    {
+     "id": "dashboard-2",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 4,
+     "offset": {
+      "x": 238,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Week",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!O5",
+      "background": "#F8F9FA",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "baseline": "Data!S5",
+      "baselineDescr": {
+       "text": "vs. a year before"
+      },
+      "chartId": "dashboard-2"
+     }
+    },
+    {
+     "id": "dashboard-3",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 4,
+     "offset": {
+      "x": 476,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Month",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!O6",
+      "background": "#F8F9FA",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "baseline": "Data!S6",
+      "baselineDescr": {
+       "text": "vs. a year before"
+      },
+      "chartId": "dashboard-3"
+     }
+    },
+    {
+     "id": "dashboard-4",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 4,
+     "offset": {
+      "x": 714,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Year",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!O7",
+      "background": "#F8F9FA",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "baseline": "Data!S7",
+      "baselineDescr": {
+       "text": "vs. a year before"
+      },
+      "chartId": "dashboard-4"
+     }
+    },
+    {
+     "id": "dashboard-5",
+     "tag": "chart",
+     "width": 470,
+     "height": 290,
+     "col": 0,
+     "row": 24,
+     "offset": {
+      "x": 0,
+      "y": 4
+     },
+     "data": {
+      "type": "bar",
+      "title": {
+       "text": "Week, day by day",
+       "bold": true,
+       "color": "#434343"
+      },
+      "background": "#FFFFFF",
+      "legendPosition": "top",
+      "dataSetsHaveTitle": true,
+      "labelRange": "Data!G13:G19",
+      "dataSets": [
+       {
+        "dataRange": "Data!H12:H19",
+        "backgroundColor": "#714B67"
+       },
+       {
+        "dataRange": "Data!I12:I19",
+        "backgroundColor": "#6ea8fe"
+       },
+       {
+        "dataRange": "Data!J12:J19",
+        "backgroundColor": "#adb5bd"
+       }
+      ],
+      "aggregated": false,
+      "stacked": false,
+      "humanize": true,
+      "axesDesign": {
+       "y": {
+        "title": {
+         "text": ""
+        }
+       }
+      },
+      "chartId": "dashboard-5"
+     }
+    },
+    {
+     "id": "dashboard-6",
+     "tag": "chart",
+     "width": 470,
+     "height": 290,
+     "col": 0,
+     "row": 24,
+     "offset": {
+      "x": 480,
+      "y": 4
+     },
+     "data": {
+      "type": "line",
+      "title": {
+       "text": "Month, accumulated",
+       "bold": true,
+       "color": "#434343"
+      },
+      "background": "#FFFFFF",
+      "legendPosition": "top",
+      "dataSetsHaveTitle": true,
+      "labelRange": "Data!G23:G53",
+      "dataSets": [
+       {
+        "dataRange": "Data!H22:H53",
+        "backgroundColor": "#714B67"
+       },
+       {
+        "dataRange": "Data!I22:I53",
+        "backgroundColor": "#6ea8fe"
+       },
+       {
+        "dataRange": "Data!J22:J53",
+        "backgroundColor": "#adb5bd"
+       }
+      ],
+      "aggregated": false,
+      "stacked": false,
+      "humanize": true,
+      "axesDesign": {
+       "y": {
+        "title": {
+         "text": ""
+        }
+       }
+      },
+      "labelsAsText": true,
+      "cumulative": false,
+      "fillArea": false,
+      "chartId": "dashboard-6"
+     }
+    },
+    {
+     "id": "dashboard-7",
+     "tag": "chart",
+     "width": 950,
+     "height": 270,
+     "col": 0,
+     "row": 38,
+     "offset": {
+      "x": 0,
+      "y": 4
+     },
+     "data": {
+      "type": "line",
+      "title": {
+       "text": "Year, accumulated by month",
+       "bold": true,
+       "color": "#434343"
+      },
+      "background": "#FFFFFF",
+      "legendPosition": "top",
+      "dataSetsHaveTitle": true,
+      "labelRange": "Data!G58:G69",
+      "dataSets": [
+       {
+        "dataRange": "Data!H57:H69",
+        "backgroundColor": "#714B67"
+       },
+       {
+        "dataRange": "Data!I57:I69",
+        "backgroundColor": "#adb5bd"
+       }
+      ],
+      "aggregated": false,
+      "stacked": false,
+      "humanize": true,
+      "axesDesign": {
+       "y": {
+        "title": {
+         "text": ""
+        }
+       }
+      },
+      "labelsAsText": true,
+      "cumulative": false,
+      "fillArea": false,
+      "chartId": "dashboard-7"
+     }
+    },
+    {
+     "id": "dashboard-8",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 52,
+     "offset": {
+      "x": 0,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Sales",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!AC2",
+      "background": "#EFF6FF",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "baseline": "Data!AD2",
+      "baselineDescr": {
+       "text": "vs. the period before"
+      },
+      "chartId": "dashboard-8"
+     }
+    },
+    {
+     "id": "dashboard-9",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 52,
+     "offset": {
+      "x": 238,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Net kg",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!AC3",
+      "background": "#EFF6FF",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "baseline": "Data!AD3",
+      "baselineDescr": {
+       "text": "vs. the period before"
+      },
+      "chartId": "dashboard-9"
+     }
+    },
+    {
+     "id": "dashboard-10",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 52,
+     "offset": {
+      "x": 476,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Price/kg",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!AC4",
+      "background": "#EFF6FF",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "baseline": "Data!AD4",
+      "baselineDescr": {
+       "text": "vs. the period before"
+      },
+      "chartId": "dashboard-10"
+     }
+    },
+    {
+     "id": "dashboard-11",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 52,
+     "offset": {
+      "x": 714,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Orders",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!AC5",
+      "background": "#EFF6FF",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "baseline": "Data!AD5",
+      "baselineDescr": {
+       "text": "vs. the period before"
+      },
+      "chartId": "dashboard-11"
+     }
+    },
+    {
+     "id": "dashboard-12",
+     "tag": "chart",
+     "width": 950,
+     "height": 250,
+     "col": 0,
+     "row": 58,
+     "offset": {
+      "x": 0,
+      "y": 4
+     },
+     "data": {
+      "type": "odoo_line",
+      "title": {
+       "text": "Sales by day",
+       "bold": true,
+       "color": "#434343"
+      },
+      "background": "#FFFFFF",
+      "legendPosition": "none",
+      "metaData": {
+       "groupBy": [
+        "date:day"
+       ],
+       "measure": "amount",
+       "order": null,
+       "resModel": "mercas.report.goods",
+       "mode": "line",
+       "cumulated": false,
+       "cumulatedStart": false
+      },
+      "searchParams": {
+       "comparison": null,
+       "context": {},
+       "domain": [
+        [
+         "kind",
+         "=",
+         "sale"
+        ]
+       ],
+       "groupBy": [
+        "date:day"
+       ],
+       "orderBy": []
+      },
+      "dataSets": [],
+      "verticalAxisPosition": "left",
+      "stacked": false,
+      "cumulatedStart": false,
+      "fieldMatching": {
+       "mercas-period": {
+        "chain": "date",
+        "type": "datetime",
+        "offset": 0
+       },
+       "mercas-partner": {
+        "chain": "partner_id",
+        "type": "many2one"
+       },
+       "mercas-product": {
+        "chain": "product_id",
+        "type": "many2one"
+       },
+       "mercas-category": {
+        "chain": "categ_id",
+        "type": "many2one"
+       },
+       "mercas-user": {
+        "chain": "user_id",
+        "type": "many2one"
+       }
+      },
+      "chartId": "dashboard-12"
+     }
+    }
+   ],
+   "tables": [],
+   "areGridLinesVisible": false,
+   "isVisible": true,
+   "headerGroups": {
+    "ROW": [],
+    "COL": []
+   },
+   "comments": {}
+  },
+  {
+   "id": "data",
+   "name": "Data",
+   "colNumber": 40,
+   "rowNumber": 5000,
+   "rows": {},
+   "cols": {},
+   "merges": [],
+   "cells": {
+    "A1": "=PIVOT(1)",
+    "G1": "=_t(\"Today\")",
+    "H1": "=TODAY()",
+    "G2": "=_t(\"Monday\")",
+    "H2": "=H1-WEEKDAY(H1,2)+1",
+    "G3": "=_t(\"Period\")",
+    "H3": "=_t(\"From\")",
+    "I3": "=_t(\"To\")",
+    "J3": "=_t(\"Before from\")",
+    "K3": "=_t(\"Before to\")",
+    "L3": "=_t(\"Year before from\")",
+    "M3": "=_t(\"Year before to\")",
+    "G4": "=_t(\"Today\")",
+    "H4": "=$H$1",
+    "I4": "=$H$1",
+    "J4": "=$H$1-1",
+    "K4": "=$H$1-1",
+    "L4": "=$H$1-364",
+    "M4": "=$H$1-364",
+    "G5": "=_t(\"Week\")",
+    "H5": "=$H$2",
+    "I5": "=$H$1",
+    "J5": "=$H$2-7",
+    "K5": "=$H$1-7",
+    "L5": "=$H$2-364",
+    "M5": "=$H$2-358",
+    "G6": "=_t(\"Month\")",
+    "H6": "=DATE(YEAR($H$1),MONTH($H$1),1)",
+    "I6": "=$H$1",
+    "J6": "=EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)",
+    "K6": "=EDATE($H$1,-1)",
+    "L6": "=EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)",
+    "M6": "=EDATE($H$1,-12)",
+    "G7": "=_t(\"Year\")",
+    "H7": "=DATE(YEAR($H$1),1,1)",
+    "I7": "=$H$1",
+    "L7": "=DATE(YEAR($H$1)-1,1,1)",
+    "M7": "=EDATE($H$1,-12)",
+    "N3": "=_t(\"Boxes\")",
+    "O3": "=_t(\"Amount\")",
+    "P3": "=_t(\"Kg\")",
+    "Q3": "=_t(\"Price/kg\")",
+    "R3": "=_t(\"Orders\")",
+    "S3": "=_t(\"Amount year before\")",
+    "T3": "=_t(\"Kg year before\")",
+    "U3": "=_t(\"Amount before\")",
+    "V3": "=_t(\"Kg before\")",
+    "W3": "=_t(\"Change before\")",
+    "X3": "=_t(\"Change year before\")",
+    "Y3": "=_t(\"Year before in all\")",
+    "Z3": "=_t(\"Forecast\")",
+    "N4": "=SUMIFS($D$1:$D$5000,$A$1:$A$5000,\">=\"&$H$4,$A$1:$A$5000,\"<=\"&$I$4)",
+    "O4": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$4,$A$1:$A$5000,\"<=\"&$I$4)",
+    "P4": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$H$4,$A$1:$A$5000,\"<=\"&$I$4)",
+    "Q4": "=IFERROR(O4/P4,\"\")",
+    "R4": "=SUMIFS($E$1:$E$5000,$A$1:$A$5000,\">=\"&$H$4,$A$1:$A$5000,\"<=\"&$I$4)",
+    "S4": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$L$4,$A$1:$A$5000,\"<=\"&$M$4)",
+    "T4": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$L$4,$A$1:$A$5000,\"<=\"&$M$4)",
+    "U4": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$J$4,$A$1:$A$5000,\"<=\"&$K$4)",
+    "V4": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$J$4,$A$1:$A$5000,\"<=\"&$K$4)",
+    "W4": "=IFERROR(O4/U4-1,\"\")",
+    "X4": "=IFERROR(O4/S4-1,\"\")",
+    "N5": "=SUMIFS($D$1:$D$5000,$A$1:$A$5000,\">=\"&$H$5,$A$1:$A$5000,\"<=\"&$I$5)",
+    "O5": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$5,$A$1:$A$5000,\"<=\"&$I$5)",
+    "P5": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$H$5,$A$1:$A$5000,\"<=\"&$I$5)",
+    "Q5": "=IFERROR(O5/P5,\"\")",
+    "R5": "=SUMIFS($E$1:$E$5000,$A$1:$A$5000,\">=\"&$H$5,$A$1:$A$5000,\"<=\"&$I$5)",
+    "S5": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$L$5,$A$1:$A$5000,\"<=\"&$M$5)",
+    "T5": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$L$5,$A$1:$A$5000,\"<=\"&$M$5)",
+    "U5": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$J$5,$A$1:$A$5000,\"<=\"&$K$5)",
+    "V5": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$J$5,$A$1:$A$5000,\"<=\"&$K$5)",
+    "W5": "=IFERROR(O5/U5-1,\"\")",
+    "X5": "=IFERROR(O5/S5-1,\"\")",
+    "N6": "=SUMIFS($D$1:$D$5000,$A$1:$A$5000,\">=\"&$H$6,$A$1:$A$5000,\"<=\"&$I$6)",
+    "O6": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$6,$A$1:$A$5000,\"<=\"&$I$6)",
+    "P6": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$H$6,$A$1:$A$5000,\"<=\"&$I$6)",
+    "Q6": "=IFERROR(O6/P6,\"\")",
+    "R6": "=SUMIFS($E$1:$E$5000,$A$1:$A$5000,\">=\"&$H$6,$A$1:$A$5000,\"<=\"&$I$6)",
+    "S6": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$L$6,$A$1:$A$5000,\"<=\"&$M$6)",
+    "T6": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$L$6,$A$1:$A$5000,\"<=\"&$M$6)",
+    "U6": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$J$6,$A$1:$A$5000,\"<=\"&$K$6)",
+    "V6": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$J$6,$A$1:$A$5000,\"<=\"&$K$6)",
+    "W6": "=IFERROR(O6/U6-1,\"\")",
+    "X6": "=IFERROR(O6/S6-1,\"\")",
+    "N7": "=SUMIFS($D$1:$D$5000,$A$1:$A$5000,\">=\"&$H$7,$A$1:$A$5000,\"<=\"&$I$7)",
+    "O7": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$7,$A$1:$A$5000,\"<=\"&$I$7)",
+    "P7": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$H$7,$A$1:$A$5000,\"<=\"&$I$7)",
+    "Q7": "=IFERROR(O7/P7,\"\")",
+    "R7": "=SUMIFS($E$1:$E$5000,$A$1:$A$5000,\">=\"&$H$7,$A$1:$A$5000,\"<=\"&$I$7)",
+    "S7": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$L$7,$A$1:$A$5000,\"<=\"&$M$7)",
+    "T7": "=SUMIFS($C$1:$C$5000,$A$1:$A$5000,\">=\"&$L$7,$A$1:$A$5000,\"<=\"&$M$7)",
+    "X7": "=IFERROR(O7/S7-1,\"\")",
+    "Y6": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$L$6,$A$1:$A$5000,\"<=\"&EOMONTH($L$6,0))",
+    "Z6": "=O6*DAY(EOMONTH($H$1,0))/DAY($H$1)",
+    "Y7": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$L$7,$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1)-1,12,31))",
+    "Z7": "=O7*(DATE(YEAR($H$1)+1,1,1)-$H$7)/($H$1-$H$7+1)",
+    "G12": "=_t(\"Day\")",
+    "H12": "=_t(\"This week\")",
+    "I12": "=_t(\"Last week\")",
+    "J12": "=_t(\"Same week a year before\")",
+    "G13": "=_t(\"Mon\")",
+    "H13": "=IF($H$2+0<=$H$1,SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2+0,$A$1:$A$5000,\"<=\"&$H$2+0),\"\")",
+    "I13": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-7+0,$A$1:$A$5000,\"<=\"&$H$2-7+0)",
+    "J13": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-364+0,$A$1:$A$5000,\"<=\"&$H$2-364+0)",
+    "G14": "=_t(\"Tue\")",
+    "H14": "=IF($H$2+1<=$H$1,SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2+1,$A$1:$A$5000,\"<=\"&$H$2+1),\"\")",
+    "I14": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-7+1,$A$1:$A$5000,\"<=\"&$H$2-7+1)",
+    "J14": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-364+1,$A$1:$A$5000,\"<=\"&$H$2-364+1)",
+    "G15": "=_t(\"Wed\")",
+    "H15": "=IF($H$2+2<=$H$1,SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2+2,$A$1:$A$5000,\"<=\"&$H$2+2),\"\")",
+    "I15": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-7+2,$A$1:$A$5000,\"<=\"&$H$2-7+2)",
+    "J15": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-364+2,$A$1:$A$5000,\"<=\"&$H$2-364+2)",
+    "G16": "=_t(\"Thu\")",
+    "H16": "=IF($H$2+3<=$H$1,SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2+3,$A$1:$A$5000,\"<=\"&$H$2+3),\"\")",
+    "I16": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-7+3,$A$1:$A$5000,\"<=\"&$H$2-7+3)",
+    "J16": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-364+3,$A$1:$A$5000,\"<=\"&$H$2-364+3)",
+    "G17": "=_t(\"Fri\")",
+    "H17": "=IF($H$2+4<=$H$1,SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2+4,$A$1:$A$5000,\"<=\"&$H$2+4),\"\")",
+    "I17": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-7+4,$A$1:$A$5000,\"<=\"&$H$2-7+4)",
+    "J17": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-364+4,$A$1:$A$5000,\"<=\"&$H$2-364+4)",
+    "G18": "=_t(\"Sat\")",
+    "H18": "=IF($H$2+5<=$H$1,SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2+5,$A$1:$A$5000,\"<=\"&$H$2+5),\"\")",
+    "I18": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-7+5,$A$1:$A$5000,\"<=\"&$H$2-7+5)",
+    "J18": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-364+5,$A$1:$A$5000,\"<=\"&$H$2-364+5)",
+    "G19": "=_t(\"Sun\")",
+    "H19": "=IF($H$2+6<=$H$1,SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2+6,$A$1:$A$5000,\"<=\"&$H$2+6),\"\")",
+    "I19": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-7+6,$A$1:$A$5000,\"<=\"&$H$2-7+6)",
+    "J19": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&$H$2-364+6,$A$1:$A$5000,\"<=\"&$H$2-364+6)",
+    "G22": "=_t(\"Day\")",
+    "H22": "=_t(\"This month\")",
+    "I22": "=_t(\"Last month\")",
+    "J22": "=_t(\"Same month a year before\")",
+    "G23": "1",
+    "H23": "=IF(1<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+0),\"\")",
+    "I23": "=IF(1<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+0),\"\")",
+    "J23": "=IF(1<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+0),\"\")",
+    "G24": "2",
+    "H24": "=IF(2<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+1),\"\")",
+    "I24": "=IF(2<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+1),\"\")",
+    "J24": "=IF(2<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+1),\"\")",
+    "G25": "3",
+    "H25": "=IF(3<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+2),\"\")",
+    "I25": "=IF(3<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+2),\"\")",
+    "J25": "=IF(3<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+2),\"\")",
+    "G26": "4",
+    "H26": "=IF(4<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+3),\"\")",
+    "I26": "=IF(4<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+3),\"\")",
+    "J26": "=IF(4<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+3),\"\")",
+    "G27": "5",
+    "H27": "=IF(5<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+4),\"\")",
+    "I27": "=IF(5<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+4),\"\")",
+    "J27": "=IF(5<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+4),\"\")",
+    "G28": "6",
+    "H28": "=IF(6<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+5),\"\")",
+    "I28": "=IF(6<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+5),\"\")",
+    "J28": "=IF(6<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+5),\"\")",
+    "G29": "7",
+    "H29": "=IF(7<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+6),\"\")",
+    "I29": "=IF(7<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+6),\"\")",
+    "J29": "=IF(7<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+6),\"\")",
+    "G30": "8",
+    "H30": "=IF(8<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+7),\"\")",
+    "I30": "=IF(8<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+7),\"\")",
+    "J30": "=IF(8<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+7),\"\")",
+    "G31": "9",
+    "H31": "=IF(9<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+8),\"\")",
+    "I31": "=IF(9<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+8),\"\")",
+    "J31": "=IF(9<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+8),\"\")",
+    "G32": "10",
+    "H32": "=IF(10<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+9),\"\")",
+    "I32": "=IF(10<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+9),\"\")",
+    "J32": "=IF(10<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+9),\"\")",
+    "G33": "11",
+    "H33": "=IF(11<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+10),\"\")",
+    "I33": "=IF(11<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+10),\"\")",
+    "J33": "=IF(11<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+10),\"\")",
+    "G34": "12",
+    "H34": "=IF(12<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+11),\"\")",
+    "I34": "=IF(12<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+11),\"\")",
+    "J34": "=IF(12<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+11),\"\")",
+    "G35": "13",
+    "H35": "=IF(13<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+12),\"\")",
+    "I35": "=IF(13<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+12),\"\")",
+    "J35": "=IF(13<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+12),\"\")",
+    "G36": "14",
+    "H36": "=IF(14<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+13),\"\")",
+    "I36": "=IF(14<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+13),\"\")",
+    "J36": "=IF(14<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+13),\"\")",
+    "G37": "15",
+    "H37": "=IF(15<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+14),\"\")",
+    "I37": "=IF(15<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+14),\"\")",
+    "J37": "=IF(15<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+14),\"\")",
+    "G38": "16",
+    "H38": "=IF(16<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+15),\"\")",
+    "I38": "=IF(16<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+15),\"\")",
+    "J38": "=IF(16<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+15),\"\")",
+    "G39": "17",
+    "H39": "=IF(17<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+16),\"\")",
+    "I39": "=IF(17<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+16),\"\")",
+    "J39": "=IF(17<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+16),\"\")",
+    "G40": "18",
+    "H40": "=IF(18<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+17),\"\")",
+    "I40": "=IF(18<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+17),\"\")",
+    "J40": "=IF(18<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+17),\"\")",
+    "G41": "19",
+    "H41": "=IF(19<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+18),\"\")",
+    "I41": "=IF(19<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+18),\"\")",
+    "J41": "=IF(19<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+18),\"\")",
+    "G42": "20",
+    "H42": "=IF(20<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+19),\"\")",
+    "I42": "=IF(20<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+19),\"\")",
+    "J42": "=IF(20<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+19),\"\")",
+    "G43": "21",
+    "H43": "=IF(21<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+20),\"\")",
+    "I43": "=IF(21<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+20),\"\")",
+    "J43": "=IF(21<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+20),\"\")",
+    "G44": "22",
+    "H44": "=IF(22<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+21),\"\")",
+    "I44": "=IF(22<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+21),\"\")",
+    "J44": "=IF(22<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+21),\"\")",
+    "G45": "23",
+    "H45": "=IF(23<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+22),\"\")",
+    "I45": "=IF(23<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+22),\"\")",
+    "J45": "=IF(23<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+22),\"\")",
+    "G46": "24",
+    "H46": "=IF(24<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+23),\"\")",
+    "I46": "=IF(24<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+23),\"\")",
+    "J46": "=IF(24<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+23),\"\")",
+    "G47": "25",
+    "H47": "=IF(25<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+24),\"\")",
+    "I47": "=IF(25<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+24),\"\")",
+    "J47": "=IF(25<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+24),\"\")",
+    "G48": "26",
+    "H48": "=IF(26<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+25),\"\")",
+    "I48": "=IF(26<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+25),\"\")",
+    "J48": "=IF(26<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+25),\"\")",
+    "G49": "27",
+    "H49": "=IF(27<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+26),\"\")",
+    "I49": "=IF(27<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+26),\"\")",
+    "J49": "=IF(27<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+26),\"\")",
+    "G50": "28",
+    "H50": "=IF(28<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+27),\"\")",
+    "I50": "=IF(28<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+27),\"\")",
+    "J50": "=IF(28<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+27),\"\")",
+    "G51": "29",
+    "H51": "=IF(29<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+28),\"\")",
+    "I51": "=IF(29<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+28),\"\")",
+    "J51": "=IF(29<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+28),\"\")",
+    "G52": "30",
+    "H52": "=IF(30<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+29),\"\")",
+    "I52": "=IF(30<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+29),\"\")",
+    "J52": "=IF(30<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+29),\"\")",
+    "G53": "31",
+    "H53": "=IF(31<=DAY($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),MONTH($H$1),1),$A$1:$A$5000,\"<=\"&DATE(YEAR($H$1),MONTH($H$1),1)+30),\"\")",
+    "I53": "=IF(31<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-1)+30),\"\")",
+    "J53": "=IF(31<=DAY(EOMONTH(EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),0)),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12),$A$1:$A$5000,\"<=\"&EDATE(DATE(YEAR($H$1),MONTH($H$1),1),-12)+30),\"\")",
+    "G57": "=_t(\"Month\")",
+    "H57": "=_t(\"This year\")",
+    "I57": "=_t(\"Last year\")",
+    "G58": "=_t(\"Jan\")",
+    "H58": "=IF(1<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),1,1),0)),\"\")",
+    "I58": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,1,1),0))",
+    "G59": "=_t(\"Feb\")",
+    "H59": "=IF(2<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),2,1),0)),\"\")",
+    "I59": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,2,1),0))",
+    "G60": "=_t(\"Mar\")",
+    "H60": "=IF(3<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),3,1),0)),\"\")",
+    "I60": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,3,1),0))",
+    "G61": "=_t(\"Apr\")",
+    "H61": "=IF(4<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),4,1),0)),\"\")",
+    "I61": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,4,1),0))",
+    "G62": "=_t(\"May\")",
+    "H62": "=IF(5<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),5,1),0)),\"\")",
+    "I62": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,5,1),0))",
+    "G63": "=_t(\"Jun\")",
+    "H63": "=IF(6<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),6,1),0)),\"\")",
+    "I63": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,6,1),0))",
+    "G64": "=_t(\"Jul\")",
+    "H64": "=IF(7<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),7,1),0)),\"\")",
+    "I64": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,7,1),0))",
+    "G65": "=_t(\"Aug\")",
+    "H65": "=IF(8<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),8,1),0)),\"\")",
+    "I65": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,8,1),0))",
+    "G66": "=_t(\"Sep\")",
+    "H66": "=IF(9<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),9,1),0)),\"\")",
+    "I66": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,9,1),0))",
+    "G67": "=_t(\"Oct\")",
+    "H67": "=IF(10<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),10,1),0)),\"\")",
+    "I67": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,10,1),0))",
+    "G68": "=_t(\"Nov\")",
+    "H68": "=IF(11<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),11,1),0)),\"\")",
+    "I68": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,11,1),0))",
+    "G69": "=_t(\"Dec\")",
+    "H69": "=IF(12<=MONTH($H$1),SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1),1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1),12,1),0)),\"\")",
+    "I69": "=SUMIFS($B$1:$B$5000,$A$1:$A$5000,\">=\"&DATE(YEAR($H$1)-1,1,1),$A$1:$A$5000,\"<=\"&EOMONTH(DATE(YEAR($H$1)-1,12,1),0))",
+    "AB1": "=_t(\"In the period\")",
+    "AC1": "=_t(\"Now\")",
+    "AD1": "=_t(\"Before\")",
+    "AB2": "=_t(\"Amount\")",
+    "AC2": "=0+PIVOT.VALUE(2,\"amount:sum\")",
+    "AD2": "=0+PIVOT.VALUE(3,\"amount:sum\")",
+    "AB3": "=_t(\"Kg\")",
+    "AC3": "=0+PIVOT.VALUE(2,\"kg:sum\")",
+    "AD3": "=0+PIVOT.VALUE(3,\"kg:sum\")",
+    "AB4": "=_t(\"Price/kg\")",
+    "AC4": "=IFERROR(PIVOT.VALUE(2,\"amount:sum\")/PIVOT.VALUE(2,\"kg:sum\"),0)",
+    "AD4": "=IFERROR(PIVOT.VALUE(3,\"amount:sum\")/PIVOT.VALUE(3,\"kg:sum\"),0)",
+    "AB5": "=_t(\"Orders\")",
+    "AC5": "=0+PIVOT.VALUE(2,\"sale_order_id:count_distinct\")",
+    "AD5": "=0+PIVOT.VALUE(3,\"sale_order_id:count_distinct\")"
+   },
+   "styles": {
+    "G1": 1,
+    "G2": 1,
+    "G3": 2,
+    "H3": 2,
+    "I3": 2,
+    "J3": 2,
+    "K3": 2,
+    "L3": 2,
+    "M3": 2,
+    "G4": 1,
+    "G5": 1,
+    "G6": 1,
+    "G7": 1,
+    "N3": 2,
+    "O3": 2,
+    "P3": 2,
+    "Q3": 2,
+    "R3": 2,
+    "S3": 2,
+    "T3": 2,
+    "U3": 2,
+    "V3": 2,
+    "W3": 2,
+    "X3": 2,
+    "Y3": 2,
+    "Z3": 2,
+    "G12": 2,
+    "H12": 2,
+    "I12": 2,
+    "J12": 2,
+    "G22": 2,
+    "H22": 2,
+    "I22": 2,
+    "J22": 2,
+    "G57": 2,
+    "H57": 2,
+    "I57": 2,
+    "AB1": 2,
+    "AC1": 2,
+    "AD1": 2,
+    "AB2": 1,
+    "AB3": 1,
+    "AB4": 1,
+    "AB5": 1
+   },
+   "formats": {
+    "H1": 1,
+    "H2": 1,
+    "H4": 1,
+    "I4": 1,
+    "J4": 1,
+    "K4": 1,
+    "L4": 1,
+    "M4": 1,
+    "H5": 1,
+    "I5": 1,
+    "J5": 1,
+    "K5": 1,
+    "L5": 1,
+    "M5": 1,
+    "H6": 1,
+    "I6": 1,
+    "J6": 1,
+    "K6": 1,
+    "L6": 1,
+    "M6": 1,
+    "H7": 1,
+    "I7": 1,
+    "L7": 1,
+    "M7": 1,
+    "O4": 2,
+    "P4": 3,
+    "Q4": 4,
+    "S4": 2,
+    "T4": 3,
+    "U4": 2,
+    "V4": 3,
+    "W4": 5,
+    "X4": 5,
+    "O5": 2,
+    "P5": 3,
+    "Q5": 4,
+    "S5": 2,
+    "T5": 3,
+    "U5": 2,
+    "V5": 3,
+    "W5": 5,
+    "X5": 5,
+    "O6": 2,
+    "P6": 3,
+    "Q6": 4,
+    "S6": 2,
+    "T6": 3,
+    "U6": 2,
+    "V6": 3,
+    "W6": 5,
+    "X6": 5,
+    "O7": 2,
+    "P7": 3,
+    "Q7": 4,
+    "S7": 2,
+    "T7": 3,
+    "X7": 5,
+    "Y6": 2,
+    "Z6": 2,
+    "Y7": 2,
+    "Z7": 2,
+    "H13": 2,
+    "I13": 2,
+    "J13": 2,
+    "H14": 2,
+    "I14": 2,
+    "J14": 2,
+    "H15": 2,
+    "I15": 2,
+    "J15": 2,
+    "H16": 2,
+    "I16": 2,
+    "J16": 2,
+    "H17": 2,
+    "I17": 2,
+    "J17": 2,
+    "H18": 2,
+    "I18": 2,
+    "J18": 2,
+    "H19": 2,
+    "I19": 2,
+    "J19": 2,
+    "H23": 2,
+    "I23": 2,
+    "J23": 2,
+    "H24": 2,
+    "I24": 2,
+    "J24": 2,
+    "H25": 2,
+    "I25": 2,
+    "J25": 2,
+    "H26": 2,
+    "I26": 2,
+    "J26": 2,
+    "H27": 2,
+    "I27": 2,
+    "J27": 2,
+    "H28": 2,
+    "I28": 2,
+    "J28": 2,
+    "H29": 2,
+    "I29": 2,
+    "J29": 2,
+    "H30": 2,
+    "I30": 2,
+    "J30": 2,
+    "H31": 2,
+    "I31": 2,
+    "J31": 2,
+    "H32": 2,
+    "I32": 2,
+    "J32": 2,
+    "H33": 2,
+    "I33": 2,
+    "J33": 2,
+    "H34": 2,
+    "I34": 2,
+    "J34": 2,
+    "H35": 2,
+    "I35": 2,
+    "J35": 2,
+    "H36": 2,
+    "I36": 2,
+    "J36": 2,
+    "H37": 2,
+    "I37": 2,
+    "J37": 2,
+    "H38": 2,
+    "I38": 2,
+    "J38": 2,
+    "H39": 2,
+    "I39": 2,
+    "J39": 2,
+    "H40": 2,
+    "I40": 2,
+    "J40": 2,
+    "H41": 2,
+    "I41": 2,
+    "J41": 2,
+    "H42": 2,
+    "I42": 2,
+    "J42": 2,
+    "H43": 2,
+    "I43": 2,
+    "J43": 2,
+    "H44": 2,
+    "I44": 2,
+    "J44": 2,
+    "H45": 2,
+    "I45": 2,
+    "J45": 2,
+    "H46": 2,
+    "I46": 2,
+    "J46": 2,
+    "H47": 2,
+    "I47": 2,
+    "J47": 2,
+    "H48": 2,
+    "I48": 2,
+    "J48": 2,
+    "H49": 2,
+    "I49": 2,
+    "J49": 2,
+    "H50": 2,
+    "I50": 2,
+    "J50": 2,
+    "H51": 2,
+    "I51": 2,
+    "J51": 2,
+    "H52": 2,
+    "I52": 2,
+    "J52": 2,
+    "H53": 2,
+    "I53": 2,
+    "J53": 2,
+    "H58": 2,
+    "I58": 2,
+    "H59": 2,
+    "I59": 2,
+    "H60": 2,
+    "I60": 2,
+    "H61": 2,
+    "I61": 2,
+    "H62": 2,
+    "I62": 2,
+    "H63": 2,
+    "I63": 2,
+    "H64": 2,
+    "I64": 2,
+    "H65": 2,
+    "I65": 2,
+    "H66": 2,
+    "I66": 2,
+    "H67": 2,
+    "I67": 2,
+    "H68": 2,
+    "I68": 2,
+    "H69": 2,
+    "I69": 2,
+    "AC2": 2,
+    "AD2": 2,
+    "AC3": 3,
+    "AD3": 3,
+    "AC4": 4,
+    "AD4": 4,
+    "AC5": 6,
+    "AD5": 6
+   },
+   "borders": {},
+   "conditionalFormats": [],
+   "dataValidationRules": [],
+   "figures": [],
+   "tables": [],
+   "areGridLinesVisible": false,
+   "isVisible": false,
+   "headerGroups": {
+    "ROW": [],
+    "COL": []
+   },
+   "comments": {}
+  }
+ ],
+ "styles": {
+  "1": {
+   "bold": true,
+   "textColor": "#434343"
+  },
+  "2": {
+   "bold": true,
+   "textColor": "#434343",
+   "fillColor": "#f1f3f5",
+   "align": "center",
+   "wrapping": "wrap",
+   "verticalAlign": "middle"
+  },
+  "3": {
+   "textColor": "#01666b",
+   "bold": true,
+   "fontSize": 16
+  },
+  "4": {
+   "textColor": "#434343",
+   "fontSize": 9,
+   "italic": true
+  },
+  "5": {
+   "textColor": "#01666b",
+   "bold": true,
+   "fontSize": 13
+  },
+  "6": {
+   "bold": true,
+   "textColor": "#434343",
+   "fillColor": "#f1f3f5",
+   "align": "left",
+   "wrapping": "wrap",
+   "verticalAlign": "middle"
+  },
+  "7": {
+   "textColor": "#434343"
+  }
+ },
+ "formats": {
+  "1": "dd/mm/yyyy",
+  "2": "#,##0.00 [$€]",
+  "3": "#,##0\" kg\"",
+  "4": "#,##0.00 [$€]\"/kg\"",
+  "5": "+0.0%;-0.0%;0.0%",
+  "6": "#,##0"
+ },
+ "borders": {
+  "1": {
+   "bottom": {
+    "style": "thin",
+    "color": "#CCCCCC"
+   }
+  }
+ },
+ "revisionId": "START_REVISION",
+ "uniqueFigureIds": true,
+ "settings": {
+  "locale": {
+   "name": "Spanish",
+   "code": "es_ES",
+   "thousandsSeparator": ".",
+   "decimalSeparator": ",",
+   "dateFormat": "dd/mm/yyyy",
+   "timeFormat": "hh:mm:ss",
+   "formulaArgSeparator": ";",
+   "weekStart": 1
+  }
+ },
+ "pivots": {
+  "1": {
+   "type": "ODOO",
+   "id": "1",
+   "formulaId": "1",
+   "name": "Sales by day",
+   "model": "mercas.report.goods",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "sale"
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    },
+    {
+     "id": "kg:sum",
+     "fieldName": "kg",
+     "aggregator": "sum"
+    },
+    {
+     "id": "boxes:sum",
+     "fieldName": "boxes",
+     "aggregator": "sum"
+    },
+    {
+     "id": "sale_order_id:count_distinct",
+     "fieldName": "sale_order_id",
+     "aggregator": "count_distinct"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "date",
+     "granularity": "day",
+     "order": "asc"
+    }
+   ],
+   "columns": [],
+   "sortedColumn": null,
+   "fieldMatching": {
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    },
+    "mercas-product": {
+     "chain": "product_id",
+     "type": "many2one"
+    },
+    "mercas-category": {
+     "chain": "categ_id",
+     "type": "many2one"
+    },
+    "mercas-user": {
+     "chain": "user_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "2": {
+   "type": "ODOO",
+   "id": "2",
+   "formulaId": "2",
+   "name": "Sales in the period",
+   "model": "mercas.report.goods",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "sale"
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    },
+    {
+     "id": "kg:sum",
+     "fieldName": "kg",
+     "aggregator": "sum"
+    },
+    {
+     "id": "boxes:sum",
+     "fieldName": "boxes",
+     "aggregator": "sum"
+    },
+    {
+     "id": "sale_order_id:count_distinct",
+     "fieldName": "sale_order_id",
+     "aggregator": "count_distinct"
+    }
+   ],
+   "rows": [],
+   "columns": [],
+   "sortedColumn": null,
+   "fieldMatching": {
+    "mercas-period": {
+     "chain": "date",
+     "type": "datetime",
+     "offset": 0
+    },
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    },
+    "mercas-product": {
+     "chain": "product_id",
+     "type": "many2one"
+    },
+    "mercas-category": {
+     "chain": "categ_id",
+     "type": "many2one"
+    },
+    "mercas-user": {
+     "chain": "user_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "3": {
+   "type": "ODOO",
+   "id": "3",
+   "formulaId": "3",
+   "name": "Sales in the period before",
+   "model": "mercas.report.goods",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "sale"
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    },
+    {
+     "id": "kg:sum",
+     "fieldName": "kg",
+     "aggregator": "sum"
+    },
+    {
+     "id": "boxes:sum",
+     "fieldName": "boxes",
+     "aggregator": "sum"
+    },
+    {
+     "id": "sale_order_id:count_distinct",
+     "fieldName": "sale_order_id",
+     "aggregator": "count_distinct"
+    }
+   ],
+   "rows": [],
+   "columns": [],
+   "sortedColumn": null,
+   "fieldMatching": {
+    "mercas-period": {
+     "chain": "date",
+     "type": "datetime",
+     "offset": -1
+    },
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    },
+    "mercas-product": {
+     "chain": "product_id",
+     "type": "many2one"
+    },
+    "mercas-category": {
+     "chain": "categ_id",
+     "type": "many2one"
+    },
+    "mercas-user": {
+     "chain": "user_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "4": {
+   "type": "ODOO",
+   "id": "4",
+   "formulaId": "4",
+   "name": "Clientes",
+   "model": "mercas.report.goods",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "sale"
+    ],
+    [
+     "partner_id",
+     "!=",
+     false
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    },
+    {
+     "id": "kg:sum",
+     "fieldName": "kg",
+     "aggregator": "sum"
+    },
+    {
+     "id": "sale_order_id:count_distinct",
+     "fieldName": "sale_order_id",
+     "aggregator": "count_distinct"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "partner_id"
+    }
+   ],
+   "columns": [],
+   "sortedColumn": {
+    "measure": "amount:sum",
+    "order": "desc",
+    "domain": []
+   },
+   "fieldMatching": {
+    "mercas-period": {
+     "chain": "date",
+     "type": "datetime",
+     "offset": 0
+    },
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    },
+    "mercas-product": {
+     "chain": "product_id",
+     "type": "many2one"
+    },
+    "mercas-category": {
+     "chain": "categ_id",
+     "type": "many2one"
+    },
+    "mercas-user": {
+     "chain": "user_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "5": {
+   "type": "ODOO",
+   "id": "5",
+   "formulaId": "5",
+   "name": "Productos",
+   "model": "mercas.report.goods",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "sale"
+    ],
+    [
+     "product_id",
+     "!=",
+     false
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    },
+    {
+     "id": "kg:sum",
+     "fieldName": "kg",
+     "aggregator": "sum"
+    },
+    {
+     "id": "sale_order_id:count_distinct",
+     "fieldName": "sale_order_id",
+     "aggregator": "count_distinct"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "product_id"
+    }
+   ],
+   "columns": [],
+   "sortedColumn": {
+    "measure": "amount:sum",
+    "order": "desc",
+    "domain": []
+   },
+   "fieldMatching": {
+    "mercas-period": {
+     "chain": "date",
+     "type": "datetime",
+     "offset": 0
+    },
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    },
+    "mercas-product": {
+     "chain": "product_id",
+     "type": "many2one"
+    },
+    "mercas-category": {
+     "chain": "categ_id",
+     "type": "many2one"
+    },
+    "mercas-user": {
+     "chain": "user_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "6": {
+   "type": "ODOO",
+   "id": "6",
+   "formulaId": "6",
+   "name": "Categorías de producto",
+   "model": "mercas.report.goods",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "sale"
+    ],
+    [
+     "categ_id",
+     "!=",
+     false
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    },
+    {
+     "id": "kg:sum",
+     "fieldName": "kg",
+     "aggregator": "sum"
+    },
+    {
+     "id": "sale_order_id:count_distinct",
+     "fieldName": "sale_order_id",
+     "aggregator": "count_distinct"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "categ_id"
+    }
+   ],
+   "columns": [],
+   "sortedColumn": {
+    "measure": "amount:sum",
+    "order": "desc",
+    "domain": []
+   },
+   "fieldMatching": {
+    "mercas-period": {
+     "chain": "date",
+     "type": "datetime",
+     "offset": 0
+    },
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    },
+    "mercas-product": {
+     "chain": "product_id",
+     "type": "many2one"
+    },
+    "mercas-category": {
+     "chain": "categ_id",
+     "type": "many2one"
+    },
+    "mercas-user": {
+     "chain": "user_id",
+     "type": "many2one"
+    }
+   }
+  }
+ },
+ "pivotNextId": 7,
+ "customTableStyles": {},
+ "globalFilters": [
+  {
+   "id": "mercas-period",
+   "type": "date",
+   "label": "Period",
+   "defaultValue": "month_to_date"
+  },
+  {
+   "id": "mercas-partner",
+   "type": "relation",
+   "label": "Customer",
+   "modelName": "res.partner",
+   "defaultValueDisplayNames": []
+  },
+  {
+   "id": "mercas-product",
+   "type": "relation",
+   "label": "Product",
+   "modelName": "product.product",
+   "defaultValueDisplayNames": []
+  },
+  {
+   "id": "mercas-category",
+   "type": "relation",
+   "label": "Product Category",
+   "modelName": "product.category",
+   "defaultValueDisplayNames": []
+  },
+  {
+   "id": "mercas-user",
+   "type": "relation",
+   "label": "Salesperson",
+   "modelName": "res.users",
+   "defaultValueDisplayNames": []
+  }
+ ],
+ "lists": {},
+ "listNextId": 1,
+ "chartOdooMenusReferences": {}
+}

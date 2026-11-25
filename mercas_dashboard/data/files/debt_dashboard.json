@@ -1,0 +1,907 @@
+{
+ "version": "18.5.10",
+ "sheets": [
+  {
+   "id": "dashboard",
+   "name": "Dashboard",
+   "colNumber": 8,
+   "rowNumber": 150,
+   "rows": {},
+   "cols": {
+    "0": {
+     "size": 230
+    },
+    "1": {
+     "size": 110
+    },
+    "2": {
+     "size": 110
+    },
+    "3": {
+     "size": 110
+    },
+    "4": {
+     "size": 110
+    },
+    "5": {
+     "size": 110
+    },
+    "6": {
+     "size": 120
+    },
+    "7": {
+     "size": 50
+    }
+   },
+   "merges": [],
+   "cells": {
+    "A1": "=_t(\"Debt and Payments\")",
+    "A2": "=_t(\"What is owed today, by days overdue; the payments collected in the period of the filter.\")",
+    "A21": "=_t(\"Customers that owe the most, by days overdue\")",
+    "A22": "=PIVOT(2,15,FALSE,TRUE,100,FALSE)",
+    "A39": "=_t(\"To invoice to customers\")",
+    "A40": "=PIVOT(3,10,FALSE,FALSE)",
+    "A52": "=_t(\"Suppliers we owe\")",
+    "A53": "=PIVOT(4,10,FALSE,FALSE)",
+    "A65": "=_t(\"Payments in the period\")",
+    "A78": "=_t(\"By journal\")",
+    "A79": "=PIVOT(5,10,FALSE,FALSE)"
+   },
+   "styles": {
+    "A1": 3,
+    "A2": 4,
+    "A21": 5,
+    "A22": 6,
+    "B22": 2,
+    "C22": 2,
+    "D22": 2,
+    "E22": 2,
+    "F22": 2,
+    "G22": 2,
+    "A39": 5,
+    "A40": 6,
+    "B40": 2,
+    "A52": 5,
+    "A53": 6,
+    "B53": 2,
+    "A65": 5,
+    "A78": 5,
+    "A79": 6,
+    "B79": 2,
+    "C79": 2
+   },
+   "formats": {
+    "B23": 1,
+    "C23": 1,
+    "D23": 1,
+    "E23": 1,
+    "F23": 1,
+    "G23": 1,
+    "B24": 1,
+    "C24": 1,
+    "D24": 1,
+    "E24": 1,
+    "F24": 1,
+    "G24": 1,
+    "B25": 1,
+    "C25": 1,
+    "D25": 1,
+    "E25": 1,
+    "F25": 1,
+    "G25": 1,
+    "B26": 1,
+    "C26": 1,
+    "D26": 1,
+    "E26": 1,
+    "F26": 1,
+    "G26": 1,
+    "B27": 1,
+    "C27": 1,
+    "D27": 1,
+    "E27": 1,
+    "F27": 1,
+    "G27": 1,
+    "B28": 1,
+    "C28": 1,
+    "D28": 1,
+    "E28": 1,
+    "F28": 1,
+    "G28": 1,
+    "B29": 1,
+    "C29": 1,
+    "D29": 1,
+    "E29": 1,
+    "F29": 1,
+    "G29": 1,
+    "B30": 1,
+    "C30": 1,
+    "D30": 1,
+    "E30": 1,
+    "F30": 1,
+    "G30": 1,
+    "B31": 1,
+    "C31": 1,
+    "D31": 1,
+    "E31": 1,
+    "F31": 1,
+    "G31": 1,
+    "B32": 1,
+    "C32": 1,
+    "D32": 1,
+    "E32": 1,
+    "F32": 1,
+    "G32": 1,
+    "B33": 1,
+    "C33": 1,
+    "D33": 1,
+    "E33": 1,
+    "F33": 1,
+    "G33": 1,
+    "B34": 1,
+    "C34": 1,
+    "D34": 1,
+    "E34": 1,
+    "F34": 1,
+    "G34": 1,
+    "B35": 1,
+    "C35": 1,
+    "D35": 1,
+    "E35": 1,
+    "F35": 1,
+    "G35": 1,
+    "B36": 1,
+    "C36": 1,
+    "D36": 1,
+    "E36": 1,
+    "F36": 1,
+    "G36": 1,
+    "B37": 1,
+    "C37": 1,
+    "D37": 1,
+    "E37": 1,
+    "F37": 1,
+    "G37": 1,
+    "B41": 1,
+    "B42": 1,
+    "B43": 1,
+    "B44": 1,
+    "B45": 1,
+    "B46": 1,
+    "B47": 1,
+    "B48": 1,
+    "B49": 1,
+    "B50": 1,
+    "B54": 1,
+    "B55": 1,
+    "B56": 1,
+    "B57": 1,
+    "B58": 1,
+    "B59": 1,
+    "B60": 1,
+    "B61": 1,
+    "B62": 1,
+    "B63": 1,
+    "B80": 1,
+    "C80": 2,
+    "B81": 1,
+    "C81": 2,
+    "B82": 1,
+    "C82": 2,
+    "B83": 1,
+    "C83": 2,
+    "B84": 1,
+    "C84": 2,
+    "B85": 1,
+    "C85": 2,
+    "B86": 1,
+    "C86": 2,
+    "B87": 1,
+    "C87": 2,
+    "B88": 1,
+    "C88": 2,
+    "B89": 1,
+    "C89": 2
+   },
+   "borders": {},
+   "conditionalFormats": [],
+   "dataValidationRules": [],
+   "figures": [
+    {
+     "id": "dashboard-1",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 3,
+     "offset": {
+      "x": 0,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Customers owe us",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!B1",
+      "background": "#FFF7ED",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "chartId": "dashboard-1"
+     }
+    },
+    {
+     "id": "dashboard-2",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 3,
+     "offset": {
+      "x": 238,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Overdue",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!B2",
+      "background": "#FFF7ED",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "chartId": "dashboard-2"
+     }
+    },
+    {
+     "id": "dashboard-3",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 3,
+     "offset": {
+      "x": 476,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "We owe suppliers",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!B3",
+      "background": "#FFF7ED",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "chartId": "dashboard-3"
+     }
+    },
+    {
+     "id": "dashboard-4",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 3,
+     "offset": {
+      "x": 714,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "To invoice",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!B4",
+      "background": "#FFF7ED",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "chartId": "dashboard-4"
+     }
+    },
+    {
+     "id": "dashboard-5",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 9,
+     "offset": {
+      "x": 0,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Collected in the period",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!B5",
+      "background": "#EFF6FF",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "baseline": "Data!B6",
+      "baselineDescr": {
+       "text": "vs. the period before"
+      },
+      "chartId": "dashboard-5"
+     }
+    },
+    {
+     "id": "dashboard-6",
+     "tag": "chart",
+     "width": 228,
+     "height": 96,
+     "col": 0,
+     "row": 9,
+     "offset": {
+      "x": 238,
+      "y": 4
+     },
+     "data": {
+      "type": "scorecard",
+      "title": {
+       "text": "Collected today",
+       "bold": true,
+       "color": "#434343"
+      },
+      "keyValue": "Data!B7",
+      "background": "#EFF6FF",
+      "baselineMode": "percentage",
+      "baselineColorUp": "#00A04A",
+      "baselineColorDown": "#DC6965",
+      "humanize": false,
+      "chartId": "dashboard-6"
+     }
+    },
+    {
+     "id": "dashboard-7",
+     "tag": "chart",
+     "width": 470,
+     "height": 220,
+     "col": 0,
+     "row": 9,
+     "offset": {
+      "x": 480,
+      "y": 4
+     },
+     "data": {
+      "type": "bar",
+      "title": {
+       "text": "Customers' open debt by days overdue",
+       "bold": true,
+       "color": "#434343"
+      },
+      "background": "#FFFFFF",
+      "legendPosition": "none",
+      "dataSetsHaveTitle": true,
+      "labelRange": "Data!G2:G6",
+      "dataSets": [
+       {
+        "dataRange": "Data!H1:H6",
+        "backgroundColor": "#714B67"
+       }
+      ],
+      "aggregated": false,
+      "stacked": false,
+      "humanize": true,
+      "axesDesign": {
+       "y": {
+        "title": {
+         "text": ""
+        }
+       }
+      },
+      "chartId": "dashboard-7"
+     }
+    },
+    {
+     "id": "dashboard-8",
+     "tag": "chart",
+     "width": 950,
+     "height": 240,
+     "col": 0,
+     "row": 65,
+     "offset": {
+      "x": 0,
+      "y": 4
+     },
+     "data": {
+      "type": "odoo_bar",
+      "title": {
+       "text": "Payments by day",
+       "bold": true,
+       "color": "#434343"
+      },
+      "background": "#FFFFFF",
+      "legendPosition": "none",
+      "metaData": {
+       "groupBy": [
+        "date:day"
+       ],
+       "measure": "amount",
+       "order": null,
+       "resModel": "mercas.report.payment",
+       "mode": "bar",
+       "cumulated": false,
+       "cumulatedStart": false
+      },
+      "searchParams": {
+       "comparison": null,
+       "context": {},
+       "domain": [],
+       "groupBy": [
+        "date:day"
+       ],
+       "orderBy": []
+      },
+      "dataSets": [],
+      "verticalAxisPosition": "left",
+      "stacked": false,
+      "cumulatedStart": false,
+      "fieldMatching": {
+       "mercas-period": {
+        "chain": "date",
+        "type": "date",
+        "offset": 0
+       },
+       "mercas-partner": {
+        "chain": "partner_id",
+        "type": "many2one"
+       }
+      },
+      "chartId": "dashboard-8"
+     }
+    }
+   ],
+   "tables": [],
+   "areGridLinesVisible": false,
+   "isVisible": true,
+   "headerGroups": {
+    "ROW": [],
+    "COL": []
+   },
+   "comments": {}
+  },
+  {
+   "id": "data",
+   "name": "Data",
+   "colNumber": 12,
+   "rowNumber": 5000,
+   "rows": {},
+   "cols": {},
+   "merges": [],
+   "cells": {
+    "A1": "=_t(\"Customers owe us\")",
+    "A2": "=_t(\"Overdue\")",
+    "A3": "=_t(\"We owe suppliers\")",
+    "A4": "=_t(\"To invoice to customers\")",
+    "A5": "=_t(\"Collected in the period\")",
+    "A6": "=_t(\"Collected in the period before\")",
+    "A7": "=_t(\"Collected today\")",
+    "B1": "=0+PIVOT.VALUE(1,\"residual:sum\",\"kind\",\"customer\")",
+    "B2": "=B1-PIVOT.VALUE(1,\"residual:sum\",\"kind\",\"customer\",\"age\",\"0_not_due\")",
+    "B3": "=0+PIVOT.VALUE(1,\"residual:sum\",\"kind\",\"supplier\")",
+    "B4": "=0+PIVOT.VALUE(1,\"residual:sum\",\"kind\",\"to_invoice\")",
+    "B5": "=0+PIVOT.VALUE(5,\"amount:sum\")",
+    "B6": "=0+PIVOT.VALUE(6,\"amount:sum\")",
+    "D1": "=PIVOT(7)",
+    "B7": "=SUMIFS($E$1:$E$5000,$D$1:$D$5000,\">=\"&TODAY(),$D$1:$D$5000,\"<=\"&TODAY())",
+    "G1": "=_t(\"Age\")",
+    "H1": "=_t(\"Customers owe us\")",
+    "G2": "=_t(\"Not due\")",
+    "H2": "=0+PIVOT.VALUE(1,\"residual:sum\",\"kind\",\"customer\",\"age\",\"0_not_due\")",
+    "G3": "=_t(\"1-30 days\")",
+    "H3": "=0+PIVOT.VALUE(1,\"residual:sum\",\"kind\",\"customer\",\"age\",\"1_30\")",
+    "G4": "=_t(\"31-60 days\")",
+    "H4": "=0+PIVOT.VALUE(1,\"residual:sum\",\"kind\",\"customer\",\"age\",\"2_60\")",
+    "G5": "=_t(\"61-90 days\")",
+    "H5": "=0+PIVOT.VALUE(1,\"residual:sum\",\"kind\",\"customer\",\"age\",\"3_90\")",
+    "G6": "=_t(\"Over 90 days\")",
+    "H6": "=0+PIVOT.VALUE(1,\"residual:sum\",\"kind\",\"customer\",\"age\",\"4_over_90\")"
+   },
+   "styles": {
+    "A1": 1,
+    "A2": 1,
+    "A3": 1,
+    "A4": 1,
+    "A5": 1,
+    "A6": 1,
+    "A7": 1,
+    "G1": 2,
+    "H1": 2
+   },
+   "formats": {
+    "B1": 1,
+    "B2": 1,
+    "B3": 1,
+    "B4": 1,
+    "B5": 1,
+    "B6": 1,
+    "B7": 1,
+    "H2": 1,
+    "H3": 1,
+    "H4": 1,
+    "H5": 1,
+    "H6": 1
+   },
+   "borders": {},
+   "conditionalFormats": [],
+   "dataValidationRules": [],
+   "figures": [],
+   "tables": [],
+   "areGridLinesVisible": false,
+   "isVisible": false,
+   "headerGroups": {
+    "ROW": [],
+    "COL": []
+   },
+   "comments": {}
+  }
+ ],
+ "styles": {
+  "1": {
+   "bold": true,
+   "textColor": "#434343"
+  },
+  "2": {
+   "bold": true,
+   "textColor": "#434343",
+   "fillColor": "#f1f3f5",
+   "align": "center",
+   "wrapping": "wrap",
+   "verticalAlign": "middle"
+  },
+  "3": {
+   "textColor": "#01666b",
+   "bold": true,
+   "fontSize": 16
+  },
+  "4": {
+   "textColor": "#434343",
+   "fontSize": 9,
+   "italic": true
+  },
+  "5": {
+   "textColor": "#01666b",
+   "bold": true,
+   "fontSize": 13
+  },
+  "6": {
+   "bold": true,
+   "textColor": "#434343",
+   "fillColor": "#f1f3f5",
+   "align": "left",
+   "wrapping": "wrap",
+   "verticalAlign": "middle"
+  }
+ },
+ "formats": {
+  "1": "#,##0.00 [$€]",
+  "2": "#,##0"
+ },
+ "borders": {},
+ "revisionId": "START_REVISION",
+ "uniqueFigureIds": true,
+ "settings": {
+  "locale": {
+   "name": "Spanish",
+   "code": "es_ES",
+   "thousandsSeparator": ".",
+   "decimalSeparator": ",",
+   "dateFormat": "dd/mm/yyyy",
+   "timeFormat": "hh:mm:ss",
+   "formulaArgSeparator": ";",
+   "weekStart": 1
+  }
+ },
+ "pivots": {
+  "1": {
+   "type": "ODOO",
+   "id": "1",
+   "formulaId": "1",
+   "name": "Balances",
+   "model": "mercas.report.balance",
+   "domain": [],
+   "context": {},
+   "measures": [
+    {
+     "id": "residual:sum",
+     "fieldName": "residual",
+     "aggregator": "sum"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "kind"
+    }
+   ],
+   "columns": [
+    {
+     "fieldName": "age"
+    }
+   ],
+   "sortedColumn": null,
+   "fieldMatching": {
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "2": {
+   "type": "ODOO",
+   "id": "2",
+   "formulaId": "2",
+   "name": "Clientes",
+   "model": "mercas.report.balance",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "customer"
+    ],
+    [
+     "partner_id",
+     "!=",
+     false
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "residual:sum",
+     "fieldName": "residual",
+     "aggregator": "sum"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "partner_id"
+    }
+   ],
+   "columns": [
+    {
+     "fieldName": "age",
+     "order": "asc"
+    }
+   ],
+   "sortedColumn": {
+    "measure": "residual:sum",
+    "order": "desc",
+    "domain": []
+   },
+   "fieldMatching": {
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "3": {
+   "type": "ODOO",
+   "id": "3",
+   "formulaId": "3",
+   "name": "Clientes",
+   "model": "mercas.report.balance",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "to_invoice"
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "residual:sum",
+     "fieldName": "residual",
+     "aggregator": "sum"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "partner_id"
+    }
+   ],
+   "columns": [],
+   "sortedColumn": {
+    "measure": "residual:sum",
+    "order": "desc",
+    "domain": []
+   },
+   "fieldMatching": {
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "4": {
+   "type": "ODOO",
+   "id": "4",
+   "formulaId": "4",
+   "name": "Proveedores",
+   "model": "mercas.report.balance",
+   "domain": [
+    [
+     "kind",
+     "=",
+     "supplier"
+    ],
+    [
+     "partner_id",
+     "!=",
+     false
+    ]
+   ],
+   "context": {},
+   "measures": [
+    {
+     "id": "residual:sum",
+     "fieldName": "residual",
+     "aggregator": "sum"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "partner_id"
+    }
+   ],
+   "columns": [],
+   "sortedColumn": {
+    "measure": "residual:sum",
+    "order": "desc",
+    "domain": []
+   },
+   "fieldMatching": {
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "5": {
+   "type": "ODOO",
+   "id": "5",
+   "formulaId": "5",
+   "name": "Diarios",
+   "model": "mercas.report.payment",
+   "domain": [],
+   "context": {},
+   "measures": [
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    },
+    {
+     "id": "payment_id:count_distinct",
+     "fieldName": "payment_id",
+     "aggregator": "count_distinct"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "journal_id"
+    }
+   ],
+   "columns": [],
+   "sortedColumn": {
+    "measure": "amount:sum",
+    "order": "desc",
+    "domain": []
+   },
+   "fieldMatching": {
+    "mercas-period": {
+     "chain": "date",
+     "type": "date",
+     "offset": 0
+    },
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "6": {
+   "type": "ODOO",
+   "id": "6",
+   "formulaId": "6",
+   "name": "Payments in the period before",
+   "model": "mercas.report.payment",
+   "domain": [],
+   "context": {},
+   "measures": [
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    }
+   ],
+   "rows": [],
+   "columns": [],
+   "sortedColumn": null,
+   "fieldMatching": {
+    "mercas-period": {
+     "chain": "date",
+     "type": "date",
+     "offset": -1
+    },
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    }
+   }
+  },
+  "7": {
+   "type": "ODOO",
+   "id": "7",
+   "formulaId": "7",
+   "name": "Payments by day",
+   "model": "mercas.report.payment",
+   "domain": [],
+   "context": {},
+   "measures": [
+    {
+     "id": "amount:sum",
+     "fieldName": "amount",
+     "aggregator": "sum"
+    }
+   ],
+   "rows": [
+    {
+     "fieldName": "date",
+     "granularity": "day",
+     "order": "asc"
+    }
+   ],
+   "columns": [],
+   "sortedColumn": null,
+   "fieldMatching": {
+    "mercas-partner": {
+     "chain": "partner_id",
+     "type": "many2one"
+    }
+   }
+  }
+ },
+ "pivotNextId": 8,
+ "customTableStyles": {},
+ "globalFilters": [
+  {
+   "id": "mercas-period",
+   "type": "date",
+   "label": "Payments in",
+   "defaultValue": "month_to_date"
+  },
+  {
+   "id": "mercas-partner",
+   "type": "relation",
+   "label": "Partner",
+   "modelName": "res.partner",
+   "defaultValueDisplayNames": []
+  }
+ ],
+ "lists": {},
+ "listNextId": 1,
+ "chartOdooMenusReferences": {}
+}

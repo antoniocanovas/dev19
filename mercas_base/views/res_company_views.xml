@@ -32,6 +32,15 @@
                             <field name="liquidation_show_sale_breakdown" widget="toggle"/>
                         </group>
                     </group>
+                    <!-- The summary of the dashboards of Mercas by email, also at once -->
+                    <group string="Management Summary" groups="mercas_base.group_mercas_management">
+                        <div colspan="2" class="text-muted">
+                            Sent each evening to the users with Management Summary by Email. The
+                            figures are in Dashboards &gt; Dashboards &gt; Mercas.
+                        </div>
+                        <button name="action_mercas_send_summary" type="object" string="Send the Summary Now"
+                                class="btn-secondary" colspan="2"/>
+                    </group>
                 </page>
             </notebook>
         </field>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Dashboards > Dashboards: the group Mercas, beside Sales and Finance. The spreadsheets
+         are built by tools/build_dashboards.py -->
+    <record id="spreadsheet_dashboard_group_mercas" model="spreadsheet.dashboard.group">
+        <field name="name">Mercas</field>
+        <field name="sequence">5</field>
+    </record>
+
+    <record id="spreadsheet_dashboard_sales" model="spreadsheet.dashboard">
+        <field name="name">Sales</field>
+        <field name="spreadsheet_binary_data" type="base64" file="mercas_dashboard/data/files/sales_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.link(ref('model_mercas_report_goods'))]"/>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard_group_mercas"/>
+        <field name="group_ids" eval="[Command.set([ref('mercas_base.group_mercas_management')])]"/>
+        <field name="sequence">10</field>
+        <field name="is_published">True</field>
+    </record>
+
+    <record id="spreadsheet_dashboard_purchases" model="spreadsheet.dashboard">
+        <field name="name">Purchases and Scrap</field>
+        <field name="spreadsheet_binary_data" type="base64" file="mercas_dashboard/data/files/purchases_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.link(ref('model_mercas_report_goods'))]"/>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard_group_mercas"/>
+        <field name="group_ids" eval="[Command.set([ref('mercas_base.group_mercas_management')])]"/>
+        <field name="sequence">20</field>
+        <field name="is_published">True</field>
+    </record>
+
+    <record id="spreadsheet_dashboard_debt" model="spreadsheet.dashboard">
+        <field name="name">Debt and Payments</field>
+        <field name="spreadsheet_binary_data" type="base64" file="mercas_dashboard/data/files/debt_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.link(ref('model_mercas_report_balance'))]"/>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard_group_mercas"/>
+        <field name="group_ids" eval="[Command.set([ref('mercas_base.group_mercas_management')])]"/>
+        <field name="sequence">30</field>
+        <field name="is_published">True</field>
+    </record>
+
+</odoo>

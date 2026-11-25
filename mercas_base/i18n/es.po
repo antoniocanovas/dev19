@@ -2280,9 +2280,9 @@ msgstr "Kg desechados"
 #. module: mercas_base
 #: model:res.groups,comment:mercas_base.group_mercas_management
 msgid ""
-"Sees the management summary (Dashboards > Mercas > Management): sales and\n"
+"Sees the dashboards of Mercas (Dashboards > Dashboards > Mercas): sales and\n"
 "            purchases in amount and kg, scrap, debt and payments."
-msgstr "Ve el resumen de dirección (Tableros > Mercas > Dirección): ventas y compras en importe y kg, mermas, deuda y cobros."
+msgstr "Ve los tableros de Mercas (Tableros > Tableros > Mercas): ventas y compras en importe y kg, mermas, deuda y cobros."
 
 #. module: mercas_base
 #: model_terms:ir.ui.view,arch_db:mercas_base.view_mercas_management_dashboard_form
@@ -2538,3 +2538,20 @@ msgstr "Precio de la mercancía de este lote, en la unidad del producto. Si se i
 #: model:ir.model.fields,help:mercas_base.field_purchase_order_line__mercas_lot_sale_price
 msgid "Sale price of the goods of this line, carried over to its lot: the base of the price lists in the sales of the lot. Empty, the sale price of the product."
 msgstr "Precio de venta de la mercancía de esta línea, que pasa a su lote: la base de las tarifas en las ventas del lote. Vacío, el precio de venta del producto."
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.view_company_form_mercas
+msgid "Management Summary"
+msgstr "Resumen de Dirección"
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.view_company_form_mercas
+msgid "Send the Summary Now"
+msgstr "Enviar el resumen ahora"
+
+#. module: mercas_base
+#: model_terms:ir.ui.view,arch_db:mercas_base.view_company_form_mercas
+msgid ""
+"Sent each evening to the users with Management Summary by Email. The\n"
+"                            figures are in Dashboards &gt; Dashboards &gt; Mercas."
+msgstr "Se envía cada tarde a los usuarios con Resumen de Dirección por correo. Las cifras están en Tableros &gt; Tableros &gt; Mercas."

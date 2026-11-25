@@ -21,9 +21,10 @@ class MercasManagementDashboard(models.TransientModel):
     with the year before; scrap, debt of the customers and to the suppliers, sales to invoice,
     lots to settle and payments collected.
 
-    The same summary is shown in the backend and sent each evening by email to the users of
-    the group Management Summary by Email (see _cron_send_summary). The counter screen shows the sales
-    of the day with _mercas_sales_figures.
+    The summary is sent each evening by email to the users of the group Management Summary by
+    Email (see _cron_send_summary), or at once from the company (Send the Summary Now). The
+    dashboards of Mercas (mercas_dashboard) show the same figures in the Dashboards app. The
+    counter screen shows the sales of the day with _mercas_sales_figures.
     """
     _name = "mercas.management.dashboard"
     _description = "Mercas Management Dashboard"
@@ -33,9 +34,6 @@ class MercasManagementDashboard(models.TransientModel):
         comodel_name="res.company", required=True, default=lambda self: self.env.company,
     )
     summary_html = fields.Html(compute="_compute_summary_html", sanitize=False)
-    # Data of the charts of the backend (see the widget mercas_management_charts): the mail
-    # keeps the charts of the summary, as the mail clients don't run them
-    chart_data = fields.Json(compute="_compute_chart_data")
 
     def _compute_display_name(self):
         for dashboard in self:
@@ -48,12 +46,6 @@ class MercasManagementDashboard(models.TransientModel):
         for dashboard in self:
             dashboard.summary_html = dashboard.date and dashboard.sudo().with_company(
                 dashboard.company_id)._mercas_render_summary(dashboard.date)
-
-    @api.depends("date", "company_id")
-    def _compute_chart_data(self):
-        for dashboard in self:
-            dashboard.chart_data = dashboard.date and dashboard.sudo().with_company(
-                dashboard.company_id)._mercas_chart_data(dashboard.date)
 
     def action_send_mail(self):
         self.ensure_one()
@@ -191,116 +183,6 @@ class MercasManagementDashboard(models.TransientModel):
             "day": (self.env._("Same day last week"), (date - timedelta(weeks=1),) * 2),
             "week": (self.env._("Last week"), (week_start - timedelta(weeks=1), week_start - timedelta(days=1))),
             "month": (self.env._("Last month"), (month_start - relativedelta(months=1), month_start - timedelta(days=1))),
-        }
-
-    @api.model
-    def _mercas_sales_by_day(self, date_from, date_to):
-        """ Untaxed amount of the goods sold each day of the period (local days), as
-        _mercas_sales_figures: {date: amount}. """
-        start, end = self._mercas_utc_bounds(date_from, date_to)
-        groups = self.env["sale.order.line"]._read_group(
-            [
-                ("order_id.state", "=", "sale"),
-                ("order_id.date_order", ">=", start),
-                ("order_id.date_order", "<", end),
-                ("order_id.company_id", "=", self.env.company.id),
-                ("display_type", "=", False),
-                ("product_id.is_box", "=", False),
-            ],
-            ["order_id"], ["price_subtotal:sum"],
-        )
-        tz = self._mercas_tz()
-        by_day = defaultdict(float)
-        for order, amount in groups:
-            by_day[pytz.utc.localize(order.date_order).astimezone(tz).date()] += amount
-        return by_day
-
-    @api.model
-    def _mercas_chart_data(self, date):
-        """ Series of the charts: the week day by day (with the week before and the week with
-        the same number last year), the month and the year accumulated (with the month before,
-        the same month and the year before, and the forecast) and the debt of the customers
-        by age. The amounts of the days are those of _mercas_sales_figures. """
-        _ = self.env._
-        week_start = date - timedelta(days=date.weekday())
-        last_year_week = self._mercas_same_week_last_year(date)
-        month_start = date.replace(day=1)
-        previous_month_start = month_start - relativedelta(months=1)
-        year_start = date.replace(month=1, day=1)
-        year_ago = relativedelta(years=1)
-        last_year_start = year_start - year_ago
-        by_day = self._mercas_sales_by_day(
-            min(last_year_week, last_year_start, previous_month_start), date)
-
-        def days(date_from, count):
-            return [by_day.get(date_from + timedelta(days=index), 0.0) for index in range(count)]
-
-        def accumulate(values):
-            total, result = 0.0, []
-            for value in values:
-                total += value
-                result.append(round(total, 2))
-            return result
-
-        def month_days(start):
-            return ((start + relativedelta(months=1)) - start).days
-
-        def by_month(start, months):
-            return [sum(amount for day, amount in by_day.items()
-                        if start + relativedelta(months=index) <= day < start + relativedelta(months=index + 1))
-                    for index in range(months)]
-
-        days_in_month = month_days(month_start)
-        days_gone = date.day
-        month = accumulate(days(month_start, days_gone))
-        month_total = month[-1] if month else 0.0
-        year = accumulate(by_month(year_start, date.month))
-        year_days = (year_start.replace(year=year_start.year + 1) - year_start).days
-        year_forecast = (year[-1] if year else 0.0) * year_days / ((date - year_start).days + 1)
-        debt = self._mercas_customer_debt(date)["ages"]
-        return {
-            "currency": {
-                "symbol": self.env.company.currency_id.symbol,
-                "position": self.env.company.currency_id.position,
-            },
-            "colors": {"now": "#714B67", "previous": "#6ea8fe", "last_year": "#adb5bd"},
-            "week": {
-                "title": _("Week, day by day"),
-                "series": [
-                    {"key": "now", "label": _("This week"), "data": days(week_start, date.weekday() + 1)},
-                    {"key": "previous", "label": _("Last week"), "data": days(week_start - timedelta(weeks=1), 7)},
-                    {"key": "last_year", "label": _("Same week last year"), "data": days(last_year_week, 7)},
-                ],
-            },
-            "month": {
-                "title": _("Month, accumulated"),
-                "days": max(days_in_month, month_days(previous_month_start), month_days(month_start - year_ago)),
-                "series": [
-                    {"key": "now", "label": _("This month"), "data": month},
-                    {"key": "previous", "label": _("Last month"),
-                     "data": accumulate(days(previous_month_start, month_days(previous_month_start)))},
-                    {"key": "last_year", "label": _("Same month last year"),
-                     "data": accumulate(days(month_start - year_ago, month_days(month_start - year_ago)))},
-                ],
-                "forecast": {"label": _("Forecast"), "from": [days_gone, month_total],
-                             "to": [days_in_month, round(month_total * days_in_month / days_gone, 2)]},
-            },
-            "year": {
-                "title": _("Year, accumulated by month"),
-                "series": [
-                    {"key": "now", "label": _("This year"), "data": year},
-                    {"key": "last_year", "label": _("Last year"), "data": accumulate(by_month(last_year_start, 12))},
-                ],
-                "forecast": {"label": _("Forecast"), "from": [date.month, year[-1] if year else 0.0],
-                             "to": [12, round(year_forecast, 2)]},
-            },
-            "debt": {
-                "title": _("Customers' open debt"),
-                "labels": self._mercas_debt_age_names(),
-                "colors": list(DEBT_AGE_COLORS),
-                "data": [round(max(amount, 0.0), 2) for amount in debt],
-                "total": round(sum(debt), 2),
-            },
         }
 
     @api.model

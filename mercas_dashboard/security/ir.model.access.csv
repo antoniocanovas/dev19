@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mercas_report_goods,access.mercas.report.goods,model_mercas_report_goods,mercas_base.group_mercas_management,1,0,0,0
+access_mercas_report_balance,access.mercas.report.balance,model_mercas_report_balance,mercas_base.group_mercas_management,1,0,0,0
+access_mercas_report_payment,access.mercas.report.payment,model_mercas_report_payment,mercas_base.group_mercas_management,1,0,0,0

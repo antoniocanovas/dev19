@@ -41,7 +41,7 @@ Hazlo en la **base de pruebas**, con los clientes y proveedores de formación. C
 11. Prueba a **Liquidar** el lote de plátano. ¿Qué mensaje sale y por qué? Haz después un **adelanto** y revisa el margen.
 12. **Fin de mes de Cliente1** ([cap. 12](12_encargado_facturacion.md)): *Para facturar* › Facturar › Cobrar en **efectivo** aplicando el saldo de las cajas.
    - ✔ Comprueba: se cobra la factura **menos el saldo** de las cajas.
-13. **Dirección** ([cap. 13](13_encargado_cuadro_de_mandos.md)): abre **Tableros › Mercas › Dirección** y busca las ventas del día y la previsión de cierre del mes.
+13. **Dirección** ([cap. 13](13_encargado_cuadro_de_mandos.md)): abre **Tableros › Tableros › Mercas › Ventas** y busca las ventas del día y la previsión de cierre del mes.
 
 ## Preguntas de repaso
 

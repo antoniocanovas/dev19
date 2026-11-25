@@ -22,8 +22,6 @@
         "product",
         # Inventory > Settings > Expiration Dates: the dates of the lots
         "product_expiry",
-        # Dashboards app: the management summary goes in its section Mercas
-        "spreadsheet_dashboard",
     ],
     "data": [
         "security/mercas_security.xml",
@@ -61,9 +59,6 @@
             "mercas_base/static/src/js/sale_order_lines_bus_notification.js",
             "mercas_base/static/src/js/product_qty_datetime_icon.js",
             "mercas_base/static/src/xml/product_qty_datetime_icon.xml",
-            "mercas_base/static/src/management/management_charts.js",
-            "mercas_base/static/src/management/management_charts.xml",
-            "mercas_base/static/src/management/management_charts.scss",
         ],
     },
     "post_init_hook": "post_init_hook",

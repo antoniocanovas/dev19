@@ -1,0 +1,963 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* mercas_dashboard
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-25 07:47+0000\n"
+"PO-Revision-Date: 2026-11-25 07:47+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_balance__age__1_30
+msgid "1-30 days"
+msgstr "1-30 días"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_balance__age__2_60
+msgid "31-60 days"
+msgstr "31-60 días"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_balance__age__3_90
+msgid "61-90 days"
+msgstr "61-90 días"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "A year before, in all"
+msgstr "Hace un año, total"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "A year before, up to today"
+msgstr "Hace un año, a hoy"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__age
+msgid "Age"
+msgstr "Antigüedad"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__amount
+msgid "Amount"
+msgstr "Importe"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__residual
+msgid "Amount Due"
+msgstr "Pendiente"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Amount before"
+msgstr "Importe anterior"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Amount year before"
+msgstr "Importe hace un año"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Apr"
+msgstr "Abr"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Aug"
+msgstr "Ago"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Before"
+msgstr "Anterior"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Before from"
+msgstr "Anterior desde"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Before to"
+msgstr "Anterior hasta"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Best customers"
+msgstr "Mejores clientes"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Best products"
+msgstr "Productos más vendidos"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__boxes
+msgid "Boxes"
+msgstr "Cajas"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "By journal"
+msgstr "Por diario"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "By product category"
+msgstr "Por categoría de producto"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Change before"
+msgstr "Variación con el anterior"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Change year before"
+msgstr "Variación con hace un año"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_payment__amount
+msgid "Collected"
+msgstr "Cobrado"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Collected in the period"
+msgstr "Cobrado en el periodo"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Collected in the period before"
+msgstr "Cobrado en el periodo anterior"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Collected today"
+msgstr "Cobrado hoy"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__company_id
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__company_id
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_payment__company_id
+msgid "Company"
+msgstr "Compañía"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_payment__partner_id
+msgid "Customer"
+msgstr "Cliente"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_balance__kind__customer
+msgid "Customers owe us"
+msgstr "Nos deben los clientes"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Customers that owe the most, by days overdue"
+msgstr "Clientes que más deben, por días de retraso"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Customers' open debt by days overdue"
+msgstr "Deuda pendiente de los clientes por días de retraso"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__date
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__date
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_payment__date
+msgid "Date"
+msgstr "Fecha"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Day"
+msgstr "Día"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__overdue_days
+msgid "Days Overdue"
+msgstr "Días de retraso"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:spreadsheet.dashboard,name:mercas_dashboard.spreadsheet_dashboard_debt
+msgid "Debt and Payments"
+msgstr "Deuda y cobros"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Dec"
+msgstr "Dic"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__display_name
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__display_name
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_payment__display_name
+msgid "Display Name"
+msgstr "Nombre mostrado"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__date_maturity
+msgid "Due Date"
+msgstr "Vencimiento"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__move_id
+msgid "Entry"
+msgstr "Asiento"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Feb"
+msgstr "Feb"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Forecast"
+msgstr "Previsión"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Forecast at this pace"
+msgstr "Previsión a este ritmo"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Fri"
+msgstr "Vie"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "From"
+msgstr "Desde"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "How we are doing, up to today"
+msgstr "Cómo vamos, hasta hoy"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__id
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__id
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_payment__id
+msgid "ID"
+msgstr "ID"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "In the period"
+msgstr "En el periodo"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Jan"
+msgstr "Ene"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_payment__journal_id
+msgid "Journal"
+msgstr "Diario"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Jul"
+msgstr "Jul"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Jun"
+msgstr "Jun"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Kg"
+msgstr "Kg"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Kg before"
+msgstr "Kg anterior"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Kg year before"
+msgstr "Kg hace un año"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__kind
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__kind
+msgid "Kind"
+msgstr "Tipo"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Last month"
+msgstr "Mes anterior"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Last week"
+msgstr "Semana anterior"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Last year"
+msgstr "Año anterior"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__lot_id
+msgid "Lot"
+msgstr "Lote"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Lots to settle"
+msgstr "Lotes por liquidar"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Mar"
+msgstr "Mar"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "May"
+msgstr "May"
+
+#. module: mercas_dashboard
+#: model:spreadsheet.dashboard.group,name:mercas_dashboard.spreadsheet_dashboard_group_mercas
+msgid "Mercas"
+msgstr "Mercas"
+
+#. module: mercas_dashboard
+#: model:ir.model,name:mercas_dashboard.model_mercas_report_goods
+msgid "Mercas: Goods Sold, Bought and Scrapped"
+msgstr "Mercas: mercancía vendida, comprada y desechada"
+
+#. module: mercas_dashboard
+#: model:ir.model,name:mercas_dashboard.model_mercas_report_balance
+msgid "Mercas: Open Debt of Customers and to Suppliers"
+msgstr "Mercas: deuda pendiente de clientes y con proveedores"
+
+#. module: mercas_dashboard
+#: model:ir.model,name:mercas_dashboard.model_mercas_report_payment
+msgid "Mercas: Payments Collected"
+msgstr "Mercas: cobros"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Mon"
+msgstr "Lun"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Monday"
+msgstr "Lunes"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Month"
+msgstr "Mes"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Month, accumulated"
+msgstr "Mes, acumulado"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__kg
+msgid "Net Kg"
+msgstr "Kg netos"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Net kg"
+msgstr "Kg netos"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_balance__age__0_not_due
+msgid "Not due"
+msgstr "Sin vencer"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Nov"
+msgstr "Nov"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Now"
+msgstr "Actual"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Oct"
+msgstr "Oct"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Orders"
+msgstr "Pedidos"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_balance__age__4_over_90
+msgid "Over 90 days"
+msgstr "Más de 90 días"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Overdue"
+msgstr "Vencido"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Pace"
+msgstr "Ritmo"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__partner_id
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__partner_id
+msgid "Partner"
+msgstr "Contacto"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_payment__payment_id
+msgid "Payments"
+msgstr "Cobros"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Payments by day"
+msgstr "Cobros por día"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Payments in"
+msgstr "Cobros en"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Payments in the period"
+msgstr "Cobros del periodo"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Period"
+msgstr "Periodo"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Price/kg"
+msgstr "Precio/kg"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__product_id
+msgid "Product"
+msgstr "Producto"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__categ_id
+msgid "Product Category"
+msgstr "Categoría de producto"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Products bought"
+msgstr "Productos comprados"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_goods__kind__purchase
+msgid "Purchase"
+msgstr "Compra"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__purchase_order_id
+msgid "Purchases"
+msgstr "Compras"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: model:spreadsheet.dashboard,name:mercas_dashboard.spreadsheet_dashboard_purchases
+msgid "Purchases and Scrap"
+msgstr "Compras y mermas"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Purchases up to today"
+msgstr "Compras hasta hoy"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_balance__sale_order_id
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_goods__kind__sale
+msgid "Sale"
+msgstr "Venta"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__sale_order_id
+#: model:spreadsheet.dashboard,name:mercas_dashboard.spreadsheet_dashboard_sales
+msgid "Sales"
+msgstr "Ventas"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Sales by day"
+msgstr "Ventas por día"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Sales up to today"
+msgstr "Ventas hasta hoy"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Salesperson"
+msgstr "Comercial"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,field_description:mercas_dashboard.field_mercas_report_goods__user_id
+msgid "Salesperson / Buyer"
+msgstr "Comercial / comprador"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Same month a year before"
+msgstr "Mismo mes hace un año"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Same week a year before"
+msgstr "Misma semana hace un año"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Sat"
+msgstr "Sáb"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_goods__kind__scrap
+msgid "Scrap"
+msgstr "Merma"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Scrap %"
+msgstr "% merma"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Scrap %: kg scrapped of the kg bought in the period."
+msgstr "% merma: kg desechados sobre los kg comprados en el periodo."
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Scrap by product"
+msgstr "Mermas por producto"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Scrap kg"
+msgstr "Kg de merma"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Sep"
+msgstr "Sep"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Sold out, under sale settlement, not yet settled with the supplier."
+msgstr ""
+"Vendidos del todo, en liquidación por venta y aún sin liquidar al proveedor."
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Sun"
+msgstr "Dom"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Supplier"
+msgstr "Proveedor"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+msgid "Suppliers"
+msgstr "Proveedores"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "Suppliers we owe"
+msgstr "Proveedores a los que debemos"
+
+#. module: mercas_dashboard
+#: model:ir.model.fields,help:mercas_dashboard.field_mercas_report_goods__partner_id
+msgid ""
+"The customer of a sale, the supplier of a purchase or of the lot scrapped."
+msgstr ""
+"El cliente de una venta, el proveedor de una compra o del lote desechado."
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "The period of the filter, against the period before."
+msgstr "El periodo del filtro, frente al periodo anterior."
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid ""
+"The week, the month and the year against the period before up to the same "
+"day, and the same one a year before (the week, the whole week)."
+msgstr ""
+"La semana, el mes y el año frente al periodo anterior hasta el mismo día, y "
+"frente al mismo periodo de hace un año (la semana, la semana entera)."
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "This month"
+msgstr "Este mes"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "This week"
+msgstr "Esta semana"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "This year"
+msgstr "Este año"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Thu"
+msgstr "Jue"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "To"
+msgstr "Hasta"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_balance__kind__to_invoice
+msgid "To invoice to customers"
+msgstr "Pendiente de facturar a clientes"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Today"
+msgstr "Hoy"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Tue"
+msgstr "Mar"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid ""
+"Untaxed amounts; net kg, without the boxes. All the figures follow the "
+"filters of the dashboard."
+msgstr ""
+"Importes sin impuestos; kg netos, sin las cajas. Todas las cifras siguen los"
+" filtros del tablero."
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Up to today"
+msgstr "Hasta hoy"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid ""
+"Up to today: the day against yesterday and the same weekday a year before."
+msgstr ""
+"Hasta hoy: el día frente a ayer y al mismo día de la semana de hace un año."
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: model:ir.model.fields.selection,name:mercas_dashboard.selection__mercas_report_balance__kind__supplier
+msgid "We owe suppliers"
+msgstr "Debemos a proveedores"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Wed"
+msgstr "Mié"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Week"
+msgstr "Semana"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Week, day by day"
+msgstr "Semana, día a día"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid ""
+"What is owed today, by days overdue; the payments collected in the period of"
+" the filter."
+msgstr ""
+"Lo que se debe hoy, por días de retraso; los cobros del periodo del filtro."
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Year"
+msgstr "Año"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Year before from"
+msgstr "Hace un año desde"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Year before in all"
+msgstr "Hace un año, total"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Year before to"
+msgstr "Hace un año hasta"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "Year, accumulated by month"
+msgstr "Año, acumulado por meses"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "vs. a year before"
+msgstr "vs. hace un año"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "vs. before"
+msgstr "vs. anterior"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/purchases_dashboard.json:0
+#: code:addons/mercas_dashboard/data/files/sales_dashboard.json:0
+msgid "vs. the period before"
+msgstr "vs. periodo anterior"
+
+#. module: mercas_dashboard
+#. odoo-javascript
+#: code:addons/mercas_dashboard/data/files/debt_dashboard.json:0
+msgid "To invoice"
+msgstr "Por facturar"

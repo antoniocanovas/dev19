@@ -87,7 +87,7 @@ class TestMercasDashboard(TransactionCase):
         self.assertIn("o_mercas_summary_sales_row", dashboard.summary_html)
         for chart in ("o_mercas_summary_tile", "o_mercas_summary_tile_reference", "o_mercas_summary_pace", "o_mercas_summary_debt_bar"):
             self.assertIn(chart, dashboard.summary_html)
-        dashboard.action_send_mail()
+        self.env.company.with_user(manager).action_mercas_send_summary()
         mail = self.env["mail.mail"].search([("recipient_ids", "in", manager.partner_id.id)])
         self.assertEqual(len(mail), 1)
         self.assertIn(self.env.company.name, mail.body_html)
@@ -149,20 +149,3 @@ class TestMercasDashboard(TransactionCase):
         self.assertAlmostEqual(pace["forecast"], 3100.0, msg="1000 in 10 days, 31 days")
         self.assertEqual(pace["scale"], max(3100.0, pace["last_year"]))
 
-    def test_chart_data(self):
-        """ The series of the charts add up to the figures of the summary. """
-        self._sell([{"product_id": self.tomato.id, "product_uom_qty": 40.0, "price_unit": 1.5}])
-        today = fields.Date.context_today(self.Dashboard)
-        data = self.Dashboard._mercas_chart_data(today)
-        figures = {key: self.Dashboard._mercas_sales_figures(*current)["amount"]
-                   for key, current, _previous, _year_before in self.Dashboard._mercas_periods(today)}
-        now = {name: next(serie for serie in data[name]["series"] if serie["key"] == "now")["data"]
-               for name in ("week", "month", "year")}
-        self.assertAlmostEqual(now["week"][-1], figures["day"])
-        self.assertEqual(len(now["week"]), today.weekday() + 1)
-        self.assertAlmostEqual(sum(now["week"]), figures["week"])
-        self.assertAlmostEqual(now["month"][-1], figures["month"], places=2)
-        self.assertAlmostEqual(now["year"][-1], figures["year"], places=2)
-        self.assertEqual(len(data["debt"]["data"]), len(data["debt"]["labels"]))
-        dashboard = self.Dashboard.create({})
-        self.assertEqual(dashboard.chart_data["month"]["series"][0]["data"], now["month"])

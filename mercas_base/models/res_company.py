@@ -135,6 +135,13 @@ class ResCompany(models.Model):
         ),
     )
 
+    def action_mercas_send_summary(self):
+        """Send now the management summary of today to the users that receive it
+        by email (the one sent each evening)."""
+        self.ensure_one()
+        dashboard = self.env["mercas.management.dashboard"].with_company(self).create({"company_id": self.id})
+        return dashboard.action_send_mail()
+
     @api.model
     def _mercas_setup_self_billing_journal(self):
         """Self-billing journal of each company with a chart of accounts,
