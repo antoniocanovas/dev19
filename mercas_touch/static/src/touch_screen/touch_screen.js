@@ -170,7 +170,10 @@ export class TouchScreen extends Component {
         this.focusPrice = false;
         // The code of a damaged label is typed or scanned as soon as its screen opens
         this.focusLabelSearch = false;
+        // The screen shown last, to give the focus to the first field of a new one
+        this.screenKey = null;
         onPatched(() => {
+            this.focusFirstField();
             if (this.focusPrice) {
                 this.focusPrice = false;
                 const input = document.querySelector(".o_mercas_touch_price_edit_input");
@@ -499,6 +502,107 @@ export class TouchScreen extends Component {
     /** The sale and the purchase are saved as drafts while they are made. */
     hasDrafts() {
         return this.state.mode === "sale" || this.state.mode === "purchase";
+    }
+
+    // ------------------------------------------------------------------
+    // Focus and Enter in the searches
+    // ------------------------------------------------------------------
+
+    /** What identifies the screen shown: when it changes, its first field gets the focus. */
+    currentScreenKey() {
+        const state = this.state;
+        return JSON.stringify([
+            state.mode, state.partner?.id || false, state.choosingCustomer, state.product?.id || false,
+            state.entry ? [state.entry.product.id, state.entry.line?.key || false] : false,
+            Boolean(state.priceEdit), Boolean(state.pallets), Boolean(state.scrap), Boolean(state.lotPrice),
+            Boolean(state.done),
+        ]);
+    }
+
+    /**
+     * The first field of a screen that opens gets the focus (the search of the quotations, of
+     * the customers or of the products, the gross weight or the quantity of the line...), to
+     * go on with the keyboard. Not on a touch screen: it would open the keyboard of the device.
+     */
+    focusFirstField() {
+        const key = this.currentScreenKey();
+        if (key === this.screenKey) {
+            return;
+        }
+        this.screenKey = key;
+        // The price editor focuses its own field
+        if (this.state.priceEdit || browser.matchMedia?.("(pointer: coarse)").matches) {
+            return;
+        }
+        const field = document.querySelector(".o_mercas_touch_body")?.querySelector(
+            "input:not([type=checkbox]):not([type=radio]):not([readonly]):not([disabled])"
+        );
+        if (field && document.activeElement !== field) {
+            field.focus();
+            field.select?.();
+        }
+    }
+
+    /**
+     * Enter in a search chooses the only record found (`records`, the result of the search);
+     * with several, it asks to narrow the search. With none it does nothing: the code may be a
+     * label scanned, handled by the scanner.
+     */
+    chooseOnEnter(records, choose, exact = null) {
+        const record = records.length === 1 ? records[0] : exact;
+        if (record) {
+            choose(record);
+        } else if (records.length > 1) {
+            this.notification.add(_t("%s results: keep typing until only one is left.", records.length), {
+                type: "info",
+            });
+        }
+    }
+
+    async onDraftSearchKeydown(ev) {
+        if (ev.key !== "Enter") {
+            return;
+        }
+        ev.preventDefault();
+        browser.clearTimeout(this.searchTimeout);
+        await this.loadDrafts();
+        this.chooseOnEnter(this.state.drafts, (draft) => this.onResumeDraft(draft));
+    }
+
+    async onPartnerSearchKeydown(ev) {
+        if (ev.key !== "Enter") {
+            return;
+        }
+        ev.preventDefault();
+        browser.clearTimeout(this.searchTimeout);
+        await this.searchPartners();
+        this.chooseOnEnter(this.state.partners, (partner) => this.onSelectPartner(partner.id));
+    }
+
+    onProductSearchKeydown(ev) {
+        if (ev.key !== "Enter") {
+            return;
+        }
+        ev.preventDefault();
+        const products = this.visibleProducts();
+        // The internal reference or the barcode typed whole chooses its product
+        const code = normalize(this.state.productSearch.trim());
+        const exact = products.filter(
+            (product) => code && [product.default_code, product.barcode].some((value) => normalize(value || "") === code)
+        );
+        this.chooseOnEnter(products, (product) => this.onSelectProduct(product), exact.length === 1 ? exact[0] : null);
+    }
+
+    async onLotSearchKeydown(ev) {
+        if (ev.key !== "Enter") {
+            return;
+        }
+        ev.preventDefault();
+        browser.clearTimeout(this.searchTimeout);
+        await this.loadLots();
+        this.chooseOnEnter(this.state.lotList, (lot) => {
+            this.state.lotSelection = { ...this.state.lotSelection, [lot.id]: true };
+        });
     }
 
     // ------------------------------------------------------------------

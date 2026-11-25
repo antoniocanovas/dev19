@@ -728,3 +728,58 @@ registry.category("web_tour.tours").add("mercas_touch_enter_tour", {
         },
     ],
 });
+
+registry.category("web_tour.tours").add("mercas_touch_keyboard_tour", {
+    steps: () => [
+        {
+            trigger: ".o_mercas_touch_mode_sale",
+            run: "click",
+        },
+        {
+            content: "The first field of the screen has the focus: the search of the quotations",
+            trigger: ".o_mercas_touch_quotation_search:focus",
+        },
+        {
+            trigger: ".o_mercas_touch_new_draft",
+            run: "click",
+        },
+        {
+            content: "Enter in the search chooses the only customer found",
+            trigger: ".o_mercas_touch_partner_search:focus",
+            run: "edit Tour Cust && press Enter",
+        },
+        {
+            content: "Then the search of the products",
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "edit Tour Pe && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_lot:contains(TOUR-LOT)",
+            run: "click",
+        },
+        {
+            content: "The line starts in the gross weight",
+            trigger: ".o_mercas_touch_gross:focus",
+            run: "edit 3 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_qty:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_price:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_qty_input:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Added, the search of the products again for the next line",
+            trigger: ".o_mercas_touch_product_search:focus",
+        },
+        {
+            trigger: ".o_mercas_touch_line:contains(Tour Pear)",
+        },
+    ],
+});

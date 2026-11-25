@@ -236,7 +236,8 @@
                 <span class="input-group-text"><i class="fa fa-search"/></span>
                 <input type="search" class="form-control o_mercas_touch_quotation_search" autocomplete="off"
                        t-att-placeholder="this.draftSearchPlaceholder()"
-                       t-att-value="this.state.draftSearch" t-on-input="this.onDraftSearchInput"/>
+                       t-att-value="this.state.draftSearch" t-on-input="this.onDraftSearchInput"
+                       t-on-keydown="this.onDraftSearchKeydown"/>
             </div>
             <button class="btn btn-primary btn-lg o_mercas_touch_new_draft" t-on-click="this.onNewDraft">
                 <i class="fa fa-plus"/>
@@ -286,7 +287,8 @@
             <span class="input-group-text"><i class="fa fa-search"/></span>
             <input type="search" class="form-control o_mercas_touch_partner_search" autocomplete="off"
                    t-att-placeholder="this.partnerPlaceholder()"
-                   t-att-value="this.state.partnerSearch" t-on-input="this.onPartnerSearchInput"/>
+                   t-att-value="this.state.partnerSearch" t-on-input="this.onPartnerSearchInput"
+                   t-on-keydown="this.onPartnerSearchKeydown"/>
         </div>
         <div t-if="!this.state.partners.length" class="alert alert-info">No partner found.</div>
         <div class="o_mercas_touch_grid">
@@ -328,7 +330,8 @@
             <span class="input-group-text"><i class="fa fa-search"/></span>
             <input type="search" class="form-control o_mercas_touch_product_search" autocomplete="off"
                    placeholder="Search a product or scan a label"
-                   t-att-value="this.state.productSearch" t-on-input="this.onProductSearchInput"/>
+                   t-att-value="this.state.productSearch" t-on-input="this.onProductSearchInput"
+                   t-on-keydown="this.onProductSearchKeydown"/>
         </div>
         <div class="d-flex flex-wrap gap-2 mb-3 o_mercas_touch_categories">
             <button t-att-class="'btn ' + (!this.state.categoryId ? 'btn-primary' : 'btn-secondary')"
@@ -1205,7 +1208,8 @@
                 <span class="input-group-text"><i class="fa fa-search"/></span>
                 <input type="search" class="form-control o_mercas_touch_lot_search" autocomplete="off"
                        placeholder="Search a lot, product or supplier, or scan a label"
-                       t-att-value="this.state.lotSearch" t-on-input="this.onLotSearchInput"/>
+                       t-att-value="this.state.lotSearch" t-on-input="this.onLotSearchInput"
+                       t-on-keydown="this.onLotSearchKeydown"/>
             </div>
             <div t-if="!this.state.lotList.length" class="alert alert-info">No lot pending of invoicing.</div>
             <div class="o_mercas_touch_lot_grid">
