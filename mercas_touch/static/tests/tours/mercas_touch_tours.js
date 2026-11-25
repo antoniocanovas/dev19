@@ -999,3 +999,68 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
         },
     ],
 });
+
+registry.category("web_tour.tours").add("mercas_touch_keyboard_payment_tour", {
+    steps: () => [
+        {
+            content: "The payments from the main menu: up from the first mode goes round",
+            trigger: ".o_mercas_touch_mode_sale:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_mode_labels:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_mode_payment:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_partner_search:focus",
+            run: "edit Tour Customer && press Enter",
+        },
+        {
+            content: "The first invoice has the focus; down goes to the second one, Enter marks it",
+            trigger: ".o_mercas_touch_invoice:eq(0) input:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_invoice:eq(1) input:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_amount:value(30)",
+        },
+        {
+            content: "Down from the last invoice goes to the amount",
+            trigger: ".o_mercas_touch_invoice:eq(1) input:focus:checked",
+            run: "press ArrowDown",
+        },
+        {
+            content: "Enter in the amount goes to the journal, without collecting",
+            trigger: ".o_mercas_touch_amount:focus",
+            run: "edit 20 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_journal.btn-primary:focus",
+            run: "press ArrowRight",
+        },
+        {
+            content: "Enter chooses the journal and goes to the memo",
+            trigger: ".o_mercas_touch_journal.btn-secondary:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_memo:focus",
+            run: "edit KEYBOARD && press Enter",
+        },
+        {
+            content: "Enter in the memo goes to the button, Enter collects",
+            trigger: ".o_mercas_touch_register_payment:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_done:contains(registered)",
+        },
+    ],
+});

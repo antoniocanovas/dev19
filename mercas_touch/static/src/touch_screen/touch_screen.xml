@@ -1334,7 +1334,8 @@
                 <label t-foreach="this.state.partner.invoices" t-as="invoice" t-key="invoice.id"
                        t-att-class="'d-flex align-items-center gap-2 border rounded p-2 o_mercas_touch_invoice ' + (this.state.invoiceIds.includes(invoice.id) ? 'border-primary border-2' : '')">
                     <input type="checkbox" class="form-check-input fs-4 mt-0"
-                           t-att-checked="this.state.invoiceIds.includes(invoice.id)" t-on-change="() => this.toggleInvoice(invoice)"/>
+                           t-att-checked="this.state.invoiceIds.includes(invoice.id)" t-on-change="() => this.toggleInvoice(invoice)"
+                           t-on-keydown="this.onPaymentCheckKeydown"/>
                     <span class="flex-grow-1">
                         <span class="fw-bold" t-out="invoice.name"/>
                         <span t-att-class="'small ms-2 ' + (invoice.overdue ? 'text-danger' : 'text-muted')">
@@ -1350,7 +1351,8 @@
                     <label t-foreach="this.state.partner.credits" t-as="credit" t-key="credit.id"
                            t-att-class="'d-flex align-items-center gap-2 border rounded p-2 o_mercas_touch_credit ' + (this.state.creditIds.includes(credit.id) ? 'border-success border-2' : '')">
                         <input type="checkbox" class="form-check-input fs-4 mt-0"
-                               t-att-checked="this.state.creditIds.includes(credit.id)" t-on-change="() => this.toggleCredit(credit)"/>
+                               t-att-checked="this.state.creditIds.includes(credit.id)" t-on-change="() => this.toggleCredit(credit)"
+                               t-on-keydown="this.onPaymentCheckKeydown"/>
                         <span class="flex-grow-1 min-w-0">
                             <span class="fw-bold" t-out="credit.name"/>
                             <span class="small text-muted ms-2" t-out="credit.label"/>
@@ -1362,16 +1364,16 @@
                 <input type="text" inputmode="decimal" autocomplete="off" class="form-control form-control-lg border-primary border-2 o_mercas_touch_amount"
                        t-att-value="this.state.amount" t-on-input="(ev) => this.onAmountInput(ev.target.value)"
                        t-on-change="() => this.onFloatChange(this.state, 'amount')"
-                       t-on-keydown="(ev) => this.onFloatKeydown(ev, this.state, 'amount')"/>
-                <div class="d-flex flex-wrap gap-2 o_mercas_touch_journals">
+                       t-on-keydown="this.onAmountKeydown"/>
+                <div class="d-flex flex-wrap gap-2 o_mercas_touch_journals" t-on-keydown="this.onButtonRowKeydown">
                     <button t-foreach="this.state.data.journals" t-as="journal" t-key="journal.id"
-                            t-att-class="'btn btn-lg ' + (journal.id === this.state.journalId ? 'btn-primary' : 'btn-secondary')"
+                            t-att-class="'btn btn-lg o_mercas_touch_journal ' + (journal.id === this.state.journalId ? 'btn-primary' : 'btn-secondary')"
                             t-on-click="() => this.onSelectJournal(journal.id)">
                         <i t-att-class="'fa ' + (journal.type === 'cash' ? 'fa-money' : 'fa-university')"/> <t t-out="journal.name"/>
                     </button>
                 </div>
                 <input type="text" class="form-control o_mercas_touch_memo" placeholder="Memo" autocomplete="off"
-                       t-att-value="this.state.memo" t-on-input="this.onMemoInput"/>
+                       t-att-value="this.state.memo" t-on-input="this.onMemoInput" t-on-keydown="this.onMemoKeydown"/>
                 <button class="btn btn-primary btn-lg mt-2 o_mercas_touch_register_payment"
                         t-att-disabled="this.state.sending" t-on-click="this.onRegisterPayment">
                     <i t-if="this.state.sending" class="spinner-border spinner-border-sm me-1"/>Collect

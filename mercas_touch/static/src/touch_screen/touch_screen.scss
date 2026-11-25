@@ -50,7 +50,8 @@
     // The tile chosen with the arrows of the keyboard (see onGridKeydown)
     .o_mercas_touch_lot:focus, .o_mercas_touch_draft:focus, .o_mercas_touch_partner:focus, .o_mercas_touch_product:focus,
     .o_mercas_touch_label_lot:focus, .o_mercas_touch_box_settle .btn:focus,
-    .o_mercas_touch_move_boxes:focus {
+    .o_mercas_touch_move_boxes:focus, .o_mercas_touch_journal:focus, .o_mercas_touch_register_payment:focus,
+    .o_mercas_touch_invoice:focus-within, .o_mercas_touch_credit:focus-within {
         border-color: $primary;
         box-shadow: 0 0 0 0.2rem rgba($primary, 0.35);
     }

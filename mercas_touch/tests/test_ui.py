@@ -76,6 +76,24 @@ class TestMercasTouchUi(HttpCase):
         self.assertEqual(invoice.payment_state, 'partial')
         self.assertEqual(invoice.amount_residual, 40.0)
 
+    def test_keyboard_payment(self):
+        """ A payment made with the keyboard: the invoice marked with the arrows and Enter, the
+        amount, the journal with the arrows, the memo and the button. """
+        invoices = self.env['account.move']
+        for amount in (100.0, 30.0):
+            invoices |= self.env['account.move'].create({
+                'move_type': 'out_invoice', 'partner_id': self.customer.id,
+                'invoice_line_ids': [Command.create({'product_id': self.pear.id, 'quantity': 1, 'price_unit': amount})],
+            })
+        invoices.action_post()
+        for kind in ('bank', 'cash'):
+            if not self.env['account.journal'].search_count([('type', '=', kind), ('company_id', '=', self.env.company.id)]):
+                self.env['account.journal'].create({'name': f'Tour {kind}', 'code': f'T{kind[:2].upper()}', 'type': kind})
+        self.start_tour('/odoo/mercas-touch', 'mercas_touch_keyboard_payment_tour', login='touch_tour')
+        self.assertEqual(invoices.mapped('amount_residual'), [100.0, 10.0])
+        payment = self.env['account.payment'].search([('memo', '=', 'KEYBOARD')])
+        self.assertEqual(payment.amount, 20.0)
+
     def test_quick_prices(self):
         self.start_tour('/odoo/mercas-touch', 'mercas_touch_price_tour', login='touch_tour')
         order = self.env['sale.order'].search([('partner_id', '=', self.customer.id)])

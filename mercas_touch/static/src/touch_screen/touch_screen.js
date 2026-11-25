@@ -557,6 +557,14 @@ export class TouchScreen extends Component {
             return;
         }
         this.lastMode = this.state.mode;
+        // Collecting, the first invoice to choose (see onPaymentCheckKeydown); without any, the amount
+        const invoice = this.state.mode === "payment" && document.querySelector(
+            ".o_mercas_touch_body .o_mercas_touch_invoice input, .o_mercas_touch_body .o_mercas_touch_credit input"
+        );
+        if (invoice) {
+            invoice.focus();
+            return;
+        }
         const field = document.querySelector(".o_mercas_touch_body")?.querySelector(
             "input:not([type=checkbox]):not([type=radio]):not([readonly]):not([disabled]), " +
             ".o_mercas_touch_lot:not(:disabled)"
@@ -2869,6 +2877,63 @@ export class TouchScreen extends Component {
 
     onSelectJournal(journalId) {
         this.state.journalId = journalId;
+        this.focusAfterRender(".o_mercas_touch_memo");
+    }
+
+    /** The checks of the invoices and the credits to collect, with the keyboard */
+    paymentChecks() {
+        return [...document.querySelectorAll(
+            ".o_mercas_touch_body .o_mercas_touch_invoice input, .o_mercas_touch_body .o_mercas_touch_credit input"
+        )];
+    }
+
+    /**
+     * An invoice or a credit with the keyboard: the arrows go to the one before or after (down
+     * from the last one, to the amount), Enter (or the space) marks or unmarks it.
+     */
+    onPaymentCheckKeydown(ev) {
+        const checks = this.paymentChecks();
+        const index = checks.indexOf(ev.target);
+        let next = null;
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            ev.target.click();
+            return;
+        } else if (ev.key === "ArrowDown" || ev.key === "ArrowRight") {
+            next = checks[index + 1] || document.querySelector(".o_mercas_touch_amount");
+        } else if (ev.key === "ArrowUp" || ev.key === "ArrowLeft") {
+            next = checks[index - 1];
+        } else {
+            return;
+        }
+        ev.preventDefault();
+        next?.focus();
+        next?.select?.();
+    }
+
+    /**
+     * The amount with the keyboard: Enter works out the operation typed and goes on to the
+     * journal (it doesn't collect: the button does), up goes back to the last invoice or credit.
+     */
+    onAmountKeydown(ev) {
+        if (ev.key === "Enter") {
+            this.onFloatKeydown(ev, this.state, "amount");
+            document.querySelector(".o_mercas_touch_journal.btn-primary, .o_mercas_touch_journal")?.focus();
+        } else if (ev.key === "ArrowUp") {
+            const last = this.paymentChecks().at(-1);
+            if (last) {
+                ev.preventDefault();
+                last.focus();
+            }
+        }
+    }
+
+    /** Enter in the memo goes to the button that collects, which Enter then presses. */
+    onMemoKeydown(ev) {
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            document.querySelector(".o_mercas_touch_register_payment:not(:disabled)")?.focus();
+        }
     }
 
     async onRegisterPayment() {
