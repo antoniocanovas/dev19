@@ -539,7 +539,7 @@ export class TouchScreen extends Component {
         if (this.state.priceEdit || browser.matchMedia?.("(pointer: coarse)").matches) {
             return;
         }
-        // Or, in the lots of a product, the first lot that can be sold (see onLotGridKeydown)
+        // Or, in the lots of a product, the first lot that can be sold (see onGridKeydown)
         if (!this.state.mode) {
             // The main menu: the mode left (back from it), or the first one
             const modes = document.querySelector(".o_mercas_touch_home_menu");
@@ -576,7 +576,7 @@ export class TouchScreen extends Component {
     }
 
     async onDraftSearchKeydown(ev) {
-        if (ev.key !== "Enter") {
+        if (this.focusFirstTile(ev, ".o_mercas_touch_draft") || ev.key !== "Enter") {
             return;
         }
         ev.preventDefault();
@@ -586,7 +586,7 @@ export class TouchScreen extends Component {
     }
 
     async onPartnerSearchKeydown(ev) {
-        if (ev.key !== "Enter") {
+        if (this.focusFirstTile(ev, ".o_mercas_touch_partner") || ev.key !== "Enter") {
             return;
         }
         ev.preventDefault();
@@ -596,7 +596,7 @@ export class TouchScreen extends Component {
     }
 
     onProductSearchKeydown(ev) {
-        if (ev.key !== "Enter") {
+        if (this.focusFirstTile(ev, ".o_mercas_touch_product") || ev.key !== "Enter") {
             return;
         }
         ev.preventDefault();
@@ -1054,26 +1054,56 @@ export class TouchScreen extends Component {
     }
 
     /**
-     * The lots of the product chosen with the keyboard: the arrows move the focus between them
-     * (up and down by a row of the grid), Enter chooses the one focused (its button). The lots
-     * without stock left are skipped.
+     * The tiles of a grid chosen with the keyboard (the partners, the products, the lots of a
+     * product, the lots of a damaged label): the arrows move the focus between them (up and
+     * down by a row of the grid), Enter chooses the one focused (its button). The tiles
+     * disabled, as the lots without stock left, are skipped. Up from the first row goes back to
+     * the search of the screen.
+     *
+     * @param {KeyboardEvent} ev on the grid
+     * @param {string} selector the tiles of the grid
      */
-    onLotGridKeydown(ev) {
+    onGridKeydown(ev, selector) {
         const moves = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: "row", ArrowUp: "-row" };
         if (!(ev.key in moves)) {
             return;
         }
-        ev.preventDefault();
-        const tiles = [...ev.currentTarget.querySelectorAll(".o_mercas_touch_lot:not(:disabled)")];
+        const tiles = [...ev.currentTarget.querySelectorAll(`${selector}:not(:disabled)`)];
         if (!tiles.length) {
             return;
         }
-        // Lots in a row of the grid: those as high as the first one
+        ev.preventDefault();
+        // Tiles in a row of the grid: those as high as the first one
         const columns = tiles.filter((tile) => tile.offsetTop === tiles[0].offsetTop).length || 1;
         const move = { row: columns, "-row": -columns }[moves[ev.key]] ?? moves[ev.key];
         const index = tiles.indexOf(document.activeElement);
+        if (index >= 0 && index + move < 0 && moves[ev.key] === "-row") {
+            const search = document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
+            if (search) {
+                search.focus();
+                search.select();
+                return;
+            }
+        }
         const next = index < 0 ? 0 : Math.min(tiles.length - 1, Math.max(0, index + move));
         tiles[next].focus();
+    }
+
+    /**
+     * Down from a search goes to the first tile of the results (see onGridKeydown).
+     *
+     * @returns {boolean} whether the key was handled
+     */
+    focusFirstTile(ev, selector) {
+        if (ev.key !== "ArrowDown") {
+            return false;
+        }
+        const tile = document.querySelector(`.o_mercas_touch_body ${selector}:not(:disabled)`);
+        if (tile) {
+            ev.preventDefault();
+            tile.focus();
+        }
+        return true;
     }
 
     /** Quantity of the lot already in the lines of the sale. */
@@ -2465,6 +2495,51 @@ export class TouchScreen extends Component {
         this.state.boxListSearch = ev.target.value;
     }
 
+    /** The boxes with the keyboard: Down or Enter in the search goes to the quantity of the
+     * first box found (see onBoxQtyKeydown). */
+    onBoxListSearchKeydown(ev) {
+        if (ev.key !== "Enter" && ev.key !== "ArrowDown") {
+            return;
+        }
+        ev.preventDefault();
+        const input = document.querySelector(".o_mercas_touch_body .o_mercas_touch_box_move_qty");
+        input?.focus();
+        input?.select();
+    }
+
+    /**
+     * The quantity of a box with the keyboard: up and down go to the box before or after (up
+     * from the first one, to the search), + and - add or take a box, and Enter goes on to what
+     * is left to choose (how to settle the amount, the journal) or to the button that moves the
+     * boxes, which Enter then presses.
+     */
+    onBoxQtyKeydown(productId, ev) {
+        if (ev.key === "+" || ev.key === "-") {
+            ev.preventDefault();
+            this.onBoxStep(productId, ev.key === "+" ? 1 : -1);
+            return;
+        }
+        const inputs = [...document.querySelectorAll(".o_mercas_touch_body .o_mercas_touch_box_move_qty")];
+        const index = inputs.indexOf(ev.target);
+        let next = null;
+        if (ev.key === "ArrowDown") {
+            next = inputs[index + 1];
+        } else if (ev.key === "ArrowUp") {
+            next = index > 0 ? inputs[index - 1] : document.querySelector(".o_mercas_touch_box_list_search");
+        } else if (ev.key === "Enter") {
+            // The button when it can be pressed; otherwise a way to settle not chosen yet
+            next = document.querySelector(".o_mercas_touch_move_boxes:not(:disabled)") ||
+                document.querySelector(".o_mercas_touch_box_settle .btn-secondary:not(:disabled)");
+        } else {
+            return;
+        }
+        ev.preventDefault();
+        if (next) {
+            next.focus();
+            next.select?.();
+        }
+    }
+
     boxBalance(productId) {
         const box = this.state.partner?.boxes.find((box) => box.product_id === productId);
         if (!box) {
@@ -2678,6 +2753,9 @@ export class TouchScreen extends Component {
 
     /** Enter ends a typed code, and a scanner in keyboard mode writing in the field. */
     async onLabelSearchKeydown(ev) {
+        if (this.focusFirstTile(ev, ".o_mercas_touch_label_lot")) {
+            return;
+        }
         if (ev.key === "Enter") {
             ev.preventDefault();
             await this.findLabel(ev.target.value);

@@ -47,8 +47,9 @@
         filter: brightness(1.15);
     }
 
-    // The lot chosen with the arrows of the keyboard (see onLotGridKeydown)
-    .o_mercas_touch_lot:focus {
+    // The tile chosen with the arrows of the keyboard (see onGridKeydown)
+    .o_mercas_touch_lot:focus, .o_mercas_touch_draft:focus, .o_mercas_touch_partner:focus, .o_mercas_touch_product:focus,
+    .o_mercas_touch_label_lot:focus {
         border-color: $primary;
         box-shadow: 0 0 0 0.2rem rgba($primary, 0.35);
     }

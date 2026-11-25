@@ -802,3 +802,173 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_tour", {
         },
     ],
 });
+
+registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
+    steps: () => [
+        {
+            content: "The purchase from the main menu, with the arrows and Enter",
+            trigger: ".o_mercas_touch_mode_sale:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_mode_purchase:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_quotation_search:focus",
+        },
+        {
+            trigger: ".o_mercas_touch_new_draft",
+            run: "click",
+        },
+        {
+            content: "Two suppliers found: Down goes to the first one, the arrows between them",
+            trigger: ".o_mercas_touch_partner_search:focus",
+            run: "edit Tour Supplier",
+        },
+        {
+            content: "The search done: only the two suppliers",
+            trigger: ".o_mercas_touch_grid:has(.o_mercas_touch_partner:nth-child(2):contains(Tour Supplier Bis)):not(:has(.o_mercas_touch_partner:nth-child(3)))",
+        },
+        {
+            trigger: ".o_mercas_touch_partner_search:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_partner:focus:not(:contains(Bis))",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_partner:focus:contains(Tour Supplier Bis)",
+            run: "press ArrowLeft",
+        },
+        {
+            content: "Up from the first row goes back to the search",
+            trigger: ".o_mercas_touch_partner:focus:not(:contains(Bis))",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_partner_search:focus",
+            run: "press ArrowDown",
+        },
+        {
+            content: "Enter chooses the supplier focused",
+            trigger: ".o_mercas_touch_partner:focus:not(:contains(Bis))",
+            run: "press Enter",
+        },
+        {
+            content: "Two products found: the same with the arrows",
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "edit Tour P",
+        },
+        {
+            trigger: ".o_mercas_touch_product:contains(Tour Plum)",
+        },
+        {
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_product:focus:contains(Tour Pear)",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_product:focus:contains(Tour Plum)",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_product:focus:contains(Tour Pear)",
+            run: "press Enter",
+        },
+        {
+            content: "The line of the purchase with Enter, to the lot and the sale price",
+            trigger: ".o_mercas_touch_gross:focus",
+            run: "edit 20 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_qty:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_price:focus",
+            run: "edit 1 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_qty_input:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_lot_name:focus",
+            run: "edit TOUR-KEY && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_sale_price:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_line:contains(TOUR-KEY)",
+        },
+        {
+            trigger: ".o_mercas_touch_purchase:enabled",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_done_lots:contains(TOUR-KEY)",
+        },
+        {
+            content: "The boxes: the customer chosen with Enter",
+            trigger: ".o_mercas_touch_done",
+            run: "press F3",
+        },
+        {
+            trigger: ".o_mercas_touch_partner_search:focus",
+            run: "edit Tour Customer && press Enter",
+        },
+        {
+            content: "Enter in the search goes to the quantity of the box found",
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "edit CJ-77 && press Enter",
+        },
+        {
+            content: "+ adds a box",
+            trigger: ".o_mercas_touch_box:contains(Tour Crate) .o_mercas_touch_box_move_qty:focus",
+            // "press +" would be read as a combination of keys
+            run() {
+                for (let i = 0; i < 2; i++) {
+                    this.anchor.dispatchEvent(new KeyboardEvent("keydown", { key: "+", bubbles: true }));
+                }
+            },
+        },
+        {
+            trigger: ".o_mercas_touch_box_move_qty:focus:value(2)",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_box_list_search:focus",
+        },
+        {
+            content: "The damaged label: the lots found with the arrows, Enter prints",
+            trigger: ".o_mercas_touch_box_list_search",
+            run: "press F6",
+        },
+        {
+            trigger: ".o_mercas_touch_label_search:focus",
+            run: "edit TOUR-KEY",
+        },
+        {
+            content: "The search done: the lot named as typed is marked",
+            trigger: ".o_mercas_touch_label_lot.border-primary:contains(TOUR-KEY)",
+        },
+        {
+            trigger: ".o_mercas_touch_label_search:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_label_lot:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".modal .o_data_row",
+        },
+    ],
+});

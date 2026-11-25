@@ -257,7 +257,7 @@
             <div t-elif="this.state.draftFilter === 'to_invoice'" class="alert alert-info">There is nothing to invoice.</div>
             <div t-else="" class="alert alert-info">No order found.</div>
         </t>
-        <div class="o_mercas_touch_grid">
+        <div class="o_mercas_touch_grid" t-on-keydown="(ev) => this.onGridKeydown(ev, '.o_mercas_touch_draft')">
             <button t-foreach="this.state.drafts" t-as="draft" t-key="draft.id"
                     class="btn btn-outline-secondary o_mercas_touch_tile o_mercas_touch_draft"
                     t-on-click="() => this.onResumeDraft(draft)">
@@ -292,7 +292,8 @@
                    t-on-keydown="this.onPartnerSearchKeydown"/>
         </div>
         <div t-if="!this.state.partners.length" class="alert alert-info">No partner found.</div>
-        <div class="o_mercas_touch_grid">
+        <!-- Chosen also with the keyboard: Down from the search, the arrows between them, Enter -->
+        <div class="o_mercas_touch_grid" t-on-keydown="(ev) => this.onGridKeydown(ev, '.o_mercas_touch_partner')">
             <button t-foreach="this.state.partners" t-as="partner" t-key="partner.id"
                     class="btn btn-outline-secondary o_mercas_touch_tile o_mercas_touch_partner"
                     t-on-click="() => this.onSelectPartner(partner.id)">
@@ -342,7 +343,7 @@
                     t-on-click="() => this.onSelectCategory(category.id)" t-out="category.name"/>
         </div>
         <div t-if="!this.visibleProducts().length" class="alert alert-info">No product found.</div>
-        <div class="o_mercas_touch_product_grid">
+        <div class="o_mercas_touch_product_grid" t-on-keydown="(ev) => this.onGridKeydown(ev, '.o_mercas_touch_product')">
             <button t-foreach="this.visibleProducts()" t-as="product" t-key="product.id"
                     class="btn btn-outline-secondary d-flex align-items-center gap-2 text-start p-2 o_mercas_touch_product"
                     t-on-click="() => this.onSelectProduct(product)">
@@ -375,7 +376,7 @@
         <div t-if="this.state.lotsLoading" class="text-muted"><i class="spinner-border spinner-border-sm"/> Loading lots...</div>
         <div t-elif="!this.state.lots.length" class="alert alert-warning o_mercas_touch_no_lots">There is no lot with stock of this product.</div>
         <!-- Chosen also with the keyboard: the arrows move between the lots, Enter chooses -->
-        <div class="o_mercas_touch_grid o_mercas_touch_lot_grid_sale" t-on-keydown="this.onLotGridKeydown">
+        <div class="o_mercas_touch_grid o_mercas_touch_lot_grid_sale" t-on-keydown="(ev) => this.onGridKeydown(ev, '.o_mercas_touch_lot')">
             <button t-foreach="this.state.lots" t-as="lot" t-key="lot.id"
                     class="btn btn-outline-secondary o_mercas_touch_tile o_mercas_touch_lot"
                     t-att-disabled="this.lotAvailable(lot) &lt;= 0"
@@ -1098,7 +1099,8 @@
                 <span class="input-group-text"><i class="fa fa-search"/></span>
                 <input type="search" class="form-control o_mercas_touch_box_list_search" autocomplete="off"
                        placeholder="Search a box by reference or name…"
-                       t-att-value="this.state.boxListSearch" t-on-input="this.onBoxListSearchInput"/>
+                       t-att-value="this.state.boxListSearch" t-on-input="this.onBoxListSearchInput"
+                       t-on-keydown="this.onBoxListSearchKeydown"/>
             </div>
         </t>
         <t t-set="boxCards" t-value="this.boxCards()"/>
@@ -1117,7 +1119,8 @@
                             <i class="fa fa-minus"/>
                         </button>
                         <input type="text" inputmode="numeric" class="form-control text-center o_mercas_touch_box_move_qty"
-                               t-att-value="this.state.boxQty[box.id] or 0" t-on-input="(ev) => this.onBoxInput(box.id, ev)"/>
+                               t-att-value="this.state.boxQty[box.id] or 0" t-on-input="(ev) => this.onBoxInput(box.id, ev)"
+                               t-on-keydown="(ev) => this.onBoxQtyKeydown(box.id, ev)"/>
                         <button class="btn btn-secondary" title="One box more" t-on-click="() => this.onBoxStep(box.id, 1)">
                             <i class="fa fa-plus"/>
                         </button>
@@ -1303,7 +1306,7 @@
                 Type the lot printed on the label, or part of it, the product or the supplier. A lot named exactly as the code opens its labels at once.
             </div>
             <div t-if="!this.state.labelLots.length" class="alert alert-info">No lot found.</div>
-            <div class="o_mercas_touch_grid">
+            <div class="o_mercas_touch_grid" t-on-keydown="(ev) => this.onGridKeydown(ev, '.o_mercas_touch_label_lot')">
                 <button t-foreach="this.state.labelLots" t-as="lot" t-key="lot.id"
                         t-att-class="'btn btn-light border o_mercas_touch_tile o_mercas_touch_label_lot ' + (lot.exact ? 'border-primary border-2' : '')"
                         t-att-disabled="this.state.sending" t-on-click="() => this.onPrintLotLabels([lot.id])">

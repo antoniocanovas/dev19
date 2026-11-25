@@ -103,6 +103,20 @@ class TestMercasTouchUi(HttpCase):
         line = self.env['sale.order'].search([('partner_id', '=', self.customer.id)]).order_line
         self.assertEqual((line.product_id, line.lot_id.name, line.product_uom_qty), (self.pear, 'TOUR-LOT-2', 3))
 
+    def test_keyboard_purchase(self):
+        """ A purchase made with the keyboard: the supplier and the product chosen with the
+        arrows and Enter, the line with Enter; then the boxes and the damaged label. """
+        self.env['res.partner'].create({'name': 'Tour Supplier Bis', 'supplier_rank': 0})
+        self.env['product.product'].create({
+            'name': 'Tour Plum', 'type': 'consu', 'is_storable': True, 'tracking': 'lot',
+            'uom_id': self.uom_kg.id, 'list_price': 3.0, 'categ_id': self.pear.categ_id.id,
+        })
+        self.start_tour('/odoo/mercas-touch', 'mercas_touch_keyboard_purchase_tour', login='touch_tour')
+        line = self.env['purchase.order.line'].search(
+            ['|', ('lot_id.name', '=', 'TOUR-KEY'), ('mercas_touch_lot_name', '=', 'TOUR-KEY')])
+        self.assertEqual((line.partner_id, line.product_id, line.product_qty, line.price_unit),
+                         (self.supplier, self.pear, 20, 1))
+
     def test_without_numpad(self):
         """ With the keypad hidden in the preferences, everything is typed with the keyboard. """
         self.user.mercas_touch_numpad = 'hide'
