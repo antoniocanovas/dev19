@@ -898,11 +898,21 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
             run: "press Enter",
         },
         {
+            content: "The country of origin is in the way of Enter (its states, only with a country)",
+            trigger: ".o_mercas_touch_origin_country:focus",
+            run: "press Enter",
+        },
+        {
             trigger: ".o_mercas_touch_lot_name:focus",
             run: "edit TOUR-KEY && press Enter",
         },
         {
             trigger: ".o_mercas_touch_sale_price:focus",
+            run: "press Enter",
+        },
+        {
+            content: "The firm negotiation last: Enter adds the line",
+            trigger: ".o_mercas_touch_firm:focus",
             run: "press Enter",
         },
         {
@@ -913,7 +923,16 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
             run: "click",
         },
         {
+            content: "Done: the main button has the focus",
             trigger: ".o_mercas_touch_done_lots:contains(TOUR-KEY)",
+        },
+        {
+            trigger: ".o_mercas_touch_done_actions .o_mercas_touch_new:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            content: "The arrows go between the buttons",
+            trigger: ".o_mercas_touch_done_actions .btn:not(.o_mercas_touch_new):focus",
         },
         {
             content: "The boxes: the customer chosen with Enter",
@@ -923,6 +942,30 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
         {
             trigger: ".o_mercas_touch_partner_search:focus",
             run: "edit Tour Customer && press Enter",
+        },
+        {
+            content: "Page Down changes who gives back the boxes, Page Up back",
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "press PageDown",
+        },
+        {
+            trigger: ".o_mercas_touch_box_direction_deliver.btn-primary",
+        },
+        {
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "press PageUp",
+        },
+        {
+            trigger: ".o_mercas_touch_box_direction_return.btn-primary",
+        },
+        {
+            content: "Up goes to who gives them back, down to the search again",
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_box_direction_return:focus",
+            run: "press ArrowDown",
         },
         {
             content: "Enter in the search goes to the quantity of the box found",
@@ -1240,6 +1283,270 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_pallets_tour", {
         },
         {
             trigger: ".o_mercas_touch_ticket",
+        },
+    ],
+});
+
+const pressKey = (key) =>
+    function () {
+        // "press +" would be read as a combination of keys
+        this.anchor.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
+    };
+
+registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
+    steps: () => [
+        {
+            content: "Right from the modes goes to the dashboard, left back",
+            trigger: ".o_mercas_touch_mode_sale:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_home_pending button:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_mode_sale:focus",
+            run: "press ArrowRight",
+        },
+        {
+            content: "Enter opens the quotations in progress",
+            trigger: ".o_mercas_touch_home_pending button:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Page Down and Page Up change the filter of the quotations",
+            trigger: ".o_mercas_touch_quotation_search:focus",
+            run: "press PageDown",
+        },
+        {
+            trigger: ".o_mercas_touch_draft_filter_to_invoice.btn-primary",
+        },
+        {
+            trigger: ".o_mercas_touch_quotation_search:focus",
+            run: "press PageUp",
+        },
+        {
+            trigger: ".o_mercas_touch_draft_filter_draft.btn-primary",
+        },
+        {
+            trigger: ".o_mercas_touch_draft:contains(Tour Customer)",
+        },
+        {
+            trigger: ".o_mercas_touch_quotation_search:focus",
+            run: "edit Tour Customer && press Enter",
+        },
+        {
+            content: "Page Down and Page Up change the category of the catalog",
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "press PageDown",
+        },
+        {
+            trigger: ".o_mercas_touch_category.btn-primary",
+        },
+        {
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "press PageUp",
+        },
+        {
+            trigger: ".o_mercas_touch_categories:not(:has(.o_mercas_touch_category.btn-primary))",
+        },
+        {
+            content: "F8 goes to the ticket; P changes the price of the line",
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "press F8",
+        },
+        {
+            trigger: ".o_mercas_touch_line_info:focus",
+            run: "press p",
+        },
+        {
+            trigger: ".o_mercas_touch_price_edit_input:focus",
+            run: "edit 3 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_line_price:contains(3)",
+        },
+        {
+            content: "Enter on the line changes it: the attributes first",
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "press F8",
+        },
+        {
+            trigger: ".o_mercas_touch_line_info:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_attribute_value:focus:contains(Extra)",
+            run: "press ArrowRight",
+        },
+        {
+            content: "Enter chooses the value and goes to the next attribute",
+            trigger: ".o_mercas_touch_attribute_value:focus:contains(First)",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_attribute_value:focus:contains(03)",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_attribute_value:focus:contains(04)",
+            run: "press Enter",
+        },
+        {
+            content: "Then the first field; Shift+Enter goes back to the attributes",
+            trigger: ".o_mercas_touch_gross:focus",
+            run: "press Shift+Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_attribute_value.btn-primary:focus:contains(04)",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_gross:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_qty:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_price:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_qty_input:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_search:focus",
+            run: "press Enter",
+        },
+        {
+            content: "A second line, its attributes with Enter",
+            trigger: ".o_mercas_touch_line_attributes:contains(First · 04)",
+        },
+        {
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "edit Tour Pe && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_lot:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_attribute_value:focus:contains(Extra)",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_attribute_value:focus:contains(03)",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_gross:focus",
+            run: "edit 2 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_qty:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_price:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_qty_input:focus",
+            run: "press Enter",
+        },
+        {
+            content: "F8 goes to the last line; Delete removes it, once confirmed",
+            trigger: ".o_mercas_touch_line:nth-child(2) .o_mercas_touch_line_attributes:contains(Extra · 03)",
+        },
+        {
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "press F8",
+        },
+        {
+            trigger: ".o_mercas_touch_line:nth-child(2) .o_mercas_touch_line_info:focus",
+            run: "press Delete",
+        },
+        {
+            trigger: ".modal .btn-primary:contains(Remove)",
+            run: "click",
+        },
+        {
+            content: "Removed, the line left has the focus",
+            trigger: ".o_mercas_touch_lines:not(:has(.o_mercas_touch_line:nth-child(2))) .o_mercas_touch_line_info:focus",
+        },
+        {
+            trigger: "body:not(:has(.modal))",
+        },
+        {
+            content: "Ctrl+Enter sells",
+            trigger: ".o_mercas_touch_line_info:focus",
+            run: "press Control+Enter",
+        },
+        {
+            content: "Done: the main button focused; Print opens with its first document focused",
+            trigger: ".o_mercas_touch_done_actions .o_mercas_touch_new:focus",
+        },
+        {
+            trigger: ".o_mercas_touch_print",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_print_panel input:checked:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Enter unchecks it; Escape closes the printing, back to its button",
+            trigger: ".o_mercas_touch_print_panel input:not(:checked):focus",
+            run: "press Escape",
+        },
+        {
+            trigger: ".o_mercas_touch_done:not(:has(.o_mercas_touch_print_panel)) .o_mercas_touch_print:focus",
+            run: "press F9",
+        },
+        {
+            content: "F9 opens the pallets; up from the first boxes, the quick spreading",
+            trigger: ".o_mercas_touch_pallet_loose .o_mercas_touch_pallet_chip:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_pallets_spread:focus",
+            run: pressKey("+"),
+        },
+        {
+            content: "+ adds a pallet; Enter spreads the boxes",
+            trigger: ".o_mercas_touch_pallets_quick_count:contains(2)",
+        },
+        {
+            trigger: ".o_mercas_touch_pallets_spread:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Then the type and the height of each pallet with Enter",
+            trigger: ".o_mercas_touch_pallet:not(.o_mercas_touch_pallet_loose) .o_mercas_touch_pallet_type:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_pallet_height:focus",
+            run: "edit 1.5 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_pallet_type:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_pallet_height:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Ctrl+Enter saves the pallets",
+            trigger: ".o_mercas_touch_pallets_save:focus",
+            run: "press Control+Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_done_actions .o_mercas_touch_new:focus",
         },
     ],
 });

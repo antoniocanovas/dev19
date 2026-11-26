@@ -102,6 +102,38 @@ class TestMercasTouchUi(HttpCase):
         pallets = self.env['mercas.touch'].get_pallets(draft['id'])['pallets']
         self.assertEqual([sum(line['box_qty'] for line in pallet['lines']) for pallet in pallets], [7])
 
+    def test_keyboard_order(self):
+        """ A quotation finished with the keyboard: from the dashboard, the filters and the
+        categories with Page Up and Down, the ticket (F8) with its price, its line with the
+        attributes and a line removed, sold with Ctrl+Enter; then the printing, and the pallets
+        (F9) spread, with their type and height, saved with Ctrl+Enter. """
+        quality, size = self.env['product.attribute'].create([{
+            'name': name, 'create_variant': 'no_variant', 'mercas_role': role,
+            'value_ids': [Command.create({'name': value}) for value in values],
+        } for name, role, values in (('Tour Quality', 'quality', ('Extra', 'First')),
+                                     ('Tour Size', 'size', ('03', '04')))])
+        self.pear.product_tmpl_id.attribute_line_ids = [
+            Command.create({'attribute_id': attribute.id, 'value_ids': [Command.set(attribute.value_ids.ids)]})
+            for attribute in quality | size
+        ]
+        # A category of its own, to choose it with Page Down
+        self.pear.categ_id = self.env['product.category'].create({'name': 'Tour Fruit'})
+        self.env['stock.package.type'].create({'name': 'Tour Euro', 'mercas_is_pallet': True})
+        draft = self.env['mercas.touch'].with_user(self.user).save_draft('sale', {
+            'uuid': str(uuid.uuid4()), 'partner_id': self.customer.id, 'lines': [
+                {'product_id': self.pear.id, 'lot_id': self.lot.id, 'qty': 5.0, 'price_unit': 2.0,
+                 'box_qty': 2, 'box_product_id': self.box.id},
+            ]})
+        self.start_tour('/odoo/mercas-touch', 'mercas_touch_keyboard_order_tour', login='touch_tour')
+        order = self.env['sale.order'].browse(draft['id'])
+        self.assertEqual(order.state, 'sale')
+        line = order.order_line.filtered(lambda l: l.product_id == self.pear)
+        self.assertEqual((line.product_uom_qty, line.price_unit), (5, 3))
+        self.assertEqual(sorted(line.product_no_variant_attribute_value_ids.mapped('name')), ['04', 'First'])
+        pallets = self.env['mercas.touch'].get_pallets(order.id)['pallets']
+        self.assertEqual([sum(l['box_qty'] for l in pallet['lines']) for pallet in pallets], [1, 1])
+        self.assertEqual([pallet['height'] for pallet in pallets], [1.5, 0])
+
     def test_keyboard_payment(self):
         """ A payment made with the keyboard: the invoice marked with the arrows and Enter, the
         amount, the journal with the arrows, the memo and the button. """

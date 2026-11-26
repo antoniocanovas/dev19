@@ -30,7 +30,13 @@ const ENTRY_INPUTS = {
     boxProduct: ".o_mercas_touch_entry .o_mercas_touch_box_search",
     lotName: ".o_mercas_touch_entry .o_mercas_touch_lot_name",
     salePrice: ".o_mercas_touch_entry .o_mercas_touch_sale_price",
+    country: ".o_mercas_touch_entry .o_mercas_touch_origin_country",
+    state: ".o_mercas_touch_entry .o_mercas_touch_origin_state",
+    firm: ".o_mercas_touch_entry .o_mercas_touch_firm",
 };
+// Fields of the line not written with the keypad: Enter goes through them, the keypad stays
+const ENTRY_NOT_KEYPAD = ["boxProduct", "country", "state", "firm"];
+const ARROW_KEYS = { ArrowUp: true, ArrowDown: true, ArrowLeft: true, ArrowRight: true };
 const ENTRY_FLOAT_FIELDS = ["gross", "qty", "price", "salePrice"];
 // Fields of numbers with decimals: quantities, weights, prices and amounts
 const DECIMAL_INPUTS = 'input[inputmode="decimal"], .o_mercas_touch_price_edit_input';
@@ -188,9 +194,12 @@ export class TouchScreen extends Component {
                 input?.select();
             }
             if (this.pendingFocus) {
-                // The first of the selectors found
-                const element = this.pendingFocus.map((selector) => document.querySelector(selector)).find(Boolean);
+                // The first of the selectors found (or of the elements given by a function)
+                const element = this.pendingFocus
+                    .map((selector) => (typeof selector === "function" ? selector() : document.querySelector(selector)))
+                    .find(Boolean);
                 element?.focus();
+                element?.select?.();
                 this.pendingFocus = null;
             }
             if (this.focusLabelSearch) {
@@ -263,6 +272,34 @@ export class TouchScreen extends Component {
             ev.preventDefault();
             ev.stopImmediatePropagation();
             document.activeElement?.blur();
+        } else if (ev.key === "F8" && this.isOrderScreen()) {
+            // F8: to the ticket, to change or remove its lines (see onTicketKeydown)
+            ev.preventDefault();
+            ev.stopImmediatePropagation();
+            this.focusTicket();
+        } else if (ev.key === "F9" && (this.isOrderScreen() || (this.state.done && !this.state.pallets))) {
+            // F9: the pallets of the sale
+            ev.preventDefault();
+            ev.stopImmediatePropagation();
+            document.querySelector(".o_mercas_touch_open_pallets:not(:disabled)")?.click();
+        } else if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey) && !document.querySelector(".modal")) {
+            // Ctrl+Enter: the button that ends what is being done (sell, purchase, save the
+            // pallets, print or send), from anywhere on the screen
+            const button = this.mainActionButton();
+            if (button) {
+                ev.preventDefault();
+                ev.stopImmediatePropagation();
+                button.click();
+            }
+        } else if (ev.key === "Escape" && this.closeDonePanel()) {
+            // Escape closes the printing, the sending or the bills, not the screen
+            ev.preventDefault();
+            ev.stopImmediatePropagation();
+        } else if (ev.key in ARROW_KEYS && this.state.done && !this.state.pallets &&
+                   document.activeElement === document.body && !document.querySelector(".modal")) {
+            // The focus lost (its button gone, as Create invoice once invoiced): the main button
+            ev.preventDefault();
+            this.focusDoneAction();
         } else if (ev.key === "Escape" && this.state.pallets?.selected && !document.querySelector(".modal")) {
             // Escape leaves the boxes chosen to move, not the pallets
             ev.preventDefault();
@@ -288,6 +325,86 @@ export class TouchScreen extends Component {
             !input.readOnly &&
             input.matches(DECIMAL_INPUTS)
         );
+    }
+
+    /** The sale or the purchase being made, with its catalog and its ticket. */
+    isOrderScreen() {
+        const state = this.state;
+        return this.hasDrafts() && Boolean(state.partner) && !state.pallets && !state.done;
+    }
+
+    /** The button pressed by Ctrl+Enter on the screen shown, if it can be pressed. */
+    mainActionButton() {
+        const state = this.state;
+        let selector = null;
+        if (state.pallets) {
+            selector = ".o_mercas_touch_pallets_save";
+        } else if (state.done?.printPanel) {
+            selector = ".o_mercas_touch_print_send";
+        } else if (state.done?.mailPanel) {
+            selector = ".o_mercas_touch_mail_send";
+        } else if (this.isOrderScreen()) {
+            selector = state.mode === "sale" ? ".o_mercas_touch_sell" : ".o_mercas_touch_purchase";
+        }
+        return selector && document.querySelector(`${selector}:not(:disabled)`);
+    }
+
+    /** Close the printing, the sending or the bills of the screen of an operation done, back
+     * to their button; false if none is open. */
+    closeDonePanel() {
+        const done = this.state.done;
+        if (!done || this.state.pallets || document.querySelector(".modal")) {
+            return false;
+        }
+        if (done.printPanel) {
+            done.printPanel = null;
+            this.focusAfterRender(".o_mercas_touch_print");
+        } else if (done.mailPanel) {
+            done.mailPanel = null;
+            this.focusAfterRender(".o_mercas_touch_mail");
+        } else if (done.invoiceList) {
+            done.invoiceList = null;
+            this.focusAfterRender(".o_mercas_touch_purchase_invoices");
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * The arrows over rows of buttons: left and right in the row, up and down to the row
+     * before or after, at the same place (or its last button).
+     *
+     * @param {KeyboardEvent} ev
+     * @param {Element[]} rows
+     * @param {(row: Element) => Element[]} items the buttons of a row that can be focused
+     * @returns {boolean|string} true when the focus moved; the key when there is nothing
+     *      further that way (for the caller to go out of the rows); false if not handled
+     */
+    moveInRows(ev, rows, items) {
+        if (!(ev.key in ARROW_KEYS)) {
+            return false;
+        }
+        const row = rows.find((other) => other.contains(ev.target));
+        const rowItems = row ? items(row) : [];
+        const index = rowItems.indexOf(ev.target);
+        if (index < 0) {
+            return false;
+        }
+        ev.preventDefault();
+        let next = null;
+        if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+            next = rowItems[index + (ev.key === "ArrowRight" ? 1 : -1)];
+        } else {
+            const other = rows[rows.indexOf(row) + (ev.key === "ArrowDown" ? 1 : -1)];
+            const otherItems = other ? items(other) : [];
+            next = otherItems[Math.min(index, otherItems.length - 1)];
+        }
+        if (next) {
+            next.focus();
+            return true;
+        }
+        return ev.key;
     }
 
     async openMode(mode) {
@@ -480,6 +597,8 @@ export class TouchScreen extends Component {
     async onMarkMessagesRead(message) {
         await this.orm.call(MODEL, "mark_messages_read", [message ? [message.id] : null]);
         await this.loadHome();
+        // On with the keyboard: the next message, or else the dashboard
+        this.focusAfterRender(".o_mercas_touch_home_message button", ".o_mercas_touch_home_dashboard button");
     }
 
     /** The form of a lot of the dashboard, to change its data or set its expiry date. */
@@ -570,6 +689,16 @@ export class TouchScreen extends Component {
             this.focusPalletChip();
             return;
         }
+        // An operation done: its main button, New or Back to the list (see focusDoneAction)
+        if (this.state.done) {
+            this.focusDoneAction();
+            return;
+        }
+        // A line with attributes (quality, size): they are chosen first (see onAttributeValueKeydown)
+        if (this.state.entry && this.entryAttributes().length) {
+            this.attributeButton(document.querySelector(".o_mercas_touch_entry .o_mercas_touch_attribute"))?.focus();
+            return;
+        }
         // Collecting, the first invoice to choose (see onPaymentCheckKeydown); without any, the amount
         const invoice = this.state.mode === "payment" && document.querySelector(
             ".o_mercas_touch_body .o_mercas_touch_invoice input, .o_mercas_touch_body .o_mercas_touch_credit input"
@@ -600,6 +729,12 @@ export class TouchScreen extends Component {
         }
     }
 
+    /** The value after (step 1) or before (-1) `value` in `values`, going round. */
+    cycle(values, value, step) {
+        const index = values.indexOf(value);
+        return values[(Math.max(index, 0) + step + values.length) % values.length];
+    }
+
     /**
      * Enter in a search chooses the only record found (`records`, the result of the search);
      * with several, it asks to narrow the search. With none it does nothing: the code may be a
@@ -617,6 +752,13 @@ export class TouchScreen extends Component {
     }
 
     async onDraftSearchKeydown(ev) {
+        if (ev.key === "PageDown" || ev.key === "PageUp") {
+            // The filter of the quotations: In progress, To invoice, All
+            ev.preventDefault();
+            const keys = this.draftFilters.map((filter) => filter.key);
+            await this.onDraftFilter(this.cycle(keys, this.state.draftFilter, ev.key === "PageDown" ? 1 : -1));
+            return;
+        }
         if (this.focusFirstTile(ev, ".o_mercas_touch_draft") || ev.key !== "Enter") {
             return;
         }
@@ -637,6 +779,13 @@ export class TouchScreen extends Component {
     }
 
     onProductSearchKeydown(ev) {
+        if (ev.key === "PageDown" || ev.key === "PageUp") {
+            // The category of the catalog, All first
+            ev.preventDefault();
+            const ids = [false, ...this.categories().map((category) => category.id)];
+            this.onSelectCategory(this.cycle(ids, this.state.categoryId, ev.key === "PageDown" ? 1 : -1));
+            return;
+        }
         if (this.focusFirstTile(ev, ".o_mercas_touch_product") || ev.key !== "Enter") {
             return;
         }
@@ -1083,6 +1232,14 @@ export class TouchScreen extends Component {
     /** The modes of the main menu chosen with the keyboard: the arrows move between them, Enter
      * (on the button focused) opens it. */
     onModeMenuKeydown(ev) {
+        // Right goes to the dashboard, when it is shown (see onHomeDashboardKeydown)
+        const dashboard = ev.key === "ArrowRight" &&
+            document.querySelector(".o_mercas_touch_home_dashboard button:not(:disabled)");
+        if (dashboard) {
+            ev.preventDefault();
+            dashboard.focus();
+            return;
+        }
         const moves = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 };
         if (!(ev.key in moves)) {
             return;
@@ -1092,6 +1249,23 @@ export class TouchScreen extends Component {
         const index = modes.indexOf(document.activeElement);
         const next = index < 0 ? 0 : (index + moves[ev.key] + modes.length) % modes.length;
         modes[next]?.focus();
+    }
+
+    /**
+     * The dashboard of the main menu with the keyboard: up and down between its rows (the
+     * quotations in progress, the messages, the lots about to expire or without date), left
+     * and right in a message (open it, mark it as read), and Enter opens; left from the first
+     * button of a row goes back to the modes.
+     */
+    onHomeDashboardKeydown(ev) {
+        const buttons = [...ev.currentTarget.querySelectorAll("button:not(:disabled)")];
+        const rows = [...new Set(buttons.map((button) => button.closest(".o_mercas_touch_home_message") || button))];
+        const items = (row) => (row.matches("button") ? [row] : [...row.querySelectorAll("button:not(:disabled)")]);
+        if (this.moveInRows(ev, rows, items) === "ArrowLeft") {
+            const modes = document.querySelector(".o_mercas_touch_home_menu");
+            ((this.lastMode && modes?.querySelector(`.o_mercas_touch_mode_${this.lastMode}`)) ||
+                modes?.querySelector(".o_mercas_touch_mode"))?.focus();
+        }
     }
 
     /**
@@ -1445,6 +1619,56 @@ export class TouchScreen extends Component {
         }
     }
 
+    /** The value chosen of an attribute (`group`, its block on the screen), or else its first one. */
+    attributeButton(group) {
+        return group && (group.querySelector(".o_mercas_touch_attribute_value.btn-primary") ||
+            group.querySelector(".o_mercas_touch_attribute_value"));
+    }
+
+    /** The first field of the line written after the attributes (the gross weight or the
+     * quantity), selected. */
+    focusEntryInput(field = this.entryFieldOrder()[0]) {
+        const input = document.querySelector(ENTRY_INPUTS[field]);
+        input?.focus();
+        input?.select?.();
+        return input;
+    }
+
+    /**
+     * The attributes of the line with the keyboard: left and right between the values of an
+     * attribute, up and down to the attribute before or after (down from the last one, to the
+     * first field), and Enter chooses the value focused (it isn't removed if it was chosen
+     * already) and goes on to the next attribute, or to the first field of the line.
+     */
+    onAttributeValueKeydown(ev, attribute, value) {
+        const groups = [...document.querySelectorAll(".o_mercas_touch_entry .o_mercas_touch_attribute")];
+        const group = ev.currentTarget.closest(".o_mercas_touch_attribute");
+        const position = groups.indexOf(group);
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            if (!this.state.entry.attributeValueIds.includes(value.id)) {
+                this.onEntryAttributeValue(attribute, value);
+            }
+            this.focusAfterRender(() =>
+                this.attributeButton(document.querySelectorAll(".o_mercas_touch_entry .o_mercas_touch_attribute")[position + 1]) ||
+                document.querySelector(ENTRY_INPUTS[this.entryFieldOrder()[0]])
+            );
+        } else if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+            ev.preventDefault();
+            const values = [...group.querySelectorAll(".o_mercas_touch_attribute_value")];
+            const index = values.indexOf(ev.currentTarget);
+            values[(index + (ev.key === "ArrowRight" ? 1 : -1) + values.length) % values.length].focus();
+        } else if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+            ev.preventDefault();
+            const other = groups[position + (ev.key === "ArrowDown" ? 1 : -1)];
+            if (other) {
+                this.attributeButton(other).focus();
+            } else if (ev.key === "ArrowDown") {
+                this.focusEntryInput();
+            }
+        }
+    }
+
     /** Values chosen on the line, as "Extra · 70-75". */
     lineAttributes(line) {
         const names = [];
@@ -1492,9 +1716,10 @@ export class TouchScreen extends Component {
         }
     }
 
-    /** Fields of the line in the order Enter goes through them: the gross weight of the goods
-     * weighed, the quantity, the price, the boxes and, with boxes, their kind; on a purchase,
-     * the lot and its sale price. */
+    /** Fields of the line in the order Enter goes through them (after the attributes, see
+     * onAttributeValueKeydown): the gross weight of the goods weighed, the quantity, the price,
+     * the boxes and, with boxes, their kind; on a purchase, the origin, the lot, its sale price
+     * and the firm negotiation. */
     entryFieldOrder() {
         const entry = this.state.entry;
         const fields = entry.product.weighed ? ["gross"] : [];
@@ -1503,15 +1728,24 @@ export class TouchScreen extends Component {
             fields.push("boxProduct");
         }
         if (this.state.mode === "purchase") {
-            fields.push("lotName", "salePrice");
+            const origin = this.state.data.origin;
+            if (origin.country) {
+                fields.push("country");
+            }
+            // The states of the country, when it has any
+            if (origin.state && this.originStates().length) {
+                fields.push("state");
+            }
+            fields.push("lotName", "salePrice", "firm");
         }
         return fields;
     }
 
     /**
      * Enter in a field of the line works out the operation typed ("12,5*3") and goes to the
-     * next field; in the last one, it adds the line, as the button. Shift+Enter goes back.
-     * A whole line is entered with the keyboard (or a scale that ends with Enter).
+     * next field; in the last one, it adds the line, as the button. Shift+Enter goes back (from
+     * the first field, to the attributes). A whole line is entered with the keyboard (or a
+     * scale that ends with Enter). The selects of the origin change with the arrows.
      */
     onEntryKeydown(ev, field) {
         if (ev.key !== "Enter") {
@@ -1530,19 +1764,20 @@ export class TouchScreen extends Component {
         }
         const index = position + (ev.shiftKey ? -1 : 1);
         if (index < 0) {
+            const groups = document.querySelectorAll(".o_mercas_touch_entry .o_mercas_touch_attribute");
+            this.attributeButton(groups[groups.length - 1])?.focus();
             return;
         }
         if (index >= order.length) {
             this.onAddEntry();
             return;
         }
-        // The kind of box isn't written with the keypad: the keypad stays on the boxes
-        if (order[index] !== "boxProduct") {
+        // The kind of box, the origin and the firm negotiation aren't written with the keypad:
+        // it stays on the field it was
+        if (!ENTRY_NOT_KEYPAD.includes(order[index])) {
             entry.field = order[index];
         }
-        const input = document.querySelector(ENTRY_INPUTS[order[index]]);
-        input?.focus();
-        input?.select();
+        this.focusEntryInput(order[index]);
     }
 
     /** Enter in a float field works out the operation typed, without leaving the field. */
@@ -1646,6 +1881,72 @@ export class TouchScreen extends Component {
         this.state.product = line.product;
         this.state.lots = line.lot ? [line.lot] : [];
         this.openEntry(line.product, line.lot, line);
+    }
+
+    /** The ticket with the keyboard (F8): the line being changed, or else the last one. */
+    focusTicket() {
+        const infos = [...document.querySelectorAll(".o_mercas_touch_lines .o_mercas_touch_line_info")];
+        const editing = this.state.entry?.line || this.priceEditLine();
+        const index = editing ? this.state.lines.indexOf(editing) : -1;
+        (infos[index] || infos[infos.length - 1])?.focus();
+    }
+
+    /**
+     * A line of the ticket with the keyboard: up and down go to the line before or after,
+     * Enter changes it, P changes its price (see onPriceKeydown) and Delete removes it, once
+     * confirmed. Left goes back to the product search.
+     */
+    onTicketKeydown(ev) {
+        const infos = [...ev.currentTarget.querySelectorAll(".o_mercas_touch_line_info")];
+        const index = infos.indexOf(ev.target);
+        const line = this.state.lines[index];
+        if (index < 0 || !line || ev.ctrlKey || ev.metaKey || ev.altKey) {
+            return;
+        }
+        if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+            ev.preventDefault();
+            infos[index + (ev.key === "ArrowDown" ? 1 : -1)]?.focus();
+        } else if (ev.key === "Enter") {
+            ev.preventDefault();
+            this.onEditLine(line);
+        } else if (ev.key === "p" || ev.key === "P") {
+            ev.preventDefault();
+            this.onEditPrice(line);
+        } else if (ev.key === "Delete") {
+            ev.preventDefault();
+            this.confirmRemoveLine(line);
+        } else if (ev.key === "ArrowLeft") {
+            const search = document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
+            if (search) {
+                ev.preventDefault();
+                search.focus();
+                search.select();
+            }
+        }
+    }
+
+    /** Remove a line with the keyboard, once confirmed: the focus goes to the line after (or
+     * before), or to the product search. */
+    confirmRemoveLine(line) {
+        if (this.state.sending) {
+            return;
+        }
+        const index = this.state.lines.indexOf(line);
+        this.dialog.add(ConfirmationDialog, {
+            title: _t("Remove the line"),
+            body: _t("%s will be removed from the ticket.", line.product.name),
+            confirmLabel: _t("Remove"),
+            cancelLabel: _t("Keep it"),
+            confirm: () => {
+                this.onRemoveLine(line);
+                this.focusAfterRender(() => {
+                    const infos = document.querySelectorAll(".o_mercas_touch_lines .o_mercas_touch_line_info");
+                    return infos[Math.min(index, infos.length - 1)] ||
+                        document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
+                });
+            },
+            cancel: () => {},
+        });
     }
 
     onRemoveLine(line) {
@@ -1981,12 +2282,18 @@ export class TouchScreen extends Component {
      * puts them there.
      */
     onPalletsKeydown(ev) {
+        const container = ev.currentTarget;
+        const target = ev.target;
+        if (ev.key === "Enter" && target.matches(".o_mercas_touch_pallet_type")) {
+            // The type of a pallet, then its height (see onPalletHeightKeydown)
+            ev.preventDefault();
+            target.closest(".o_mercas_touch_pallet").querySelector(".o_mercas_touch_pallet_height")?.focus();
+            return;
+        }
         const moves = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
         if (!(ev.key in moves)) {
             return;
         }
-        const container = ev.currentTarget;
-        const target = ev.target;
         let next = null;
         if (target.matches(".o_mercas_touch_pallet_drop, .o_mercas_touch_pallet_add")) {
             const drops = [...container.querySelectorAll(
@@ -1997,7 +2304,11 @@ export class TouchScreen extends Component {
             const card = target.closest(".o_mercas_touch_pallet");
             const chips = [...card.querySelectorAll(".o_mercas_touch_pallet_chip")];
             const index = chips.indexOf(target);
-            if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+            if (ev.key === "ArrowUp" && index === 0) {
+                // Up from the first chip: the type of the pallet, or the quick spreading
+                next = card.querySelector(".o_mercas_touch_pallet_type") ||
+                    document.querySelector(".o_mercas_touch_pallets_spread");
+            } else if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
                 next = chips[index + moves[ev.key]];
             } else {
                 // The next pallet with boxes, at the same place or the last one
@@ -2016,6 +2327,40 @@ export class TouchScreen extends Component {
         }
         ev.preventDefault();
         next?.focus();
+    }
+
+    /**
+     * The height of a pallet with the keyboard: Enter works out the operation typed and goes to
+     * the type of the next pallet, or to Save after the last one; down goes to its boxes.
+     */
+    onPalletHeightKeydown(ev, pallet) {
+        const card = ev.currentTarget.closest(".o_mercas_touch_pallet");
+        if (ev.key === "Enter") {
+            ev.preventDefault();
+            this.onFloatChange(pallet, "height");
+            const cards = [...document.querySelectorAll(".o_mercas_touch_body .o_mercas_touch_pallet")];
+            const next = cards.slice(cards.indexOf(card) + 1)
+                .map((other) => other.querySelector(".o_mercas_touch_pallet_type")).find(Boolean);
+            (next || document.querySelector(".o_mercas_touch_pallets_save:not(:disabled)"))?.focus();
+        } else if (ev.key === "ArrowDown") {
+            const chip = card.querySelector(".o_mercas_touch_pallet_chip");
+            if (chip) {
+                ev.preventDefault();
+                chip.focus();
+            }
+        }
+    }
+
+    /** The quick spreading with the keyboard: + and - change the number of pallets, Enter on
+     * the button spreads the boxes, and down goes to the boxes. */
+    onPalletsQuickKeydown(ev) {
+        if (ev.key === "+" || ev.key === "-") {
+            ev.preventDefault();
+            this.onQuickCount(ev.key === "+" ? 1 : -1);
+        } else if (ev.key === "ArrowDown" && !ev.target.matches("select")) {
+            ev.preventDefault();
+            this.focusPalletChip();
+        }
     }
 
     /**
@@ -2182,6 +2527,9 @@ export class TouchScreen extends Component {
         pallets.pallets = result;
         pallets.selected = null;
         pallets.dirty = true;
+        // On with the type and the height of the pallets, or Ctrl+Enter to save them
+        this.focusAfterRender(".o_mercas_touch_pallet:not(.o_mercas_touch_pallet_loose) .o_mercas_touch_pallet_type",
+            ".o_mercas_touch_pallets_save");
     }
 
     palletsPayload() {
@@ -2349,6 +2697,8 @@ export class TouchScreen extends Component {
         if (invoice && this.state.done === done) {
             Object.assign(done, invoice.order);
             done.invoice = invoice;
+            // Its button gone, on to collecting it
+            this.focusAfterRender(".o_mercas_touch_collect_invoice", ".o_mercas_touch_done_actions .o_mercas_touch_new");
             await this.reloadPartner();
         }
     }
@@ -2382,6 +2732,20 @@ export class TouchScreen extends Component {
         const invoices = await this.orm.call(MODEL, "get_purchase_invoices", [done.id]);
         if (this.state.done === done) {
             done.invoiceList = invoices;
+            this.focusAfterRender(".o_mercas_touch_open_invoice");
+        }
+    }
+
+    /**
+     * The bills of a purchase with the keyboard: up and down between them, left and right
+     * between opening, printing or deleting it, Enter presses; down from the last one goes back
+     * to the buttons. Escape closes the list.
+     */
+    onInvoiceListKeydown(ev) {
+        const rows = [...ev.currentTarget.querySelectorAll(".o_mercas_touch_purchase_invoice")];
+        const items = (row) => [...row.querySelectorAll("button:not(:disabled)")];
+        if (this.moveInRows(ev, rows, items) === "ArrowDown") {
+            document.querySelector(".o_mercas_touch_purchase_invoices")?.focus();
         }
     }
 
@@ -2404,6 +2768,8 @@ export class TouchScreen extends Component {
             confirm: async () => {
                 if (await this.run("delete_purchase_invoice", [done.id, invoice.id])) {
                     await this.refreshOrderSummary();
+                    this.focusAfterRender(".o_mercas_touch_open_invoice", ".o_mercas_touch_purchase_invoices",
+                        ".o_mercas_touch_done_actions .btn");
                 }
             },
             cancel: () => {},
@@ -2488,6 +2854,7 @@ export class TouchScreen extends Component {
         const done = this.state.done;
         if (done.printPanel) {
             done.printPanel = null;
+            this.focusAfterRender(".o_mercas_touch_print");
             return;
         }
         done.mailPanel = null;
@@ -2497,6 +2864,7 @@ export class TouchScreen extends Component {
             return;
         }
         done.printPanel = { kinds: [...done.print.documents] };
+        this.focusAfterRender(".o_mercas_touch_print_panel input:not(:disabled)", ".o_mercas_touch_print_send:not(:disabled)");
     }
 
     onTogglePrintKind(kind) {
@@ -2517,6 +2885,7 @@ export class TouchScreen extends Component {
         await this.action.doAction(action);
         if (this.state.done === done) {
             done.printPanel = null;
+            this.focusAfterRender(".o_mercas_touch_print");
             // The invoice printed keeps its PDF: its comments can't be changed anymore
             await this.refreshOrderSummary();
         }
@@ -2527,6 +2896,7 @@ export class TouchScreen extends Component {
         const done = this.state.done;
         if (done.mailPanel) {
             done.mailPanel = null;
+            this.focusAfterRender(".o_mercas_touch_mail");
             return;
         }
         done.printPanel = null;
@@ -2538,6 +2908,34 @@ export class TouchScreen extends Component {
         done.mailPanel = {
             kinds: done.mail.documents.filter((kind) => this.mailEmail(done, kind)),
         };
+        this.focusAfterRender(".o_mercas_touch_mail_panel input:not(:disabled)", ".o_mercas_touch_mail_send:not(:disabled)");
+    }
+
+    /**
+     * The printing or the sending with the keyboard: up and down (or left and right) between
+     * the documents and the buttons, Enter checks the document focused or presses the button,
+     * and Ctrl+Enter prints or sends from anywhere (see mainActionButton).
+     */
+    onDonePanelKeydown(ev) {
+        const items = [...ev.currentTarget.querySelectorAll("input[type=checkbox]:not(:disabled), button:not(:disabled)")];
+        const index = items.indexOf(ev.target);
+        if (index < 0) {
+            return;
+        }
+        if (ev.key === "Enter" && ev.target.matches("input")) {
+            ev.preventDefault();
+            ev.target.click();
+        } else if (ev.key in ARROW_KEYS) {
+            ev.preventDefault();
+            items[index + (ev.key === "ArrowDown" || ev.key === "ArrowRight" ? 1 : -1)]?.focus();
+        }
+    }
+
+    /** The main button of an operation done: New, or Back to the list. */
+    focusDoneAction() {
+        const actions = document.querySelector(".o_mercas_touch_done_actions");
+        (actions?.querySelector(".o_mercas_touch_new, .o_mercas_touch_back_to_list") ||
+            actions?.querySelector(".btn:not(:disabled)"))?.focus();
     }
 
     onToggleMailKind(kind) {
@@ -2565,6 +2963,7 @@ export class TouchScreen extends Component {
         }
         if (this.state.done === done) {
             done.mailPanel = null;
+            this.focusAfterRender(".o_mercas_touch_mail");
             // The invoice sent: its comments can't be changed anymore
             await this.refreshOrderSummary();
         }
@@ -2586,6 +2985,18 @@ export class TouchScreen extends Component {
     onBoxDirection(direction) {
         this.state.boxDirection = direction;
         this.state.boxQty = {};
+        this.focusAfterRender(".o_mercas_touch_box_list_search");
+    }
+
+    /** Who gives back the boxes with the keyboard: left and right between both, Enter chooses
+     * and goes back to the search, as down. */
+    onBoxDirectionKeydown(ev) {
+        if (ev.key === "ArrowDown") {
+            ev.preventDefault();
+            document.querySelector(".o_mercas_touch_box_list_search")?.focus();
+        } else {
+            this.onButtonRowKeydown(ev);
+        }
     }
 
     /** How the boxes given back by a customer are settled: chosen by the counter each time. */
@@ -2659,8 +3070,20 @@ export class TouchScreen extends Component {
     }
 
     /** The boxes with the keyboard: Down or Enter in the search goes to the quantity of the
-     * first box found (see onBoxQtyKeydown). */
+     * first box found (see onBoxQtyKeydown), Up to who gives them back, and Page Up or Page
+     * Down changes it. */
     onBoxListSearchKeydown(ev) {
+        if (ev.key === "PageDown" || ev.key === "PageUp") {
+            // The customer gives back boxes, or we give them back to the supplier
+            ev.preventDefault();
+            this.onBoxDirection(this.state.boxDirection === "return" ? "deliver" : "return");
+            return;
+        }
+        if (ev.key === "ArrowUp") {
+            ev.preventDefault();
+            document.querySelector(".o_mercas_touch_box_direction .btn-primary")?.focus();
+            return;
+        }
         if (ev.key !== "Enter" && ev.key !== "ArrowDown") {
             return;
         }

@@ -2258,3 +2258,15 @@ msgstr "Teclado numérico del Mostrador"
 #: model:ir.model.fields,help:mercas_touch.field_res_users__mercas_touch_numpad
 msgid "Keypad and calculator on the screen of the Market Counter. Automatic: shown on a touch screen, hidden with a mouse and a keyboard."
 msgstr "Teclado numérico y calculadora en la pantalla del Mostrador. Automático: se muestra en una pantalla táctil y se oculta con ratón y teclado."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
+msgid "Remove the line"
+msgstr "Quitar la línea"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
+msgid "%s will be removed from the ticket."
+msgstr "Se quitará %s del ticket."
