@@ -1064,3 +1064,94 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_payment_tour", {
         },
     ],
 });
+
+registry.category("web_tour.tours").add("mercas_touch_keyboard_lots_tour", {
+    steps: () => [
+        {
+            trigger: ".o_mercas_touch_home",
+            run: "press F4",
+        },
+        {
+            trigger: ".o_mercas_touch_lot_search:focus",
+            run: "edit TOUR-LOT",
+        },
+        {
+            content: "The search done: only the two lots of the tour",
+            trigger: ".o_mercas_touch_lot_grid:has(.o_mercas_touch_lot_card:eq(1)):not(:has(.o_mercas_touch_lot_card:not(:contains(TOUR-LOT))))",
+        },
+        {
+            content: "Down from the search goes to the first lot, Enter selects it",
+            trigger: ".o_mercas_touch_lot_search:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_lot_card:eq(0) .o_mercas_touch_lot_select:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Right goes along the buttons of the lot, down to the same button of the next one",
+            trigger: ".o_mercas_touch_lot_card:eq(0).border-primary .o_mercas_touch_lot_select:focus:checked",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_lot_card:eq(0) .o_mercas_touch_lot_price_button:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_lot_card:eq(1) .o_mercas_touch_lot_price_button:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Enter in the price goes to Save, Enter saves",
+            trigger: ".o_mercas_touch_lot_price_input:focus",
+            run: "edit 3 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_confirm_lot_price:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Back in the list, the lot left has the focus",
+            trigger: ".o_mercas_touch_lot_card:eq(1) .o_mercas_touch_lot_select:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            content: "Left from the check stays; the scrap is the last button",
+            trigger: ".o_mercas_touch_lot_card:eq(1) .o_mercas_touch_lot_select:focus",
+            run: "press ArrowRight && press ArrowRight && press ArrowRight && press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_lot_card:eq(1) .o_mercas_touch_scrap_lot:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_scrap_qty:focus",
+            run: "edit 1 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_confirm_scrap:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_lot_card:eq(1):contains(Scrapped 1) .o_mercas_touch_lot_select:focus",
+            run: "press ArrowDown",
+        },
+        {
+            content: "Down from the last lot goes to the buttons of the lots selected",
+            trigger: ".o_mercas_touch_selected_labels:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_lot_card:eq(1) .o_mercas_touch_lot_select:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_lot_card:eq(0) .o_mercas_touch_lot_select:focus",
+            run: "press ArrowUp",
+        },
+        {
+            content: "Up from the first lot goes back to the search",
+            trigger: ".o_mercas_touch_lot_search:focus",
+        },
+    ],
+});

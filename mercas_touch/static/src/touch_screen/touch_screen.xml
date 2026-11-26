@@ -1177,7 +1177,7 @@
                     <input type="text" inputmode="decimal" class="form-control form-control-lg border-primary border-2 o_mercas_touch_scrap_qty"
                            autocomplete="off" t-att-value="scrap.qty" t-on-input="(ev) => this.onScrapInput(ev.target.value)"
                            t-on-change="() => this.onFloatChange(scrap, 'qty')"
-                           t-on-keydown="(ev) => this.onFloatKeydown(ev, scrap, 'qty')"/>
+                           t-on-keydown="(ev) => this.onFloatKeydown(ev, scrap, 'qty', '.o_mercas_touch_confirm_scrap')"/>
                     <div class="d-flex gap-2 mt-2">
                         <button class="btn btn-secondary btn-lg" t-on-click="this.onBack">Cancel</button>
                         <button class="btn btn-danger btn-lg flex-grow-1 o_mercas_touch_confirm_scrap"
@@ -1199,7 +1199,7 @@
                     <input type="text" inputmode="decimal" class="form-control form-control-lg border-primary border-2 o_mercas_touch_lot_price_input"
                            autocomplete="off" t-att-value="lotPrice.price" t-on-input="(ev) => this.onLotPriceInput(ev.target.value)"
                            t-on-change="() => this.onFloatChange(lotPrice, 'price')"
-                           t-on-keydown="(ev) => this.onFloatKeydown(ev, lotPrice, 'price')"/>
+                           t-on-keydown="(ev) => this.onFloatKeydown(ev, lotPrice, 'price', '.o_mercas_touch_confirm_lot_price')"/>
                     <div class="d-flex gap-2 mt-2">
                         <button class="btn btn-secondary btn-lg" t-on-click="this.onBack">Cancel</button>
                         <button class="btn btn-primary btn-lg flex-grow-1 o_mercas_touch_confirm_lot_price"
@@ -1218,8 +1218,9 @@
                        t-on-keydown="this.onLotSearchKeydown"/>
             </div>
             <div t-if="!this.state.lotList.length" class="alert alert-info">No lot pending of invoicing.</div>
-            <div class="o_mercas_touch_lot_grid">
-                <div t-foreach="this.state.lotList" t-as="lot" t-key="lot.id"
+            <!-- Also with the keyboard: a lot is a row of its check and buttons (see onLotListKeydown) -->
+            <div class="o_mercas_touch_lot_grid" t-on-keydown="this.onLotListKeydown">
+                <div t-foreach="this.state.lotList" t-as="lot" t-key="lot.id" t-att-data-lot-id="lot.id"
                      t-att-class="'card o_mercas_touch_lot_card ' + (this.state.lotSelection[lot.id] ? 'border-primary border-2' : '')">
                     <div class="card-body p-2">
                         <div class="d-flex align-items-start gap-2">
@@ -1273,7 +1274,8 @@
                     </div>
                 </div>
             </div>
-            <div class="o_mercas_touch_lot_actions d-flex flex-wrap align-items-center gap-2 mt-3 py-2 bg-view border-top">
+            <div class="o_mercas_touch_lot_actions d-flex flex-wrap align-items-center gap-2 mt-3 py-2 bg-view border-top"
+                 t-on-keydown="this.onLotActionsKeydown">
                 <span class="me-auto"><t t-out="this.selectedLotIds().length"/> lots selected</span>
                 <button class="btn btn-secondary btn-lg o_mercas_touch_selected_labels" t-att-disabled="this.state.sending or !this.selectedLotIds().length"
                         t-on-click="() => this.onPrintLotLabels(this.selectedLotIds())"><i class="fa fa-tags"/> Labels</button>

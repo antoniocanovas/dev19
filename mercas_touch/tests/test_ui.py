@@ -76,6 +76,19 @@ class TestMercasTouchUi(HttpCase):
         self.assertEqual(invoice.payment_state, 'partial')
         self.assertEqual(invoice.amount_residual, 40.0)
 
+    def test_keyboard_lots(self):
+        """ The lots with the keyboard: selected, priced and scrapped with the arrows and Enter. """
+        self.env['mercas.touch'].with_user(self.user).purchase({
+            'uuid': str(uuid.uuid4()), 'partner_id': self.supplier.id,
+            'lines': [{'product_id': self.pear.id, 'qty': 50.0, 'price_unit': 1.0, 'lot_name': 'TOUR-LOT-2'}],
+        })
+        self.start_tour('/odoo/mercas-touch', 'mercas_touch_keyboard_lots_tour', login='touch_tour')
+        lots = self.env['stock.lot'].search([('name', 'in', ('TOUR-LOT', 'TOUR-LOT-2'))])
+        priced = lots.filtered(lambda lot: lot.mercas_sale_price == 3)
+        self.assertEqual(len(priced), 1)
+        scrap = self.env['stock.scrap'].search([('lot_id', 'in', lots.ids), ('state', '=', 'done')])
+        self.assertEqual((scrap.lot_id, scrap.scrap_qty), (priced, 1))
+
     def test_keyboard_payment(self):
         """ A payment made with the keyboard: the invoice marked with the arrows and Enter, the
         amount, the journal with the arrows, the memo and the button. """

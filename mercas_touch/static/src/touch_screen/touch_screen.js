@@ -176,6 +176,8 @@ export class TouchScreen extends Component {
         // last mode opened, focused back in the main menu
         this.screenKey = null;
         this.lastMode = null;
+        // The lot scrapped or priced, focused back in the list of lots
+        this.lastLotId = null;
         onMounted(() => this.focusFirstField());
         onPatched(() => {
             this.focusFirstField();
@@ -565,6 +567,18 @@ export class TouchScreen extends Component {
             invoice.focus();
             return;
         }
+        // Back to the lots from scrapping one or changing its price, the lot left
+        const lotList = this.state.mode === "lots" && !this.state.scrap && !this.state.lotPrice;
+        const lot = lotList && this.lastLotId && document.querySelector(
+            `.o_mercas_touch_body .o_mercas_touch_lot_card[data-lot-id="${this.lastLotId}"] .o_mercas_touch_lot_select`
+        );
+        if (lotList) {
+            this.lastLotId = null;
+        }
+        if (lot) {
+            lot.focus();
+            return;
+        }
         const field = document.querySelector(".o_mercas_touch_body")?.querySelector(
             "input:not([type=checkbox]):not([type=radio]):not([readonly]):not([disabled]), " +
             ".o_mercas_touch_lot:not(:disabled)"
@@ -626,7 +640,7 @@ export class TouchScreen extends Component {
     }
 
     async onLotSearchKeydown(ev) {
-        if (ev.key !== "Enter") {
+        if (this.focusFirstTile(ev, ".o_mercas_touch_lot_select") || ev.key !== "Enter") {
             return;
         }
         ev.preventDefault();
@@ -1521,10 +1535,17 @@ export class TouchScreen extends Component {
     }
 
     /** Enter in a float field works out the operation typed, without leaving the field. */
-    onFloatKeydown(ev, record, key) {
+    /**
+     * Enter in a decimal field works out the operation typed; with `next`, it also goes to that
+     * button (Scrap, Save...), which Enter then presses: a field doesn't confirm by itself.
+     */
+    onFloatKeydown(ev, record, key, next = null) {
         if (ev.key === "Enter") {
             ev.preventDefault();
             this.onFloatChange(record, key);
+            if (next) {
+                document.querySelector(`${next}:not(:disabled)`)?.focus();
+            }
         }
     }
 
@@ -2688,6 +2709,64 @@ export class TouchScreen extends Component {
         this.state.lotSelection = selection;
     }
 
+    /**
+     * The lots with the keyboard. Each lot is a row: its check and its buttons (price, details,
+     * labels, scrap). Left and right move along the row; up and down go to the lot before or
+     * after, at the same place of the row (up from the first lot, to the search; down from the
+     * last one, to the buttons of the lots selected). Enter (or the space) on the check selects
+     * the lot; on a button, presses it.
+     */
+    onLotListKeydown(ev) {
+        const moves = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: "next", ArrowUp: "previous" };
+        const card = ev.target.closest(".o_mercas_touch_lot_card");
+        if (!card) {
+            return;
+        }
+        const row = (lotCard) => [...lotCard.querySelectorAll(".o_mercas_touch_lot_select, button")];
+        if (ev.key === "Enter" && ev.target.matches(".o_mercas_touch_lot_select")) {
+            ev.preventDefault();
+            ev.target.click();
+            return;
+        }
+        if (!(ev.key in moves)) {
+            return;
+        }
+        ev.preventDefault();
+        const items = row(card);
+        const index = items.indexOf(ev.target);
+        let next;
+        if (moves[ev.key] === 1) {
+            next = items.slice(index + 1).find((item) => !item.disabled);
+        } else if (moves[ev.key] === -1) {
+            next = items.slice(0, index).reverse().find((item) => !item.disabled);
+        } else {
+            const cards = [...ev.currentTarget.querySelectorAll(".o_mercas_touch_lot_card")];
+            const other = cards[cards.indexOf(card) + (moves[ev.key] === "next" ? 1 : -1)];
+            if (other) {
+                const item = row(other)[index];
+                next = item && !item.disabled ? item : row(other)[0];
+            } else if (moves[ev.key] === "previous") {
+                next = document.querySelector(".o_mercas_touch_lot_search");
+            } else {
+                next = document.querySelector(".o_mercas_touch_lot_actions button:not(:disabled)");
+            }
+        }
+        next?.focus();
+    }
+
+    /** The buttons of the lots selected: left and right between them, up back to the last lot. */
+    onLotActionsKeydown(ev) {
+        if (ev.key === "ArrowUp") {
+            const checks = document.querySelectorAll(".o_mercas_touch_body .o_mercas_touch_lot_select");
+            if (checks.length) {
+                ev.preventDefault();
+                checks[checks.length - 1].focus();
+            }
+        } else if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+            this.onButtonRowKeydown(ev);
+        }
+    }
+
     selectedLotIds() {
         return Object.keys(this.state.lotSelection).map((id) => parseInt(id, 10));
     }
@@ -2708,6 +2787,7 @@ export class TouchScreen extends Component {
     }
 
     onScrapLot(lot) {
+        this.lastLotId = lot.id;
         this.state.scrap = { lot, qty: "" };
     }
 
@@ -2733,6 +2813,7 @@ export class TouchScreen extends Component {
     }
 
     onLotPrice(lot) {
+        this.lastLotId = lot.id;
         this.state.lotPrice = { lot, price: lot.sale_price ? this.formatInput(lot.sale_price) : "" };
     }
 
