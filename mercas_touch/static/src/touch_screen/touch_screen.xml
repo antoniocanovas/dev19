@@ -979,7 +979,9 @@
                 </button>
             </div>
             <div class="d-flex flex-column flex-lg-row gap-3">
-                <div class="flex-grow-1 d-flex flex-wrap gap-2 align-content-start">
+                <!-- Also with the keyboard: the arrows between the chips, then between the pallets
+                     where the boxes chosen can go (see onPalletsKeydown) -->
+                <div class="flex-grow-1 d-flex flex-wrap gap-2 align-content-start" t-on-keydown="this.onPalletsKeydown">
                     <t t-set="looseChips" t-value="this.palletChips(null)"/>
                     <div t-att-class="'card o_mercas_touch_pallet o_mercas_touch_pallet_loose' + (p.selected and p.selected.from !== null ? ' border-primary border-2' : '')"
                          style="width: 17rem; min-height: 12rem;" role="button" t-on-click="() => this.onDropOnPallet(null)">
@@ -1054,7 +1056,7 @@
                         <!-- Resolución especial para móvil: typed with the keyboard of the phone -->
                         <input type="text" class="form-control fs-3 text-center o_mercas_touch_pallets_move_qty"
                                t-att-inputmode="this.keypadOnly() ? 'none' : 'numeric'" t-att-readonly="this.keypadOnly()"
-                               t-att-value="p.moveQty" t-on-input="this.onMoveQtyInput"/>
+                               t-att-value="p.moveQty" t-on-input="this.onMoveQtyInput" t-on-keydown="this.onMoveQtyKeydown"/>
                         <button class="btn btn-secondary" t-on-click="() => this.onMoveStep(1)"><i class="fa fa-plus"/></button>
                     </div>
                     <div class="small text-muted">Tap the pallet to put them on, or "Not on a pallet".</div>

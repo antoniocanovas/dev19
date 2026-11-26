@@ -89,6 +89,19 @@ class TestMercasTouchUi(HttpCase):
         scrap = self.env['stock.scrap'].search([('lot_id', 'in', lots.ids), ('state', '=', 'done')])
         self.assertEqual((scrap.lot_id, scrap.scrap_qty), (priced, 1))
 
+    def test_keyboard_pallets(self):
+        """ The boxes put on pallets with the keyboard: the chips and the pallets with the arrows
+        and Enter, the boxes to move typed. """
+        self.env['stock.package.type'].create({'name': 'Tour Euro', 'mercas_is_pallet': True})
+        draft = self.env['mercas.touch'].with_user(self.user).save_draft('sale', {
+            'uuid': str(uuid.uuid4()), 'partner_id': self.customer.id, 'lines': [
+                {'product_id': self.pear.id, 'lot_id': self.lot.id, 'qty': 40.0, 'price_unit': 2.0,
+                 'box_qty': 8, 'box_product_id': self.box.id},
+            ]})
+        self.start_tour('/odoo/mercas-touch', 'mercas_touch_keyboard_pallets_tour', login='touch_tour')
+        pallets = self.env['mercas.touch'].get_pallets(draft['id'])['pallets']
+        self.assertEqual([sum(line['box_qty'] for line in pallet['lines']) for pallet in pallets], [7])
+
     def test_keyboard_payment(self):
         """ A payment made with the keyboard: the invoice marked with the arrows and Enter, the
         amount, the journal with the arrows, the memo and the button. """

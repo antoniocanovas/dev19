@@ -263,6 +263,12 @@ export class TouchScreen extends Component {
             ev.preventDefault();
             ev.stopImmediatePropagation();
             document.activeElement?.blur();
+        } else if (ev.key === "Escape" && this.state.pallets?.selected && !document.querySelector(".modal")) {
+            // Escape leaves the boxes chosen to move, not the pallets
+            ev.preventDefault();
+            ev.stopImmediatePropagation();
+            this.state.pallets.selected = null;
+            this.focusAfterRender(".o_mercas_touch_pallet_chip");
         } else if (ev.key === "Escape" && this.state.mode && !document.querySelector(".modal")) {
             ev.preventDefault();
             ev.stopImmediatePropagation();
@@ -559,6 +565,11 @@ export class TouchScreen extends Component {
             return;
         }
         this.lastMode = this.state.mode;
+        // The pallets: the first chip of boxes, those not on a pallet first (see onPalletsKeydown)
+        if (this.state.pallets) {
+            this.focusPalletChip();
+            return;
+        }
         // Collecting, the first invoice to choose (see onPaymentCheckKeydown); without any, the amount
         const invoice = this.state.mode === "payment" && document.querySelector(
             ".o_mercas_touch_body .o_mercas_touch_invoice input, .o_mercas_touch_body .o_mercas_touch_credit input"
@@ -1949,6 +1960,85 @@ export class TouchScreen extends Component {
         pallets.selected = { lineId: chip.line.id, from: pallet ? pallet.key : null };
         pallets.moveQty = String(chip.boxes);
         pallets.moveFresh = true;
+        this.focusAfterRender(".o_mercas_touch_pallets_move_qty");
+    }
+
+    /** The first chip of boxes not on a pallet, or else the first one, or else Save. */
+    focusPalletChip() {
+        const body = document.querySelector(".o_mercas_touch_body");
+        const element = body?.querySelector(".o_mercas_touch_pallet_loose .o_mercas_touch_pallet_chip") ||
+            body?.querySelector(".o_mercas_touch_pallet_chip") ||
+            body?.querySelector(".o_mercas_touch_pallets_save:not(:disabled)");
+        element?.focus();
+    }
+
+    /**
+     * The pallets with the keyboard. On a chip of boxes, up and down go to the chip before or
+     * after on the same pallet, left and right to the pallet before or after (or "Not on a
+     * pallet"); Enter chooses it, and the focus goes to the boxes to move (see
+     * onMoveQtyKeydown). With some boxes chosen, the arrows go between the pallets where they
+     * can be put ("Put here", "Take them off here", and the button of a new pallet) and Enter
+     * puts them there.
+     */
+    onPalletsKeydown(ev) {
+        const moves = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+        if (!(ev.key in moves)) {
+            return;
+        }
+        const container = ev.currentTarget;
+        const target = ev.target;
+        let next = null;
+        if (target.matches(".o_mercas_touch_pallet_drop, .o_mercas_touch_pallet_add")) {
+            const drops = [...container.querySelectorAll(
+                ".o_mercas_touch_pallet_drop, .o_mercas_touch_pallet_add:not(:disabled)"
+            )];
+            next = drops[(drops.indexOf(target) + moves[ev.key] + drops.length) % drops.length];
+        } else if (target.matches(".o_mercas_touch_pallet_chip")) {
+            const card = target.closest(".o_mercas_touch_pallet");
+            const chips = [...card.querySelectorAll(".o_mercas_touch_pallet_chip")];
+            const index = chips.indexOf(target);
+            if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+                next = chips[index + moves[ev.key]];
+            } else {
+                // The next pallet with boxes, at the same place or the last one
+                const cards = [...container.querySelectorAll(".o_mercas_touch_pallet")];
+                const step = moves[ev.key];
+                for (let i = cards.indexOf(card) + step; i >= 0 && i < cards.length; i += step) {
+                    const others = cards[i].querySelectorAll(".o_mercas_touch_pallet_chip");
+                    if (others.length) {
+                        next = others[Math.min(index, others.length - 1)];
+                        break;
+                    }
+                }
+            }
+        } else {
+            return;
+        }
+        ev.preventDefault();
+        next?.focus();
+    }
+
+    /**
+     * The boxes to move with the keyboard: the digits (also with the keypad on the screen, when
+     * the field takes only it), + and - add or take a box, and Enter or down go to the first
+     * pallet where they can be put (see onPalletsKeydown).
+     */
+    onMoveQtyKeydown(ev) {
+        if (/^[0-9]$/.test(ev.key) && ev.target.readOnly) {
+            ev.preventDefault();
+            this.onNumpadKey(ev.key);
+        } else if (ev.key === "Backspace" && ev.target.readOnly) {
+            ev.preventDefault();
+            this.onNumpadKey("backspace");
+        } else if (ev.key === "+" || ev.key === "-") {
+            ev.preventDefault();
+            this.onMoveStep(ev.key === "+" ? 1 : -1);
+        } else if (ev.key === "Enter" || ev.key === "ArrowDown") {
+            ev.preventDefault();
+            document.querySelector(
+                ".o_mercas_touch_body .o_mercas_touch_pallet_drop, .o_mercas_touch_body .o_mercas_touch_pallet_add:not(:disabled)"
+            )?.focus();
+        }
     }
 
     /** Boxes of the chip chosen still where they are. */
@@ -2003,6 +2093,10 @@ export class TouchScreen extends Component {
         }
         pallets.selected = null;
         pallets.dirty = true;
+        // On with the boxes left out of the pallets, or else to Save
+        if (!browser.matchMedia?.("(pointer: coarse)").matches) {
+            this.pendingFocus = [".o_mercas_touch_pallet_loose .o_mercas_touch_pallet_chip", ".o_mercas_touch_pallets_save"];
+        }
     }
 
     onAddPallet() {

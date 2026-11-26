@@ -1155,3 +1155,91 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_lots_tour", {
         },
     ],
 });
+
+registry.category("web_tour.tours").add("mercas_touch_keyboard_pallets_tour", {
+    steps: () => [
+        {
+            trigger: ".o_mercas_touch_home",
+            run: "press F1",
+        },
+        {
+            trigger: ".o_mercas_touch_quotation_search:focus",
+            run: "edit Tour Customer && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_open_pallets:enabled",
+            run: "click",
+        },
+        {
+            content: "The first chip of the boxes not on a pallet has the focus; Enter chooses it",
+            trigger: ".o_mercas_touch_pallet_loose .o_mercas_touch_pallet_chip:focus",
+            run: "press Enter",
+        },
+        {
+            content: "The boxes to move, typed; Enter goes to where they can be put: a new pallet",
+            trigger: ".o_mercas_touch_pallets_move_qty:focus:value(8)",
+            run: "press 3",
+        },
+        {
+            trigger: ".o_mercas_touch_pallets_move_qty:focus:value(3)",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_pallet_add:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Put there, back to the boxes left",
+            trigger: ".o_mercas_touch_pallet_loose .o_mercas_touch_pallet_chip:focus:contains(5)",
+            run: "press Enter",
+        },
+        {
+            content: "- takes a box",
+            trigger: ".o_mercas_touch_pallets_move_qty:focus:value(5)",
+            run() {
+                this.anchor.dispatchEvent(new KeyboardEvent("keydown", { key: "-", bubbles: true }));
+            },
+        },
+        {
+            trigger: ".o_mercas_touch_pallets_move_qty:focus:value(4)",
+            run: "press Enter",
+        },
+        {
+            content: "The arrows go between the pallets where they can be put",
+            trigger: ".o_mercas_touch_pallet_drop:focus:contains(Put 4 here)",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_pallet_add:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_pallet_drop:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Right goes to the chip of the pallet",
+            trigger: ".o_mercas_touch_pallet_loose .o_mercas_touch_pallet_chip:focus:contains(1)",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_pallet:not(.o_mercas_touch_pallet_loose) .o_mercas_touch_pallet_chip:focus:contains(7)",
+            run: "press Enter",
+        },
+        {
+            content: "Escape leaves the boxes chosen, not the pallets",
+            trigger: ".o_mercas_touch_pallets_move_qty:focus:value(7)",
+            run: "press Escape",
+        },
+        {
+            trigger: ".o_mercas_touch_pallets:not(:has(.o_mercas_touch_pallets_move)) .o_mercas_touch_pallet_chip:focus",
+        },
+        {
+            trigger: ".o_mercas_touch_pallets_save",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_ticket",
+        },
+    ],
+});
