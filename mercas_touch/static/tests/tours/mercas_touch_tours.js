@@ -1053,11 +1053,24 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
             run: "press Escape",
         },
         {
-            content: "Ctrl+Enter goes to how to settle the amount: paid now",
+            content: "Down from the last line goes to how to settle the amount, up back",
             trigger: ".o_mercas_touch_box_list_search:focus",
-            run: "press Control+Enter",
+            run: "press F8",
         },
         {
+            trigger: ".o_mercas_touch_box_line .o_mercas_touch_line_info:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_box_pay:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_box_line .o_mercas_touch_line_info:focus",
+            run: "press ArrowDown",
+        },
+        {
+            content: "Paid now",
             trigger: ".o_mercas_touch_box_pay:focus",
             run: "press Enter",
         },
@@ -1073,6 +1086,15 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
         {
             content: "The journal chosen, Enter goes to the button that moves the boxes",
             trigger: ".o_mercas_touch_box_journal.btn-primary:not(:focus)",
+        },
+        {
+            content: "Up from the button goes to the journal, down back to the button",
+            trigger: ".o_mercas_touch_move_boxes:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_box_journal.btn-primary:focus",
+            run: "press ArrowDown",
         },
         {
             content: "Ctrl+Enter moves the boxes",

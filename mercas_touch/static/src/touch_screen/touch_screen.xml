@@ -1260,12 +1260,14 @@
     <!-- How to settle the boxes given back and the button that moves them, under the lines
          (also Ctrl+Enter) -->
     <t t-name="mercas_touch.TouchScreenBoxesActions">
-        <div class="d-flex flex-column gap-2 o_mercas_touch_box_actions">
+        <!-- Also with the keyboard: down from the lines, through how to settle, the journal and
+             the button (see onBoxActionsKeydown) -->
+        <div class="d-flex flex-column gap-2 o_mercas_touch_box_actions" t-on-keydown="this.onBoxActionsKeydown">
             <!-- Boxes given back by a customer: their amount, as a credit for the next invoices or
                  paid now; the counter chooses each time -->
             <div t-if="this.state.boxDirection === 'return'" class="border rounded p-2 o_mercas_touch_box_settle">
                 <div class="fw-bold mb-2">Amount of the boxes</div>
-                <div class="d-grid gap-2" role="group" t-on-keydown="this.onButtonRowKeydown">
+                <div class="d-grid gap-2 o_mercas_touch_box_settle_choices" role="group">
                     <button t-att-class="'btn btn-lg o_mercas_touch_box_compensate ' + (this.state.boxSettle === 'compensate' ? 'btn-primary' : 'btn-secondary')"
                             t-att-disabled="!this.state.data.can_compensate"
                             t-on-click="() => this.onBoxSettle('compensate')">
@@ -1279,8 +1281,7 @@
                 <div t-if="!this.state.data.can_compensate" class="small text-muted mt-1">
                     To leave it as a credit, set the offsetting journal on the Mercas tab of the company.
                 </div>
-                <div t-if="this.state.boxSettle === 'pay'" class="d-flex flex-wrap gap-2 mt-2 o_mercas_touch_box_journals"
-                     t-on-keydown="this.onButtonRowKeydown">
+                <div t-if="this.state.boxSettle === 'pay'" class="d-flex flex-wrap gap-2 mt-2 o_mercas_touch_box_journals">
                     <button t-foreach="this.state.data.journals" t-as="journal" t-key="journal.id"
                             t-att-class="'btn btn-lg o_mercas_touch_box_journal ' + (journal.id === this.state.boxJournalId ? 'btn-primary' : 'btn-secondary')"
                             t-on-click="() => this.onSelectBoxJournal(journal.id)">

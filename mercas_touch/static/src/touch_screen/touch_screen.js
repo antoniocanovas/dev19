@@ -2027,10 +2027,16 @@ export class TouchScreen extends Component {
         } else if (ev.key === "Delete") {
             ev.preventDefault();
             this.confirmRemoveLine(line);
-        } else if (this.moveInRows(ev, rows, (other) => this.ticketLineItems(other)) === "ArrowLeft") {
-            const search = document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
-            search?.focus();
-            search?.select();
+        } else {
+            const edge = this.moveInRows(ev, rows, (other) => this.ticketLineItems(other));
+            if (edge === "ArrowLeft") {
+                const search = document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
+                search?.focus();
+                search?.select();
+            } else if (edge === "ArrowDown" && boxes) {
+                // Down from the last line of boxes: how to settle them, and the button
+                this.focusBoxStop(this.boxActionStops()[0]);
+            }
         }
     }
 
@@ -3178,12 +3184,12 @@ export class TouchScreen extends Component {
 
     /** A row of buttons with the keyboard (how to settle the boxes, their journal): the arrows
      * move between them, going round, and Enter presses the one focused. */
-    onButtonRowKeydown(ev) {
+    onButtonRowKeydown(ev, row = ev.currentTarget) {
         const moves = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
         if (!(ev.key in moves)) {
             return;
         }
-        const buttons = [...ev.currentTarget.querySelectorAll("button:not(:disabled)")];
+        const buttons = [...row.querySelectorAll("button:not(:disabled)")];
         const index = buttons.indexOf(document.activeElement);
         if (!buttons.length || index < 0) {
             return;
@@ -3325,6 +3331,64 @@ export class TouchScreen extends Component {
             this.state.boxLines.push({ key: `${Date.now()}-${this.state.boxLines.length}`, productId: entry.productId, qty });
         }
         this.state.boxEntry = null;
+    }
+
+    /** What is under the lines of boxes, from top to bottom: the ways to settle them (given
+     * back by a customer), the journals to pay them with (as one stop) and the button. */
+    boxActionStops() {
+        const actions = document.querySelector(".o_mercas_touch_box_actions");
+        if (!actions) {
+            return [];
+        }
+        const stops = [...actions.querySelectorAll(".o_mercas_touch_box_settle_choices .btn:not(:disabled)")];
+        const journals = actions.querySelector(".o_mercas_touch_box_journals");
+        if (journals) {
+            stops.push(journals);
+        }
+        const button = actions.querySelector(".o_mercas_touch_move_boxes:not(:disabled)");
+        if (button) {
+            stops.push(button);
+        }
+        return stops;
+    }
+
+    /** Focus a stop of boxActionStops: the journals, on the one chosen (or the first one). */
+    focusBoxStop(stop) {
+        if (stop?.matches(".o_mercas_touch_box_journals")) {
+            stop = stop.querySelector(".btn-primary") || stop.querySelector(".btn");
+        }
+        stop?.focus();
+    }
+
+    /**
+     * Under the lines of boxes with the keyboard: up and down go from the last line to how to
+     * settle them ("Credit for next invoices", "Pay now"), the journal and the button that moves
+     * them, and back up to the lines; left and right go between the journals. Enter chooses.
+     */
+    onBoxActionsKeydown(ev) {
+        if (!(ev.key in ARROW_KEYS)) {
+            return;
+        }
+        const stops = this.boxActionStops();
+        const index = stops.findIndex((stop) => stop === ev.target ||
+            (stop.matches(".o_mercas_touch_box_journals") && stop.contains(ev.target)));
+        if (index < 0) {
+            return;
+        }
+        ev.preventDefault();
+        if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+            if (stops[index].matches(".o_mercas_touch_box_journals")) {
+                this.onButtonRowKeydown(ev, stops[index]);
+            }
+            return;
+        }
+        const next = stops[index + (ev.key === "ArrowDown" ? 1 : -1)];
+        if (next) {
+            this.focusBoxStop(next);
+        } else if (ev.key === "ArrowUp") {
+            const infos = document.querySelectorAll(".o_mercas_touch_lines .o_mercas_touch_line_info");
+            infos[infos.length - 1]?.focus();
+        }
     }
 
     /** The trash of a line of boxes. */
