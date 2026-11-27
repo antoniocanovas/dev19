@@ -16,7 +16,7 @@
                             <t t-if="this.state.partner"> · <span class="o_mercas_touch_partner_name" t-out="this.state.partner.name"/></t>
                             <t t-if="this.state.order and !this.state.done"> · <span class="o_mercas_touch_order_name" t-out="this.state.order.name"/></t>
                             <t t-elif="this.state.choosingCustomer and this.state.mode === 'sale'"> · <span class="text-muted">New quotation</span></t>
-                            <t t-elif="this.state.choosingCustomer"> · <span class="text-muted">New purchase</span></t>
+                            <t t-elif="this.state.choosingCustomer and this.state.mode === 'purchase'"> · <span class="text-muted">New purchase</span></t>
                         </div>
                         <div t-if="this.state.partner" class="d-flex flex-wrap gap-2 small o_mercas_touch_partner_badges">
                             <span t-if="this.state.partner.city" class="text-muted" t-out="this.state.partner.city"/>
@@ -61,6 +61,7 @@
                     <t t-if="this.state.mode === 'lots'" t-call="mercas_touch.TouchScreenLots"/>
                     <t t-elif="this.state.mode === 'labels'" t-call="mercas_touch.TouchScreenLabels"/>
                     <t t-elif="this.hasDrafts() and !this.state.partner and !this.state.choosingCustomer" t-call="mercas_touch.TouchScreenDrafts"/>
+                    <t t-elif="this.state.mode === 'boxes' and !this.state.partner and !this.state.choosingCustomer and this.state.boxDrafts.length" t-call="mercas_touch.TouchScreenBoxDrafts"/>
                     <t t-elif="!this.state.partner" t-call="mercas_touch.TouchScreenPartners"/>
                     <t t-elif="this.state.pallets" t-call="mercas_touch.TouchScreenPallets"/>
                     <t t-elif="this.state.done" t-call="mercas_touch.TouchScreenDone"/>
@@ -1182,6 +1183,43 @@
         </div>
     </t>
 
+    <!-- Box movements in progress to go on with, or a new one (only when there is any) -->
+    <t t-name="mercas_touch.TouchScreenBoxDrafts">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <div class="input-group input-group-lg flex-grow-1 o_mercas_touch_search">
+                <span class="input-group-text"><i class="fa fa-search"/></span>
+                <input type="search" class="form-control o_mercas_touch_box_draft_search" autocomplete="off"
+                       placeholder="Search a box movement or a contact"
+                       t-att-value="this.state.boxDraftSearch" t-on-input="this.onBoxDraftSearchInput"
+                       t-on-keydown="this.onBoxDraftSearchKeydown"/>
+            </div>
+            <button class="btn btn-primary btn-lg o_mercas_touch_new_box_draft" t-on-click="this.onNewBoxDraft">
+                <i class="fa fa-plus"/> New
+            </button>
+        </div>
+        <t t-set="boxDrafts" t-value="this.visibleBoxDrafts()"/>
+        <div t-if="!boxDrafts.length" class="alert alert-info">No box movement found.</div>
+        <!-- Chosen also with the keyboard: Down from the search, the arrows between them, Enter -->
+        <div class="o_mercas_touch_grid" t-on-keydown="(ev) => this.onGridKeydown(ev, '.o_mercas_touch_box_draft')">
+            <button t-foreach="boxDrafts" t-as="draft" t-key="draft.direction + draft.id"
+                    class="btn btn-outline-secondary o_mercas_touch_tile o_mercas_touch_box_draft"
+                    t-on-click="() => this.onResumeBoxDraft(draft)">
+                <div class="d-flex align-items-start gap-2">
+                    <span class="fs-5 fw-bold text-truncate me-auto" t-out="draft.partner"/>
+                    <span class="badge text-bg-secondary" t-out="draft.name"/>
+                </div>
+                <div class="d-flex justify-content-between gap-2 small">
+                    <span t-if="draft.direction === 'return'" class="text-truncate">The customer gives back boxes</span>
+                    <span t-else="" class="text-truncate">We give back boxes to the supplier</span>
+                    <strong class="text-nowrap" t-out="this.boxCountText(draft.boxes)"/>
+                </div>
+                <div class="small text-muted text-truncate">
+                    <t t-out="this.formatDateTimeShort(draft.date)"/><t t-if="draft.user"> · <t t-out="draft.user"/></t>
+                </div>
+            </button>
+        </div>
+    </t>
+
     <!-- The boxes of a kind to add to the ticket, or to change on its line -->
     <t t-name="mercas_touch.TouchScreenBoxEntry">
         <t t-set="boxEntry" t-value="this.state.boxEntry"/>
@@ -1222,6 +1260,12 @@
     <!-- The lines of the boxes to move, as the ticket of a sale, with how to settle them and
          the button that moves them (also Ctrl+Enter) -->
     <t t-name="mercas_touch.TouchScreenBoxTicket">
+        <div class="small mb-1 o_mercas_touch_save_state">
+            <span t-if="this.state.saveState === 'saving'" class="text-muted"><i class="spinner-border spinner-border-sm me-1"/>Saving…</span>
+            <span t-elif="this.state.saveState === 'saved'" class="text-success"><i class="fa fa-check me-1"/>Saved in <t t-out="this.state.order.name"/></span>
+            <span t-elif="this.state.saveState === 'error'" class="text-danger"><i class="fa fa-exclamation-triangle me-1"/>Not saved: it will be tried again with the next change</span>
+            <span t-else="" class="text-muted">It is saved in draft with the first line</span>
+        </div>
         <div class="fw-bold mb-2">
             Boxes
             <span class="text-muted fw-normal" t-if="this.state.boxLines.length === 1"> · 1 line</span>
@@ -1289,7 +1333,12 @@
                     </button>
                 </div>
             </div>
-            <div class="d-flex">
+            <div class="d-flex gap-2">
+                <button class="btn btn-secondary btn-lg o_mercas_touch_box_clear" title="Cancel the box movement"
+                        t-att-disabled="this.state.sending or (!this.state.boxLines.length and !this.state.order)"
+                        t-on-click="this.onClearBoxes">
+                    <i class="fa fa-eraser"/>
+                </button>
                 <button class="btn btn-primary btn-lg flex-grow-1 o_mercas_touch_move_boxes"
                         t-att-disabled="this.state.sending or !this.boxesReady()" t-on-click="this.onMoveBoxes">
                     <i t-if="this.state.sending" class="spinner-border spinner-border-sm me-1"/>

@@ -292,7 +292,8 @@ class MercasTouch(models.AbstractModel):
         SaleOrder = self.env['sale.order']
         company_domain = [('company_id', '=', self.env.company.id)]
         return {
-            'drafts': SaleOrder.search_count([*company_domain, ('state', 'in', ('draft', 'sent'))]),
+            'drafts': SaleOrder.search_count([*company_domain, ('state', 'in', ('draft', 'sent')),
+                                              ('mercas_touch_boxes', '=', False)]),
             'to_deliver': SaleOrder.search_count([
                 *company_domain, ('state', '=', 'sale'),
                 ('delivery_status', 'in', ('pending', 'started', 'partial')),
@@ -756,7 +757,9 @@ class MercasTouch(models.AbstractModel):
         }
         if state_filter not in state_domains:
             raise ValidationError(self.env._("Invalid filter."))
-        domain = [*state_domains[state_filter], ('company_id', '=', self.env.company.id)]
+        # The box movements are resumed in Boxes (see get_box_drafts)
+        domain = [*state_domains[state_filter], ('company_id', '=', self.env.company.id),
+                  ('mercas_touch_boxes', '=', False)]
         query = (query or '').strip() if isinstance(query, str) else ''
         if query:
             domain += ['|', ('name', 'ilike', query), ('partner_id', 'ilike', query)]
@@ -1324,6 +1327,8 @@ class MercasTouch(models.AbstractModel):
 
         :param dict vals: {
             'uuid': str, 'partner_id': int, 'direction': 'return' or 'deliver',
+            'order_id': int (the box movement in progress resumed or saved, see
+                save_box_draft; without it, a new one),
             'lines': [{'product_id': int, 'qty': float}],
             'settle': 'compensate' or 'pay' (optional, boxes given back by a customer: their
                 amount as a credit for the next invoices, or paid now; without it the bill stays
@@ -1333,41 +1338,148 @@ class MercasTouch(models.AbstractModel):
         """
         vals, operation_uuid = self._check_operation(vals)
         direction = vals.get('direction')
-        if direction not in ('return', 'deliver'):
-            raise ValidationError(self.env._("Invalid box movement."))
         settle = vals.get('settle') or False
         if settle and (direction != 'return' or settle not in ('compensate', 'pay')):
             raise ValidationError(self.env._("Invalid way of settling the boxes."))
-        model = 'purchase.order' if direction == 'return' else 'sale.order'
-        existing = self.env[model].search([('mercas_touch_uuid', '=', operation_uuid)], limit=1)
+        Order = self.env[self._get_box_model(direction)]
         partner = self._get_partner(vals.get('partner_id'))
-        if existing:
-            return {'order': self._get_box_result(existing), 'boxes': self._get_box_balance(partner)}
-        lines = self._prepare_lines(vals.get('lines'), 'box')
+        order = self._find_box_draft(Order, vals, operation_uuid)
+        if order and order.state != 'draft':
+            # Sent again after it was done: nothing left to do
+            return {'order': self._get_box_result(order), 'boxes': self._get_box_balance(partner)}
         journal = self._get_payment_journal(vals.get('journal_id')) if settle == 'pay' else None
+        order = self._save_box_draft(Order, order, partner, vals, operation_uuid)
+        self._check_has_lines(order)
         result = {}
         if direction == 'return':
-            order = self.env['purchase.order'].create({
-                'partner_id': partner.id,
-                'mercas_touch_uuid': operation_uuid,
-                'order_line': [Command.create({'product_id': line['product_id'], 'product_qty': line['qty']})
-                               for line in lines],
-            })
             order.button_purchase_and_receive()
             if settle:
                 self._settle_box_bills(order, settle, journal)
         else:
-            order = self.env['sale.order'].create({
-                'partner_id': partner.id,
-                'mercas_touch_uuid': operation_uuid,
-                'order_line': [Command.create({'product_id': line['product_id'], 'product_uom_qty': line['qty']})
-                               for line in lines],
-            })
             action = order.button_sold_and_sent()
             if isinstance(action, dict):
                 result['action'] = self._get_client_action(action)
         result.update(order=self._get_box_result(order), boxes=self._get_box_balance(partner))
         return result
+
+    @api.model
+    def get_box_drafts(self):
+        """ The box movements in progress, the last changed first: boxes given back by a
+        customer (a purchase of boxes in draft) or to a supplier (a sale of boxes in draft). """
+        drafts = []
+        for direction in ('return', 'deliver'):
+            Order = self.env[self._get_box_model(direction)]
+            orders = Order.search([
+                ('state', '=', 'draft'), ('mercas_touch_boxes', '=', True),
+                ('company_id', '=', self.env.company.id),
+            ], limit=DRAFT_LIMIT, order='write_date desc, id desc')
+            qty_field = 'product_qty' if direction == 'return' else 'product_uom_qty'
+            drafts += [{
+                'id': order.id,
+                'name': order.name,
+                'direction': direction,
+                'partner': order.partner_id.display_name,
+                'partner_id': order.partner_id.commercial_partner_id.id,
+                'date': fields.Datetime.to_string(order.write_date),
+                'user': order.user_id.name or '',
+                'boxes': sum(order.order_line.mapped(qty_field)),
+            } for order in orders]
+        return sorted(drafts, key=lambda draft: draft['date'], reverse=True)[:DRAFT_LIMIT]
+
+    @api.model
+    def get_box_draft(self, direction, order_id):
+        """ A box movement in progress to go on with: its partner and its lines. """
+        order = self._get_box_draft(direction, order_id)
+        return self._get_box_draft_data(order)
+
+    @api.model
+    def save_box_draft(self, vals):
+        """ Save the box movement being made, so that it can be resumed later: created with its
+        first line, then its lines are those of the screen (one per kind of box).
+
+        :param dict vals: {'uuid': str, 'partner_id': int, 'direction': 'return' or 'deliver',
+            'order_id': int (once created), 'lines': [{'product_id': int, 'qty': float}]}
+        """
+        vals, operation_uuid = self._check_operation(vals)
+        Order = self.env[self._get_box_model(vals.get('direction'))]
+        partner = self._get_partner(vals.get('partner_id'))
+        order = self._find_box_draft(Order, vals, operation_uuid)
+        order = self._save_box_draft(Order, order, partner, vals, operation_uuid)
+        return self._get_box_draft_data(order)
+
+    @api.model
+    def cancel_box_draft(self, direction, order_id):
+        """ Cancel a box movement in progress that won't go on. """
+        order = self._get_box_draft(direction, order_id)
+        if order._name == 'sale.order':
+            order.action_cancel()
+        else:
+            order.button_cancel()
+        return True
+
+    def _get_box_model(self, direction):
+        """ Boxes given back by a customer are bought back; given back to a supplier, sold. """
+        if direction not in ('return', 'deliver'):
+            raise ValidationError(self.env._("Invalid box movement."))
+        return 'purchase.order' if direction == 'return' else 'sale.order'
+
+    def _get_box_draft(self, direction, order_id):
+        order = self._browse_order(self._get_box_model(direction), order_id)
+        order.check_access('write')
+        if order.state != 'draft' or not order.mercas_touch_boxes:
+            raise UserError(self.env._("%s is not a box movement in progress anymore.", order.name))
+        return order
+
+    def _find_box_draft(self, Order, vals, operation_uuid):
+        """ The box movement of the screen: the one resumed, or the one it created. """
+        if vals.get('order_id') is not None:
+            if not is_record_id(vals['order_id']):
+                raise ValidationError(self.env._("Invalid order."))
+            return Order.browse(vals['order_id']).exists()
+        return Order.search([('mercas_touch_uuid', '=', operation_uuid)], limit=1)
+
+    def _save_box_draft(self, Order, order, partner, vals, operation_uuid):
+        """ The box movement in draft with the lines of the screen: created if there is none,
+        else its lines updated, added or removed (one per kind of box). """
+        qty_field = 'product_qty' if Order._name == 'purchase.order' else 'product_uom_qty'
+        if not order:
+            lines = self._prepare_lines(vals.get('lines'), 'box')
+            return Order.create({
+                'partner_id': partner.id,
+                'mercas_touch_uuid': operation_uuid,
+                'mercas_touch_boxes': True,
+                'order_line': [Command.create({'product_id': line['product_id'], qty_field: line['qty']})
+                               for line in lines],
+            })
+        order = self._get_box_draft('return' if Order._name == 'purchase.order' else 'deliver', order.id)
+        if order.partner_id.commercial_partner_id != partner:
+            raise ValidationError(self.env._("The partner of an order can't be changed."))
+        lines = self._prepare_lines(vals.get('lines'), 'box', order)
+        current = order.order_line.filtered(lambda line: not line.display_type)
+        commands = []
+        for line in lines:
+            existing = current.filtered(lambda l: l.product_id.id == line['product_id'])[:1]
+            if existing:
+                current -= existing
+                commands.append(Command.update(existing.id, {qty_field: line['qty']}))
+            else:
+                commands.append(Command.create({'product_id': line['product_id'], qty_field: line['qty']}))
+        commands += [Command.unlink(line.id) for line in current]
+        order.write({'order_line': commands})
+        return order
+
+    def _get_box_draft_data(self, order):
+        is_purchase = order._name == 'purchase.order'
+        return {
+            'id': order.id,
+            'name': order.name,
+            'direction': 'return' if is_purchase else 'deliver',
+            'partner_id': order.partner_id.commercial_partner_id.id,
+            'lines': [{
+                'product_id': line.product_id.id,
+                'qty': line.product_qty if is_purchase else line.product_uom_qty,
+            } for line in order.order_line.filtered(lambda line: not line.display_type)],
+        }
 
     def _settle_box_bills(self, order, settle, journal):
         """ The bill of the boxes given back by a customer: offset (a credit in their favour for

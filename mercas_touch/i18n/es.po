@@ -2314,3 +2314,43 @@ msgstr "Ninguna caja en stock coincide: mira todas."
 #: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
 msgid "Choose a kind of box."
 msgstr "Elige un tipo de caja."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Search a box movement or a contact"
+msgstr "Buscar una devolución de cajas o un contacto"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "No box movement found."
+msgstr "No hay ninguna devolución de cajas."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Cancel the box movement"
+msgstr "Anular la devolución de cajas"
+
+#. module: mercas_touch
+#: code:addons/mercas_touch/models/mercas_touch.py:0
+msgid "%s is not a box movement in progress anymore."
+msgstr "%s ya no es una devolución de cajas en curso."
+
+#. module: mercas_touch
+#: model:ir.model.fields,field_description:mercas_touch.field_purchase_order__mercas_touch_boxes
+#: model:ir.model.fields,field_description:mercas_touch.field_sale_order__mercas_touch_boxes
+msgid "Touch Screen Box Movement"
+msgstr "Devolución de cajas del Mostrador"
+
+#. module: mercas_touch
+#: model:ir.model.fields,help:mercas_touch.field_purchase_order__mercas_touch_boxes
+#: model:ir.model.fields,help:mercas_touch.field_sale_order__mercas_touch_boxes
+msgid ""
+"Boxes given back by a customer or to a supplier from the touch screen: it is "
+"resumed in Boxes, not among the sales or the purchases."
+msgstr ""
+"Cajas devueltas por un cliente o a un proveedor desde el Mostrador: se "
+"retoma en Cajas, no entre las ventas ni las compras."

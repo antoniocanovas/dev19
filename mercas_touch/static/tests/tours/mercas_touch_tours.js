@@ -1763,3 +1763,76 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
         },
     ],
 });
+
+registry.category("web_tour.tours").add("mercas_touch_box_drafts_tour", {
+    steps: () => [
+        {
+            content: "Boxes: the box movements in progress first",
+            trigger: ".o_mercas_touch_home",
+            run: "press F3",
+        },
+        {
+            trigger: ".o_mercas_touch_box_draft:contains(Tour Customer):contains(2 boxes)",
+        },
+        {
+            content: "Enter in the search resumes the only one found",
+            trigger: ".o_mercas_touch_box_draft_search:focus",
+            run: "edit Tour Customer && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_line:contains(Tour Box) .o_mercas_touch_box_line_qty:contains(2)",
+        },
+        {
+            content: "Another kind of box, saved with it",
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "edit CJ-77 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_entry_qty:focus",
+            run: "press 5 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_lines:has(.o_mercas_touch_box_line:nth-child(2))",
+        },
+        {
+            trigger: ".o_mercas_touch_save_state .text-success",
+            run() {
+                window.location.reload();
+            },
+            expectUnloadPage: true,
+        },
+        {
+            content: "Reloaded: still there, with both kinds",
+            trigger: ".o_mercas_touch_home",
+            run: "press F3",
+        },
+        {
+            trigger: ".o_mercas_touch_box_draft:contains(Tour Customer):contains(7 boxes)",
+        },
+        {
+            content: "Down goes to the box movements, Enter resumes",
+            trigger: ".o_mercas_touch_box_draft_search:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_box_draft:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_line:contains(Tour Crate) .o_mercas_touch_box_line_qty:contains(5)",
+        },
+        {
+            content: "The eraser cancels it, once confirmed",
+            trigger: ".o_mercas_touch_box_clear:enabled",
+            run: "click",
+        },
+        {
+            trigger: ".modal .btn-primary:contains(Cancel the box movement)",
+            run: "click",
+        },
+        {
+            content: "No box movement left: the contacts straight away",
+            trigger: ".o_mercas_touch_partner_search:focus",
+        },
+    ],
+});

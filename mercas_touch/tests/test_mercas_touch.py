@@ -385,6 +385,36 @@ class TestMercasTouch(MercasTouchCommon):
             self.Touch.move_boxes({'uuid': str(uuid.uuid4()), 'partner_id': self.customer.id, 'direction': 'return',
                                    'lines': [{'product_id': self.pear.id, 'qty': 1}]})
 
+    def test_box_drafts(self):
+        """ A box movement in progress is saved and resumed in Boxes, not among the sales or the
+        purchases, and done from its draft. """
+        self._buy(10.0, box_qty=4, box_product_id=self.box.id)
+        vals = {'uuid': str(uuid.uuid4()), 'partner_id': self.supplier.id, 'direction': 'deliver',
+                'lines': [{'product_id': self.box.id, 'qty': 2}]}
+        draft = self.Touch.save_box_draft(vals)
+        order = self.env['sale.order'].browse(draft['id'])
+        self.assertEqual((order.state, order.mercas_touch_boxes), ('draft', True))
+        # Saved again with the lines of the screen
+        draft = self.Touch.save_box_draft(dict(vals, order_id=order.id, lines=[{'product_id': self.box.id, 'qty': 4}]))
+        self.assertEqual(draft['lines'], [{'product_id': self.box.id, 'qty': 4}])
+        self.assertEqual(len(order.order_line), 1)
+        drafts = self.Touch.get_box_drafts()
+        self.assertIn((order.id, 'deliver', 4), [(d['id'], d['direction'], d['boxes']) for d in drafts])
+        self.assertNotIn(order.id, [d['id'] for d in self.Touch.get_drafts('sale')], "Not among the sales")
+        self.assertEqual(self.Touch.get_box_draft('deliver', order.id)['partner_id'], self.supplier.id)
+        # Done from the draft, with no other order; sent again, nothing more
+        result = self.Touch.move_boxes(dict(vals, uuid=str(uuid.uuid4()), order_id=order.id,
+                                            lines=[{'product_id': self.box.id, 'qty': 4}]))
+        self.assertEqual((result['order']['id'], order.state), (order.id, 'sale'))
+        self.assertNotIn(order.id, [d['id'] for d in self.Touch.get_box_drafts()])
+        again = self.Touch.move_boxes(dict(vals, order_id=order.id))
+        self.assertEqual(again['order']['id'], order.id)
+        # Cancelled when it won't go on
+        other = self.Touch.save_box_draft({'uuid': str(uuid.uuid4()), 'partner_id': self.customer.id,
+                                           'direction': 'return', 'lines': [{'product_id': self.box.id, 'qty': 1}]})
+        self.Touch.cancel_box_draft('return', other['id'])
+        self.assertEqual(self.env['purchase.order'].browse(other['id']).state, 'cancel')
+
     def _cash_journal(self):
         journal = self.env['account.journal'].search([('type', '=', 'cash'), ('company_id', '=', self.company.id)], limit=1)
         return journal or self.env['account.journal'].create({'name': 'Counter Cash', 'type': 'cash', 'code': 'TCSH'})

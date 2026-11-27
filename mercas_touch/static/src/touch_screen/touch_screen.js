@@ -146,6 +146,10 @@ export class TouchScreen extends Component {
             // The kind of box being added or changed: { productId, line, qty, fresh }
             boxEntry: null,
             boxListSearch: "",
+            // The box movements in progress, to resume one (see loadBoxDrafts), and the text
+            // typed to find one
+            boxDrafts: [],
+            boxDraftSearch: "",
             // Boxes given back by a customer: "compensate" (a credit for the next invoices) or
             // "pay" (paid now from boxJournalId); chosen when they give them back
             boxSettle: false,
@@ -487,6 +491,13 @@ export class TouchScreen extends Component {
             this.state.labelSearch = "";
             this.focusLabelSearch = true;
             await this.loadLabelLots();
+        } else if (mode === "boxes") {
+            // The box movements in progress to resume; without any, the contact straight away
+            this.state.boxDraftSearch = "";
+            await this.loadBoxDrafts();
+            if (!this.state.boxDrafts.length) {
+                await this.searchPartners();
+            }
         } else if (this.hasDrafts()) {
             await this.loadDrafts();
         } else {
@@ -550,6 +561,9 @@ export class TouchScreen extends Component {
             this.state.scrap = null;
         } else if (this.state.lotPrice) {
             this.state.lotPrice = null;
+        } else if (this.state.mode === "boxes" && (this.state.partner || this.state.choosingCustomer)) {
+            // The box movement is saved: back to the ones in progress (or to the contacts)
+            await this.leaveBoxMovement();
         } else if (this.hasDrafts() && (this.state.partner || this.state.choosingCustomer)) {
             // The draft is saved: back to the list, to resume it or another one later
             await this.flushSave();
@@ -722,6 +736,8 @@ export class TouchScreen extends Component {
             state.entry ? [state.entry.product.id, state.entry.line?.key || false] : false,
             Boolean(state.priceEdit), Boolean(state.pallets), Boolean(state.scrap), Boolean(state.lotPrice),
             Boolean(state.done), state.boxEntry ? [state.boxEntry.productId, state.boxEntry.line?.key || false] : false,
+            // The box movements in progress, or the contacts without any
+            state.mode === "boxes" && state.boxDrafts.length > 0,
         ]);
     }
 
@@ -1036,7 +1052,7 @@ export class TouchScreen extends Component {
 
     /** Save the draft after a change of the lines, in the background. */
     scheduleSave() {
-        if (!this.hasDrafts() || !this.state.partner || this.state.done) {
+        if (!(this.hasDrafts() || this.state.mode === "boxes") || !this.state.partner || this.state.done) {
             return;
         }
         this.saveDirty = true;
@@ -1058,6 +1074,10 @@ export class TouchScreen extends Component {
     }
 
     async saveDraft(token) {
+        if (this.state.mode === "boxes") {
+            await this.saveBoxDraft(token);
+            return;
+        }
         const lines = [...this.state.lines];
         const notes = lines.map((line) => line.note);
         const vals = {
@@ -1088,6 +1108,40 @@ export class TouchScreen extends Component {
             line.lineId = result.line_ids[index];
             line.origNote = notes[index];
         });
+        this.state.saveState = this.saveDirty ? "saving" : "saved";
+    }
+
+    /** Save the box movement being made (see save_box_draft), created with its first line. */
+    async saveBoxDraft(token) {
+        const lines = this.state.boxLines.map((line) => ({ product_id: line.productId, qty: line.qty }));
+        if (!this.state.order && !lines.length) {
+            return;
+        }
+        const vals = {
+            uuid: this.newUuid(),
+            partner_id: this.state.partner.id,
+            direction: this.state.boxDirection,
+            ...(this.state.order ? { order_id: this.state.order.id } : {}),
+            lines,
+        };
+        this.state.saveState = "saving";
+        let result;
+        try {
+            result = await this.orm.silent.call(MODEL, "save_box_draft", [vals]);
+        } catch (error) {
+            if (token === this.saveToken) {
+                this.state.saveState = "error";
+                this.notification.add(error.data?.message || _t("The changes couldn't be saved."), {
+                    title: _t("Not saved"),
+                    type: "danger",
+                });
+            }
+            return;
+        }
+        if (token !== this.saveToken) {
+            return;
+        }
+        this.state.order = { id: result.id, name: result.name };
         this.state.saveState = this.saveDirty ? "saving" : "saved";
     }
 
@@ -3135,12 +3189,129 @@ export class TouchScreen extends Component {
     // Boxes
     // ------------------------------------------------------------------
 
-    onBoxDirection(direction) {
+    /** Who gives back the boxes: changed, the ticket starts again (the box movement saved in
+     * the other way is cancelled: it is another kind of order). */
+    async onBoxDirection(direction) {
+        if (direction === this.state.boxDirection) {
+            this.focusAfterRender(".o_mercas_touch_box_list_search");
+            return;
+        }
+        const previous = this.state.boxDirection;
+        const order = this.state.order;
         this.state.boxDirection = direction;
         this.state.boxLines = [];
         this.state.boxEntry = null;
         this.state.boxFilter = null;
         this.focusAfterRender(".o_mercas_touch_box_list_search");
+        if (order) {
+            await this.flushSave();
+            this.saveToken = {};
+            this.operationUuid = null;
+            this.state.order = null;
+            this.state.saveState = false;
+            await this.orm.call(MODEL, "cancel_box_draft", [previous, order.id]);
+        }
+    }
+
+    /** The box movements in progress, of all the counters. */
+    async loadBoxDrafts() {
+        this.state.boxDrafts = await this.orm.call(MODEL, "get_box_drafts", []);
+    }
+
+    /** The box movements in progress whose contact or reference contains the text typed. */
+    visibleBoxDrafts() {
+        const search = normalize(this.state.boxDraftSearch.trim());
+        return this.state.boxDrafts.filter((draft) => !search || normalize(`${draft.partner} ${draft.name}`).includes(search));
+    }
+
+    onBoxDraftSearchInput(ev) {
+        this.state.boxDraftSearch = ev.target.value;
+    }
+
+    /** Down goes to the box movements found, Enter resumes the only one found. */
+    onBoxDraftSearchKeydown(ev) {
+        if (this.focusFirstTile(ev, ".o_mercas_touch_box_draft") || ev.key !== "Enter") {
+            return;
+        }
+        ev.preventDefault();
+        this.chooseOnEnter(this.visibleBoxDrafts(), (draft) => this.onResumeBoxDraft(draft));
+    }
+
+    boxCountText(boxes) {
+        return boxes === 1 ? _t("1 box") : _t("%s boxes", this.formatQty(boxes));
+    }
+
+    async onNewBoxDraft() {
+        this.resetOperation();
+        this.state.choosingCustomer = true;
+        this.state.partnerSearch = "";
+        await this.searchPartners();
+    }
+
+    /** Go on with a box movement in progress: its contact, its way and its lines. */
+    async onResumeBoxDraft(draft) {
+        const [data, partner] = await Promise.all([
+            this.orm.call(MODEL, "get_box_draft", [draft.direction, draft.id]),
+            this.orm.call(MODEL, "get_partner_info", [draft.partner_id]),
+        ]);
+        this.resetOperation();
+        this.state.partner = partner;
+        this.state.boxDirection = data.direction;
+        this.state.order = { id: data.id, name: data.name };
+        this.state.saveState = "saved";
+        this.state.boxLines = data.lines.map((line, index) => ({
+            key: `line-${index}-${line.product_id}`,
+            productId: line.product_id,
+            qty: line.qty,
+        }));
+    }
+
+    /** Back from a box movement: saved, to the ones in progress (or to the contacts without
+     * any). Left without boxes, it is cancelled. */
+    async leaveBoxMovement() {
+        await this.flushSave();
+        const order = this.state.order;
+        if (order && !this.state.done && !this.state.boxLines.length) {
+            try {
+                await this.orm.silent.call(MODEL, "cancel_box_draft", [this.state.boxDirection, order.id]);
+            } catch {
+                // Done or cancelled elsewhere meanwhile: nothing to cancel
+            }
+        }
+        this.resetOperation();
+        this.state.partner = null;
+        await this.loadBoxDrafts();
+        if (!this.state.boxDrafts.length) {
+            await this.searchPartners();
+        }
+    }
+
+    /** The eraser of the boxes: the box movement saved is cancelled, once confirmed. */
+    onClearBoxes() {
+        const order = this.state.order;
+        if (!order) {
+            this.state.boxLines = [];
+            this.state.boxEntry = null;
+            return;
+        }
+        const direction = this.state.boxDirection;
+        this.dialog.add(ConfirmationDialog, {
+            title: _t("Cancel the box movement"),
+            body: _t("%s will be cancelled.", order.name),
+            confirmLabel: _t("Cancel the box movement"),
+            cancelLabel: _t("Keep it"),
+            confirm: async () => {
+                await this.flushSave();
+                await this.orm.call(MODEL, "cancel_box_draft", [direction, order.id]);
+                this.resetOperation();
+                this.state.partner = null;
+                await this.loadBoxDrafts();
+                if (!this.state.boxDrafts.length) {
+                    await this.searchPartners();
+                }
+            },
+            cancel: () => {},
+        });
     }
 
     /** Who gives back the boxes with the keyboard: left and right between both, Enter chooses
@@ -3331,6 +3502,7 @@ export class TouchScreen extends Component {
             this.state.boxLines.push({ key: `${Date.now()}-${this.state.boxLines.length}`, productId: entry.productId, qty });
         }
         this.state.boxEntry = null;
+        this.scheduleSave();
     }
 
     /** What is under the lines of boxes, from top to bottom: the ways to settle them (given
@@ -3402,6 +3574,7 @@ export class TouchScreen extends Component {
         if (this.state.boxEntry?.line === line) {
             this.state.boxEntry = null;
         }
+        this.scheduleSave();
     }
 
     boxBalance(productId) {
@@ -3423,12 +3596,20 @@ export class TouchScreen extends Component {
         if (!lines.length || !this.boxesReady()) {
             return;
         }
+        this.state.sending = true;
+        try {
+            await this.flushSave();
+        } finally {
+            this.state.sending = false;
+        }
         const giveBack = this.state.boxDirection === "return";
         const result = await this.run("move_boxes", [
             {
                 uuid: this.newUuid(),
                 partner_id: this.state.partner.id,
                 direction: this.state.boxDirection,
+                // The box movement in progress, done from its draft
+                ...(this.state.order ? { order_id: this.state.order.id } : {}),
                 lines,
                 ...(giveBack && { settle: this.state.boxSettle }),
                 ...(giveBack && this.state.boxSettle === "pay" && { journal_id: this.state.boxJournalId }),

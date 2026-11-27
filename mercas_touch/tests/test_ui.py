@@ -134,6 +134,18 @@ class TestMercasTouchUi(HttpCase):
         self.assertEqual([sum(l['box_qty'] for l in pallet['lines']) for pallet in pallets], [1, 1])
         self.assertEqual([pallet['height'] for pallet in pallets], [1.5, 0])
 
+    def test_box_drafts(self):
+        """ A box movement in progress is resumed in Boxes, also after reloading the page, and
+        cancelled with the eraser. """
+        draft = self.env['mercas.touch'].with_user(self.user).save_box_draft({
+            'uuid': str(uuid.uuid4()), 'partner_id': self.customer.id, 'direction': 'return',
+            'lines': [{'product_id': self.box.id, 'qty': 2}],
+        })
+        self.start_tour('/odoo/mercas-touch', 'mercas_touch_box_drafts_tour', login='touch_tour')
+        order = self.env['purchase.order'].browse(draft['id'])
+        self.assertEqual(order.state, 'cancel')
+        self.assertEqual(sorted(order.order_line.mapped('product_qty')), [2, 5])
+
     def test_keyboard_payment(self):
         """ A payment made with the keyboard: the invoice marked with the arrows and Enter, the
         amount, the journal with the arrows, the memo and the button. """
