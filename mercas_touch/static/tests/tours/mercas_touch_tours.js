@@ -984,8 +984,8 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
             run: "edit CJ-77 && press Enter",
         },
         {
-            content: "+ adds a box",
-            trigger: ".o_mercas_touch_box:contains(Tour Crate) .o_mercas_touch_box_move_qty:focus",
+            content: "The only kind found: its boxes, + adds one",
+            trigger: ".o_mercas_touch_box_entry:contains(Tour Crate) .o_mercas_touch_box_entry_qty:focus",
             // "press +" would be read as a combination of keys
             run() {
                 for (let i = 0; i < 2; i++) {
@@ -994,18 +994,68 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
             },
         },
         {
-            trigger: ".o_mercas_touch_box_move_qty:focus:value(2)",
-            run: "press ArrowUp",
+            content: "Enter adds the line, back to the search",
+            trigger: ".o_mercas_touch_box_entry_qty:focus:value(2)",
+            run: "press Enter",
         },
         {
-            content: "Up from the first box goes to the search, Down back to the box",
+            trigger: ".o_mercas_touch_box_line:contains(Tour Crate) .o_mercas_touch_box_line_qty:contains(2)",
+        },
+        {
+            content: "A second kind, chosen with the arrows",
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "edit Tour Box",
+        },
+        {
+            content: "The search done: only that kind",
+            trigger: ".o_mercas_touch_grid:has(.o_mercas_touch_box:contains(Tour Box)):not(:has(.o_mercas_touch_box:contains(Tour Crate)))",
+        },
+        {
             trigger: ".o_mercas_touch_box_list_search:focus",
             run: "press ArrowDown",
         },
         {
-            content: "Enter goes to how to settle the amount: paid now",
-            trigger: ".o_mercas_touch_box_move_qty:focus:value(2)",
+            trigger: ".o_mercas_touch_box:focus:contains(Tour Box)",
             run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_entry_qty:focus",
+            run: "press 3 && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_lines:has(.o_mercas_touch_box_line:nth-child(2))",
+        },
+        {
+            content: "F8 goes to the lines: Enter changes one, Delete removes it",
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "press F8",
+        },
+        {
+            trigger: ".o_mercas_touch_box_line:nth-child(2) .o_mercas_touch_line_info:focus",
+            run: "press ArrowRight",
+        },
+        {
+            content: "Enter on the trash removes the line",
+            trigger: ".o_mercas_touch_box_line:nth-child(2) .o_mercas_touch_remove_line:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_lines:not(:has(.o_mercas_touch_box_line:nth-child(2))) .o_mercas_touch_remove_line:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_box_line:contains(Tour Crate) .o_mercas_touch_line_info:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Its boxes again; Escape leaves them as they were",
+            trigger: ".o_mercas_touch_box_entry_qty:focus:value(2)",
+            run: "press Escape",
+        },
+        {
+            content: "Ctrl+Enter goes to how to settle the amount: paid now",
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "press Control+Enter",
         },
         {
             trigger: ".o_mercas_touch_box_pay:focus",
@@ -1666,16 +1716,20 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
             trigger: ".o_mercas_touch_grid .o_mercas_touch_box:contains(Tour Crate)",
         },
         {
-            content: "Some boxes typed: Ctrl+Enter goes to how to settle them, without choosing",
+            content: "Some boxes added: Ctrl+Enter goes to how to settle them, without choosing",
             trigger: ".o_mercas_touch_box_list_search:focus",
             run: "edit Tour Box && press Enter",
         },
         {
-            trigger: ".o_mercas_touch_box:contains(Tour Box) .o_mercas_touch_box_move_qty:focus",
+            trigger: ".o_mercas_touch_box_entry:contains(Tour Box) .o_mercas_touch_box_entry_qty:focus",
             run: pressKey("+"),
         },
         {
-            trigger: ".o_mercas_touch_box_move_qty:focus:value(1)",
+            trigger: ".o_mercas_touch_box_entry_qty:focus:value(1)",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_list_search:focus",
             run: "press Control+Enter",
         },
         {

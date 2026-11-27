@@ -141,7 +141,10 @@ export class TouchScreen extends Component {
             done: null,
             // Boxes
             boxDirection: "return",
-            boxQty: {},
+            // The lines of the boxes to move, as the ticket of a sale: [{ key, productId, qty }]
+            boxLines: [],
+            // The kind of box being added or changed: { productId, line, qty, fresh }
+            boxEntry: null,
             boxListSearch: "",
             // Boxes given back by a customer: "compensate" (a credit for the next invoices) or
             // "pay" (paid now from boxJournalId); chosen when they give them back
@@ -272,7 +275,7 @@ export class TouchScreen extends Component {
             ev.preventDefault();
             ev.stopImmediatePropagation();
             document.activeElement?.blur();
-        } else if (ev.key === "F8" && this.isOrderScreen()) {
+        } else if (ev.key === "F8" && (this.isOrderScreen() || this.isBoxesScreen())) {
             // F8: to the ticket, to change or remove its lines (see onTicketKeydown)
             ev.preventDefault();
             ev.stopImmediatePropagation();
@@ -349,7 +352,17 @@ export class TouchScreen extends Component {
 
     /** The lines of the ticket can be reached (F8). */
     canFocusTicket() {
-        return this.isOrderScreen() && this.state.lines.length > 0;
+        return (this.isOrderScreen() || this.isBoxesScreen()) && this.ticketLines().length > 0;
+    }
+
+    /** The boxes of a partner being moved, with their catalog and their ticket. */
+    isBoxesScreen() {
+        return this.state.mode === "boxes" && Boolean(this.state.partner) && !this.state.done;
+    }
+
+    /** The lines of the ticket shown: of the sale or the purchase, or of the boxes. */
+    ticketLines() {
+        return this.state.mode === "boxes" ? this.state.boxLines : this.state.lines;
     }
 
     /** The boxes of the partner of the operation done: given back by the customer of a sale
@@ -491,7 +504,8 @@ export class TouchScreen extends Component {
         this.state.done = null;
         this.state.categoryId = false;
         this.state.productSearch = "";
-        this.state.boxQty = {};
+        this.state.boxLines = [];
+        this.state.boxEntry = null;
         this.state.boxListSearch = "";
         this.state.boxDirection = "return";
         // The boxes shown: "stock" (those the partner holds, or we hold of them), "all", or
@@ -522,6 +536,8 @@ export class TouchScreen extends Component {
             this.onClosePallets();
         } else if (this.state.priceEdit) {
             this.onClosePriceEdit();
+        } else if (this.state.boxEntry) {
+            this.state.boxEntry = null;
         } else if (this.state.entry) {
             this.state.entry = null;
             if (!this.state.lots.length) {
@@ -659,7 +675,7 @@ export class TouchScreen extends Component {
     hasWork() {
         return (
             this.state.lines.length > 0 ||
-            Object.values(this.state.boxQty).some((qty) => qty > 0) ||
+            this.state.boxLines.length > 0 ||
             this.state.invoiceIds.length > 0
         );
     }
@@ -705,7 +721,7 @@ export class TouchScreen extends Component {
             state.product ? state.lots.length : 0,
             state.entry ? [state.entry.product.id, state.entry.line?.key || false] : false,
             Boolean(state.priceEdit), Boolean(state.pallets), Boolean(state.scrap), Boolean(state.lotPrice),
-            Boolean(state.done),
+            Boolean(state.done), state.boxEntry ? [state.boxEntry.productId, state.boxEntry.line?.key || false] : false,
         ]);
     }
 
@@ -742,6 +758,13 @@ export class TouchScreen extends Component {
         // An operation done: its main button, New or Back to the list (see focusDoneAction)
         if (this.state.done) {
             this.focusDoneAction();
+            return;
+        }
+        // The boxes of a kind being added: their number
+        if (this.state.boxEntry) {
+            const input = document.querySelector(".o_mercas_touch_box_entry_qty");
+            input?.focus();
+            input?.select();
             return;
         }
         // A line with attributes (quality, size): they are chosen first (see onAttributeValueKeydown)
@@ -1528,7 +1551,14 @@ export class TouchScreen extends Component {
         const priceEdit = this.state.priceEdit;
         const entry = this.state.entry;
         const pallets = this.state.pallets;
-        if (pallets) {
+        const boxEntry = this.state.boxEntry;
+        if (boxEntry) {
+            // Whole boxes only; the first digit replaces the number shown
+            if (/^[0-9]$/.test(key) || ["backspace", "clear"].includes(key)) {
+                boxEntry.qty = applyNumpadKey(boxEntry.fresh ? "" : boxEntry.qty, key);
+                boxEntry.fresh = false;
+            }
+        } else if (pallets) {
             // Boxes to move: whole boxes only
             if (pallets.selected && (/^[0-9]$/.test(key) || ["backspace", "clear"].includes(key))) {
                 pallets.moveQty = applyNumpadKey(pallets.moveFresh ? "" : pallets.moveQty, key);
@@ -1933,11 +1963,31 @@ export class TouchScreen extends Component {
         this.openEntry(line.product, line.lot, line);
     }
 
+    /** A line of the ticket removed with the keyboard (its trash focused): the focus goes on
+     * to the same place of the line after (or before), or to the search. */
+    keepTicketFocus(line) {
+        const focused = document.activeElement?.closest?.(".o_mercas_touch_line");
+        if (!focused) {
+            return;
+        }
+        const index = this.ticketLines().indexOf(line);
+        const column = this.ticketLineItems(focused).indexOf(document.activeElement);
+        this.focusAfterRender(() => {
+            const rows = document.querySelectorAll(".o_mercas_touch_lines .o_mercas_touch_line");
+            const row = rows[Math.min(index, rows.length - 1)];
+            const items = row ? this.ticketLineItems(row) : [];
+            return items[Math.min(column, items.length - 1)] ||
+                document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
+        });
+    }
+
     /** The ticket with the keyboard (F8): the line being changed, or else the last one. */
     focusTicket() {
         const infos = [...document.querySelectorAll(".o_mercas_touch_lines .o_mercas_touch_line_info")];
-        const editing = this.state.entry?.line || this.priceEditLine();
-        const index = editing ? this.state.lines.indexOf(editing) : -1;
+        const editing = this.state.mode === "boxes"
+            ? this.state.boxEntry?.line
+            : this.state.entry?.line || this.priceEditLine();
+        const index = editing ? this.ticketLines().indexOf(editing) : -1;
         (infos[index] || infos[infos.length - 1])?.focus();
     }
 
@@ -1963,14 +2013,15 @@ export class TouchScreen extends Component {
         }
         const rows = [...ev.currentTarget.querySelectorAll(".o_mercas_touch_line")];
         const row = rows.find((other) => other.contains(ev.target));
-        const line = this.state.lines[rows.indexOf(row)];
+        const boxes = this.state.mode === "boxes";
+        const line = this.ticketLines()[rows.indexOf(row)];
         if (!line || !this.ticketLineItems(row).includes(ev.target)) {
             return;
         }
         if (ev.key === "Enter" && ev.target.matches(".o_mercas_touch_line_info")) {
             ev.preventDefault();
-            this.onEditLine(line);
-        } else if (ev.key === "p" || ev.key === "P") {
+            boxes ? this.onEditBoxLine(line) : this.onEditLine(line);
+        } else if ((ev.key === "p" || ev.key === "P") && !boxes) {
             ev.preventDefault();
             this.onEditPrice(line);
         } else if (ev.key === "Delete") {
@@ -1989,14 +2040,15 @@ export class TouchScreen extends Component {
         if (this.state.sending) {
             return;
         }
-        const index = this.state.lines.indexOf(line);
+        const boxes = this.state.mode === "boxes";
+        const index = this.ticketLines().indexOf(line);
         this.dialog.add(ConfirmationDialog, {
             title: _t("Remove the line"),
-            body: _t("%s will be removed from the ticket.", line.product.name),
+            body: _t("%s will be removed from the ticket.", boxes ? this.boxName(line.productId) : line.product.name),
             confirmLabel: _t("Remove"),
             cancelLabel: _t("Keep it"),
             confirm: () => {
-                this.onRemoveLine(line);
+                boxes ? this.removeBoxLine(line) : this.onRemoveLine(line);
                 this.focusAfterRender(() => {
                     const infos = document.querySelectorAll(".o_mercas_touch_lines .o_mercas_touch_line_info");
                     return infos[Math.min(index, infos.length - 1)] ||
@@ -2010,18 +2062,7 @@ export class TouchScreen extends Component {
     onRemoveLine(line) {
         // Removed from the ticket with the keyboard (its trash focused): on with the same
         // place of the line after (or before), or the product search
-        const focused = document.activeElement?.closest?.(".o_mercas_touch_line");
-        if (focused) {
-            const index = this.state.lines.indexOf(line);
-            const column = this.ticketLineItems(focused).indexOf(document.activeElement);
-            this.focusAfterRender(() => {
-                const rows = document.querySelectorAll(".o_mercas_touch_lines .o_mercas_touch_line");
-                const row = rows[Math.min(index, rows.length - 1)];
-                const items = row ? this.ticketLineItems(row) : [];
-                return items[Math.min(column, items.length - 1)] ||
-                    document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
-            });
-        }
+        this.keepTicketFocus(line);
         if (this.state.priceEdit?.key === line.key) {
             this.state.priceEdit = null;
         }
@@ -3090,7 +3131,8 @@ export class TouchScreen extends Component {
 
     onBoxDirection(direction) {
         this.state.boxDirection = direction;
-        this.state.boxQty = {};
+        this.state.boxLines = [];
+        this.state.boxEntry = null;
         this.state.boxFilter = null;
         this.focusAfterRender(".o_mercas_touch_box_list_search");
     }
@@ -3161,16 +3203,11 @@ export class TouchScreen extends Component {
         return state.boxSettle === "compensate" || (state.boxSettle === "pay" && Boolean(state.boxJournalId));
     }
 
-    /**
-     * Boxes of the tab, filtered by what is typed; those with a quantity typed stay in sight
-     * so that what is going to be moved is always seen. The kinds the partner holds go first.
-     */
+    /** The kinds of box to choose, filtered by what is typed and by the filter (in stock or
+     * all of them); the ones the partner holds go first. */
     boxCards() {
-        const found = new Set(this.searchBoxes(this.state.boxListSearch).map((box) => box.id));
         const stock = this.boxFilter() === "stock";
-        const boxes = this.boxProducts().filter((box) =>
-            (found.has(box.id) && (!stock || this.boxBalance(box.id) > 0)) || this.state.boxQty[box.id] > 0
-        );
+        const boxes = this.searchBoxes(this.state.boxListSearch).filter((box) => !stock || this.boxBalance(box.id) > 0);
         const held = (box) => (this.boxBalance(box.id) ? 0 : 1);
         return boxes.sort((a, b) => held(a) - held(b));
     }
@@ -3193,9 +3230,9 @@ export class TouchScreen extends Component {
         this.state.boxListSearch = ev.target.value;
     }
 
-    /** The boxes with the keyboard: Down or Enter in the search goes to the quantity of the
-     * first box found (see onBoxQtyKeydown), Up to who gives them back, and Page Up or Page
-     * Down changes it. */
+    /** The boxes with the keyboard: Down in the search goes to the kinds of box found (see
+     * onGridKeydown), Enter chooses the only one found (or the one of the reference typed), Up
+     * goes to who gives them back, and Page Up or Page Down changes it. */
     onBoxListSearchKeydown(ev) {
         if (ev.key === "PageDown" || ev.key === "PageUp") {
             // The customer gives back boxes, or we give them back to the supplier
@@ -3208,45 +3245,98 @@ export class TouchScreen extends Component {
             document.querySelector(".o_mercas_touch_box_direction .btn-primary")?.focus();
             return;
         }
-        if (ev.key !== "Enter" && ev.key !== "ArrowDown") {
+        if (this.focusFirstTile(ev, ".o_mercas_touch_box") || ev.key !== "Enter") {
             return;
         }
         ev.preventDefault();
-        const input = document.querySelector(".o_mercas_touch_body .o_mercas_touch_box_move_qty");
-        input?.focus();
-        input?.select();
+        const boxes = this.boxCards();
+        const code = normalize(this.state.boxListSearch.trim());
+        const exact = boxes.filter(
+            (box) => code && [box.default_code, box.barcode].some((value) => normalize(value || "") === code)
+        );
+        this.chooseOnEnter(boxes, (box) => this.onSelectBoxTile(box), exact.length === 1 ? exact[0] : null);
     }
 
-    /**
-     * The quantity of a box with the keyboard: up and down go to the box before or after (up
-     * from the first one, to the search), + and - add or take a box, and Enter goes on to what
-     * is left to choose (how to settle the amount, the journal) or to the button that moves the
-     * boxes, which Enter then presses.
-     */
-    onBoxQtyKeydown(productId, ev) {
-        if (ev.key === "+" || ev.key === "-") {
+    /** The line of the ticket of a kind of box, if there is one. */
+    boxLine(productId) {
+        return this.state.boxLines.find((line) => line.productId === productId);
+    }
+
+    /** A kind of box chosen: its number of boxes, to add it to the ticket (or to change its
+     * line, if it is already there). */
+    onSelectBoxTile(box) {
+        this.openBoxEntry(box.id, this.boxLine(box.id) || null);
+    }
+
+    onEditBoxLine(line) {
+        this.openBoxEntry(line.productId, line);
+    }
+
+    openBoxEntry(productId, line) {
+        this.state.boxEntry = { productId, line, qty: line ? String(line.qty) : "", fresh: true };
+    }
+
+    /** Resolución especial para móvil, or without the keypad: the number typed with the keyboard. */
+    onBoxEntryInput(ev) {
+        const qty = parseInt(ev.target.value || "0", 10) || 0;
+        this.state.boxEntry.qty = qty > 0 ? String(qty) : "";
+        this.state.boxEntry.fresh = false;
+        // Owl doesn't patch the value when it is the one there was
+        ev.target.value = this.state.boxEntry.qty;
+    }
+
+    onBoxEntryStep(step) {
+        const entry = this.state.boxEntry;
+        entry.qty = String(Math.max(0, (parseInt(entry.qty || "0", 10) || 0) + step));
+        entry.fresh = false;
+    }
+
+    /** The number of boxes with the keyboard: the digits (also with the keypad on the screen,
+     * when the field takes only it), + and - add or take a box, and Enter adds the line. */
+    onBoxEntryKeydown(ev) {
+        if (/^[0-9]$/.test(ev.key) && ev.target.readOnly) {
             ev.preventDefault();
-            this.onBoxStep(productId, ev.key === "+" ? 1 : -1);
-            return;
-        }
-        const inputs = [...document.querySelectorAll(".o_mercas_touch_body .o_mercas_touch_box_move_qty")];
-        const index = inputs.indexOf(ev.target);
-        let next = null;
-        if (ev.key === "ArrowDown") {
-            next = inputs[index + 1];
-        } else if (ev.key === "ArrowUp") {
-            next = index > 0 ? inputs[index - 1] : document.querySelector(".o_mercas_touch_box_list_search");
+            this.onNumpadKey(ev.key);
+        } else if (ev.key === "Backspace" && ev.target.readOnly) {
+            ev.preventDefault();
+            this.onNumpadKey("backspace");
+        } else if (ev.key === "+" || ev.key === "-") {
+            ev.preventDefault();
+            this.onBoxEntryStep(ev.key === "+" ? 1 : -1);
         } else if (ev.key === "Enter") {
-            // The button when it can be pressed; otherwise a way to settle not chosen yet
-            next = document.querySelector(".o_mercas_touch_move_boxes:not(:disabled)") ||
-                document.querySelector(".o_mercas_touch_box_settle .btn-secondary:not(:disabled)");
-        } else {
+            ev.preventDefault();
+            this.onAddBoxEntry();
+        }
+    }
+
+    /** Add the boxes to the ticket, or change their line (none: the line is removed). */
+    onAddBoxEntry() {
+        const entry = this.state.boxEntry;
+        const qty = parseInt(entry.qty || "0", 10) || 0;
+        if (qty <= 0 && !entry.line) {
+            this.notification.add(_t("Enter how many boxes to move."), { type: "warning" });
             return;
         }
-        ev.preventDefault();
-        if (next) {
-            next.focus();
-            next.select?.();
+        if (entry.line && qty <= 0) {
+            this.removeBoxLine(entry.line);
+        } else if (entry.line) {
+            entry.line.qty = qty;
+        } else {
+            this.state.boxLines.push({ key: `${Date.now()}-${this.state.boxLines.length}`, productId: entry.productId, qty });
+        }
+        this.state.boxEntry = null;
+    }
+
+    /** The trash of a line of boxes. */
+    onRemoveBoxLine(line) {
+        this.keepTicketFocus(line);
+        this.removeBoxLine(line);
+    }
+
+    removeBoxLine(line) {
+        this.state.boxLines = this.state.boxLines.filter((other) => other !== line);
+        if (this.state.boxEntry?.line === line) {
+            this.state.boxEntry = null;
         }
     }
 
@@ -3258,24 +3348,14 @@ export class TouchScreen extends Component {
         return this.state.boxDirection === "return" ? box.customer : -box.supplier;
     }
 
-    onBoxStep(productId, step) {
-        const qty = Math.max(0, (this.state.boxQty[productId] || 0) + step);
-        this.state.boxQty = { ...this.state.boxQty, [productId]: qty };
-    }
-
-    onBoxInput(productId, ev) {
-        const qty = Math.max(0, parseInt(ev.target.value, 10) || 0);
-        this.state.boxQty = { ...this.state.boxQty, [productId]: qty };
-    }
-
     boxTotal() {
-        return Object.values(this.state.boxQty).reduce((total, qty) => total + qty, 0);
+        return this.state.boxLines.reduce((total, line) => total + line.qty, 0);
     }
 
     async onMoveBoxes() {
-        const lines = Object.entries(this.state.boxQty)
-            .filter(([, qty]) => qty > 0)
-            .map(([productId, qty]) => ({ product_id: parseInt(productId, 10), qty }));
+        const lines = this.state.boxLines
+            .filter((line) => line.qty > 0)
+            .map((line) => ({ product_id: line.productId, qty: line.qty }));
         if (!lines.length || !this.boxesReady()) {
             return;
         }

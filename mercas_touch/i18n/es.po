@@ -2308,3 +2308,9 @@ msgstr "Todas"
 #: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
 msgid "No box in stock matches: see all the boxes."
 msgstr "Ninguna caja en stock coincide: mira todas."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Choose a kind of box."
+msgstr "Elige un tipo de caja."

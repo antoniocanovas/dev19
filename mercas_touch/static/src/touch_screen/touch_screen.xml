@@ -1123,68 +1123,149 @@
         </button>
     </t>
 
+    <!-- Boxes given back by a customer or to a supplier, as a sale: the kinds of box on the left,
+         the lines on the right -->
     <t t-name="mercas_touch.TouchScreenBoxes">
-        <div class="btn-group w-100 mb-3 o_mercas_touch_box_direction" role="group" t-on-keydown="this.onBoxDirectionKeydown">
-            <button t-att-class="'btn btn-lg o_mercas_touch_box_direction_return ' + (this.state.boxDirection === 'return' ? 'btn-primary' : 'btn-secondary')"
-                    t-on-click="() => this.onBoxDirection('return')">The customer gives back boxes</button>
-            <button t-att-class="'btn btn-lg o_mercas_touch_box_direction_deliver ' + (this.state.boxDirection === 'deliver' ? 'btn-primary' : 'btn-secondary')"
-                    t-on-click="() => this.onBoxDirection('deliver')">We give back boxes to the supplier</button>
-        </div>
-        <div t-if="!this.boxProducts().length" class="alert alert-warning">There is no product marked as a box.</div>
-        <t t-else="">
-            <div class="input-group input-group-lg mb-3 o_mercas_touch_search">
-                <span class="input-group-text"><i class="fa fa-search"/></span>
-                <input type="search" class="form-control o_mercas_touch_box_list_search" autocomplete="off"
-                       placeholder="Search a box by reference or name…"
-                       t-att-value="this.state.boxListSearch" t-on-input="this.onBoxListSearchInput"
-                       t-on-keydown="this.onBoxListSearchKeydown"/>
-                <!-- Only the boxes the partner holds (or we hold of the supplier), or all the kinds -->
-                <button t-att-class="'btn o_mercas_touch_box_filter_stock ' + (this.boxFilter() === 'stock' ? 'btn-primary' : 'btn-secondary')"
-                        t-on-click="() => this.onBoxFilter('stock')">Stock</button>
-                <button t-att-class="'btn o_mercas_touch_box_filter_all ' + (this.boxFilter() === 'all' ? 'btn-primary' : 'btn-secondary')"
-                        t-on-click="() => this.onBoxFilter('all')">All the boxes</button>
-            </div>
-        </t>
-        <t t-call="mercas_touch.TouchScreenBoxesActions"/>
-        <t t-set="boxCards" t-value="this.boxCards()"/>
-        <div t-if="this.boxProducts().length and !boxCards.length" class="text-muted mb-3">
-            <t t-if="this.boxFilter() === 'stock'">No box in stock matches: see all the boxes.</t>
-            <t t-else="">No box matches.</t>
-        </div>
-        <div class="o_mercas_touch_grid">
-            <div t-foreach="boxCards" t-as="box" t-key="box.id" class="card o_mercas_touch_box">
-                <div class="card-body">
-                    <div class="fs-5 fw-bold text-truncate" t-out="box.name"/>
-                    <div class="small text-muted mb-2">
-                        <t t-if="this.state.boxDirection === 'return'">The customer has:</t>
-                        <t t-else="">We have of the supplier:</t>
-                        <strong class="ms-1" t-out="this.formatQty(this.boxBalance(box.id))"/>
-                    </div>
-                    <div class="input-group input-group-lg">
-                        <button class="btn btn-secondary" title="One box less" t-on-click="() => this.onBoxStep(box.id, -1)">
-                            <i class="fa fa-minus"/>
-                        </button>
-                        <input type="text" inputmode="numeric" class="form-control text-center o_mercas_touch_box_move_qty"
-                               t-att-value="this.state.boxQty[box.id] or 0" t-on-input="(ev) => this.onBoxInput(box.id, ev)"
-                               t-on-keydown="(ev) => this.onBoxQtyKeydown(box.id, ev)"/>
-                        <button class="btn btn-secondary" title="One box more" t-on-click="() => this.onBoxStep(box.id, 1)">
-                            <i class="fa fa-plus"/>
-                        </button>
-                    </div>
+        <div t-att-class="'d-flex flex-column flex-lg-row gap-3 h-100' + (this.showNumpad() ? '' : ' o_mercas_touch_compact')">
+            <div class="flex-grow-1 min-w-0 o_mercas_touch_work">
+                <div class="btn-group w-100 mb-3 o_mercas_touch_box_direction" role="group" t-on-keydown="this.onBoxDirectionKeydown">
+                    <button t-att-class="'btn btn-lg o_mercas_touch_box_direction_return ' + (this.state.boxDirection === 'return' ? 'btn-primary' : 'btn-secondary')"
+                            t-on-click="() => this.onBoxDirection('return')">The customer gives back boxes</button>
+                    <button t-att-class="'btn btn-lg o_mercas_touch_box_direction_deliver ' + (this.state.boxDirection === 'deliver' ? 'btn-primary' : 'btn-secondary')"
+                            t-on-click="() => this.onBoxDirection('deliver')">We give back boxes to the supplier</button>
                 </div>
+                <t t-if="this.state.boxEntry" t-call="mercas_touch.TouchScreenBoxEntry"/>
+                <div t-elif="!this.boxProducts().length" class="alert alert-warning">There is no product marked as a box.</div>
+                <t t-else="">
+                    <div class="input-group input-group-lg mb-3 o_mercas_touch_search">
+                        <span class="input-group-text"><i class="fa fa-search"/></span>
+                        <input type="search" class="form-control o_mercas_touch_box_list_search" autocomplete="off"
+                               placeholder="Search a box by reference or name…"
+                               t-att-value="this.state.boxListSearch" t-on-input="this.onBoxListSearchInput"
+                               t-on-keydown="this.onBoxListSearchKeydown"/>
+                        <!-- Only the boxes the partner holds (or we hold of the supplier), or all the kinds -->
+                        <button t-att-class="'btn o_mercas_touch_box_filter_stock ' + (this.boxFilter() === 'stock' ? 'btn-primary' : 'btn-secondary')"
+                                t-on-click="() => this.onBoxFilter('stock')">Stock</button>
+                        <button t-att-class="'btn o_mercas_touch_box_filter_all ' + (this.boxFilter() === 'all' ? 'btn-primary' : 'btn-secondary')"
+                                t-on-click="() => this.onBoxFilter('all')">All the boxes</button>
+                    </div>
+                    <t t-set="boxCards" t-value="this.boxCards()"/>
+                    <div t-if="!boxCards.length" class="text-muted mb-3">
+                        <t t-if="this.boxFilter() === 'stock'">No box in stock matches: see all the boxes.</t>
+                        <t t-else="">No box matches.</t>
+                    </div>
+                    <!-- Chosen also with the keyboard: Down from the search, the arrows between them, Enter -->
+                    <div class="o_mercas_touch_grid" t-on-keydown="(ev) => this.onGridKeydown(ev, '.o_mercas_touch_box')">
+                        <button t-foreach="boxCards" t-as="box" t-key="box.id"
+                                class="btn btn-outline-secondary o_mercas_touch_tile o_mercas_touch_box"
+                                t-on-click="() => this.onSelectBoxTile(box)">
+                            <div class="d-flex align-items-start gap-2">
+                                <span class="fs-5 fw-bold text-truncate me-auto" t-out="box.name"/>
+                                <t t-set="boxLine" t-value="this.boxLine(box.id)"/>
+                                <span t-if="boxLine" class="badge text-bg-primary fs-6 o_mercas_touch_box_in_ticket">
+                                    <i class="fa fa-check"/> <t t-out="boxLine.qty"/>
+                                </span>
+                            </div>
+                            <div t-if="box.default_code" class="small text-muted" t-out="box.default_code"/>
+                            <div class="small text-muted">
+                                <t t-if="this.state.boxDirection === 'return'">The customer has:</t>
+                                <t t-else="">We have of the supplier:</t>
+                                <strong class="ms-1" t-out="this.formatQty(this.boxBalance(box.id))"/>
+                            </div>
+                        </button>
+                    </div>
+                </t>
+            </div>
+            <div class="o_mercas_touch_ticket d-flex flex-column border rounded p-2">
+                <t t-call="mercas_touch.TouchScreenBoxTicket"/>
             </div>
         </div>
     </t>
 
-    <!-- How to settle the boxes given back and the button that moves them: above the boxes, in
-         sight however many kinds there are (also Ctrl+Enter) -->
+    <!-- The boxes of a kind to add to the ticket, or to change on its line -->
+    <t t-name="mercas_touch.TouchScreenBoxEntry">
+        <t t-set="boxEntry" t-value="this.state.boxEntry"/>
+        <div class="d-flex flex-column flex-md-row gap-3 o_mercas_touch_box_entry">
+            <div class="flex-grow-1 min-w-0 d-flex flex-column gap-2">
+                <div>
+                    <div class="fs-4 fw-bold" t-out="this.boxName(boxEntry.productId)"/>
+                    <div class="text-muted">
+                        <t t-if="this.state.boxDirection === 'return'">The customer has:</t>
+                        <t t-else="">We have of the supplier:</t>
+                        <strong class="ms-1" t-out="this.formatQty(this.boxBalance(boxEntry.productId))"/>
+                    </div>
+                </div>
+                <label class="form-label mb-0">Boxes</label>
+                <div class="input-group input-group-lg">
+                    <button class="btn btn-secondary" title="One box less" t-on-click="() => this.onBoxEntryStep(-1)">
+                        <i class="fa fa-minus"/>
+                    </button>
+                    <!-- Resolución especial para móvil: typed with the keyboard of the phone -->
+                    <input type="text" class="form-control fs-3 text-center border-primary border-2 o_mercas_touch_box_entry_qty"
+                           autocomplete="off" t-att-inputmode="this.keypadOnly() ? 'none' : 'numeric'" t-att-readonly="this.keypadOnly()"
+                           t-att-value="boxEntry.qty" t-on-input="this.onBoxEntryInput" t-on-keydown="this.onBoxEntryKeydown"/>
+                    <button class="btn btn-secondary" title="One box more" t-on-click="() => this.onBoxEntryStep(1)">
+                        <i class="fa fa-plus"/>
+                    </button>
+                </div>
+                <div class="d-flex gap-2 mt-2">
+                    <button class="btn btn-secondary btn-lg" t-on-click="this.onBack">Cancel</button>
+                    <button class="btn btn-primary btn-lg flex-grow-1 o_mercas_touch_box_add" t-on-click="this.onAddBoxEntry">
+                        <t t-if="boxEntry.line">Update line</t><t t-else="">Add</t>
+                    </button>
+                </div>
+            </div>
+            <TouchNumpad t-if="this.showNumpad()" onKey="(key) => this.onNumpadKey(key)" decimals="false" calculator="false"/>
+        </div>
+    </t>
+
+    <!-- The lines of the boxes to move, as the ticket of a sale, with how to settle them and
+         the button that moves them (also Ctrl+Enter) -->
+    <t t-name="mercas_touch.TouchScreenBoxTicket">
+        <div class="fw-bold mb-2">
+            Boxes
+            <span class="text-muted fw-normal" t-if="this.state.boxLines.length === 1"> · 1 line</span>
+            <span class="text-muted fw-normal" t-elif="this.state.boxLines.length"> · <t t-out="this.state.boxLines.length"/> lines</span>
+        </div>
+        <!-- Also with the keyboard: F8, the arrows, Enter and Delete (see onTicketKeydown) -->
+        <div class="flex-grow-1 overflow-auto o_mercas_touch_lines" t-on-keydown="this.onTicketKeydown">
+            <div t-if="!this.state.boxLines.length" class="text-muted small">Choose a kind of box.</div>
+            <div t-foreach="this.state.boxLines" t-as="line" t-key="line.key"
+                 t-att-class="'d-flex align-items-center gap-2 border-bottom py-2 o_mercas_touch_line o_mercas_touch_box_line' + (this.state.boxEntry?.line === line ? ' bg-primary-subtle' : '')">
+                <div class="flex-grow-1 min-w-0 o_mercas_touch_line_info" role="button" tabindex="0" t-on-click="() => this.onEditBoxLine(line)">
+                    <div class="fw-bold text-truncate" t-out="this.boxName(line.productId)"/>
+                    <div class="small text-muted">
+                        <t t-if="this.state.boxDirection === 'return'">The customer has:</t>
+                        <t t-else="">We have of the supplier:</t>
+                        <t t-out="this.formatQty(this.boxBalance(line.productId))"/>
+                    </div>
+                </div>
+                <span class="fs-4 fw-bold text-nowrap o_mercas_touch_box_line_qty" t-out="line.qty"/>
+                <button class="btn btn-sm btn-link text-danger o_mercas_touch_remove_line" title="Remove"
+                        t-att-disabled="this.state.sending" t-on-click="() => this.onRemoveBoxLine(line)">
+                    <i class="fa fa-trash"/>
+                </button>
+            </div>
+        </div>
+        <div class="border-top pt-2 mt-2">
+            <div class="o_mercas_touch_summary rounded px-2 py-1 mb-2">
+                <div class="d-flex justify-content-between fs-4 fw-bold">
+                    <span>Boxes</span><span class="o_mercas_touch_total_boxes" t-out="this.boxTotal()"/>
+                </div>
+            </div>
+            <t t-call="mercas_touch.TouchScreenBoxesActions"/>
+        </div>
+    </t>
+
+    <!-- How to settle the boxes given back and the button that moves them, under the lines
+         (also Ctrl+Enter) -->
     <t t-name="mercas_touch.TouchScreenBoxesActions">
-        <div class="d-flex flex-column gap-2 mb-3 o_mercas_touch_box_actions">
+        <div class="d-flex flex-column gap-2 o_mercas_touch_box_actions">
             <!-- Boxes given back by a customer: their amount, as a credit for the next invoices or
                  paid now; the counter chooses each time -->
             <div t-if="this.state.boxDirection === 'return'" class="border rounded p-2 o_mercas_touch_box_settle">
                 <div class="fw-bold mb-2">Amount of the boxes</div>
-                <div class="btn-group w-100" role="group" t-on-keydown="this.onButtonRowKeydown">
+                <div class="d-grid gap-2" role="group" t-on-keydown="this.onButtonRowKeydown">
                     <button t-att-class="'btn btn-lg o_mercas_touch_box_compensate ' + (this.state.boxSettle === 'compensate' ? 'btn-primary' : 'btn-secondary')"
                             t-att-disabled="!this.state.data.can_compensate"
                             t-on-click="() => this.onBoxSettle('compensate')">
@@ -1207,9 +1288,8 @@
                     </button>
                 </div>
             </div>
-            <div class="d-flex justify-content-end align-items-center gap-3">
-                <span class="fs-5"><t t-out="this.boxTotal()"/> boxes</span>
-                <button class="btn btn-primary btn-lg o_mercas_touch_move_boxes"
+            <div class="d-flex">
+                <button class="btn btn-primary btn-lg flex-grow-1 o_mercas_touch_move_boxes"
                         t-att-disabled="this.state.sending or !this.boxesReady()" t-on-click="this.onMoveBoxes">
                     <i t-if="this.state.sending" class="spinner-border spinner-border-sm me-1"/>
                     <t t-if="this.state.boxDirection === 'return'">Receive and refund</t>
