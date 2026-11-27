@@ -1289,6 +1289,21 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_pallets_tour", {
             trigger: ".o_mercas_touch_pallets:not(:has(.o_mercas_touch_pallets_move)) .o_mercas_touch_pallet_chip:focus",
         },
         {
+            content: "Delete on a pallet asks to remove it: kept",
+            trigger: ".o_mercas_touch_pallet:not(.o_mercas_touch_pallet_loose) .o_mercas_touch_pallet_chip",
+            run() {
+                this.anchor.focus();
+                this.anchor.dispatchEvent(new KeyboardEvent("keydown", { key: "Delete", bubbles: true }));
+            },
+        },
+        {
+            trigger: ".modal:contains(7 boxes) .btn-secondary:contains(Keep it)",
+            run: "click",
+        },
+        {
+            trigger: "body:not(:has(.modal))",
+        },
+        {
             trigger: ".o_mercas_touch_pallets_save",
             run: "click",
         },
@@ -1370,6 +1385,31 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
         },
         {
             content: "F8 goes to the ticket; P changes the price of the line",
+            trigger: ".o_mercas_touch_product_search:focus",
+            run: "press F8",
+        },
+        {
+            content: "The line is a row: right to the price and the trash, left back, and left from the product to the search",
+            trigger: ".o_mercas_touch_line_info:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_line_price:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_remove_line:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_line_price:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_line_info:focus",
+            run: "press ArrowLeft",
+        },
+        {
             trigger: ".o_mercas_touch_product_search:focus",
             run: "press F8",
         },
@@ -1488,12 +1528,41 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
             run: "press Delete",
         },
         {
-            trigger: ".modal .btn-primary:contains(Remove)",
+            content: "Delete asks first: kept",
+            trigger: ".modal .btn-secondary:contains(Keep it)",
             run: "click",
         },
         {
-            content: "Removed, the line left has the focus",
-            trigger: ".o_mercas_touch_lines:not(:has(.o_mercas_touch_line:nth-child(2))) .o_mercas_touch_line_info:focus",
+            trigger: "body:not(:has(.modal))",
+        },
+        {
+            content: "Up and down keep the place in the row",
+            trigger: ".o_mercas_touch_line:nth-child(2) .o_mercas_touch_line_info",
+            run() {
+                document.querySelector(".o_mercas_touch_line:nth-child(2) .o_mercas_touch_remove_line").focus();
+            },
+        },
+        {
+            trigger: ".o_mercas_touch_line:nth-child(2) .o_mercas_touch_remove_line:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_line:nth-child(1) .o_mercas_touch_remove_line:focus",
+            run: "press ArrowDown",
+        },
+        {
+            content: "Enter on the trash removes the line, as a tap",
+            trigger: ".o_mercas_touch_line:nth-child(2) .o_mercas_touch_remove_line:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Removed, the trash of the line left has the focus",
+            trigger: ".o_mercas_touch_lines:not(:has(.o_mercas_touch_line:nth-child(2))) .o_mercas_touch_remove_line:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_line_price:focus",
+            run: "press ArrowLeft",
         },
         {
             trigger: "body:not(:has(.modal))",

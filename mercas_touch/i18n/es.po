@@ -1789,6 +1789,7 @@ msgstr "Rápido:"
 
 #. module: mercas_touch
 #. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
 #: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
 msgid "Remove the pallet"
 msgstr "Quitar el palet"
@@ -2289,3 +2290,9 @@ msgstr "Recibir cajas"
 #: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
 msgid "Deliver boxes"
 msgstr "Entregar cajas"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
+msgid "Pallet %(number)s will be removed: its %(boxes)s boxes go back to Not on a pallet."
+msgstr "Se quitará el palet %(number)s: sus %(boxes)s cajas vuelven a Sin palet."

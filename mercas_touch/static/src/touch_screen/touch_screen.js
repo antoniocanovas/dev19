@@ -1919,22 +1919,33 @@ export class TouchScreen extends Component {
         (infos[index] || infos[infos.length - 1])?.focus();
     }
 
+    /** The elements of a line of the ticket that can be focused, in a row: the product (the
+     * line itself), its price and its trash. */
+    ticketLineItems(row) {
+        return [...row.querySelectorAll(
+            ".o_mercas_touch_line_info, .o_mercas_touch_line_price:not(:disabled), .o_mercas_touch_remove_line:not(:disabled)"
+        )];
+    }
+
     /**
-     * A line of the ticket with the keyboard: up and down go to the line before or after,
-     * Enter changes it, P changes its price (see onPriceKeydown) and Delete removes it, once
-     * confirmed. Left goes back to the product search.
+     * A line of the ticket with the keyboard, as a row: the product, the price and the trash.
+     * Left and right go along the row (left from the product, back to the product search), up
+     * and down to the line before or after, at the same place. Enter on the product changes
+     * the line, on the price changes it (see onPriceKeydown) and on the trash removes it, as
+     * a tap. From anywhere on the line, P changes its price and Delete removes it, once
+     * confirmed.
      */
     onTicketKeydown(ev) {
-        const infos = [...ev.currentTarget.querySelectorAll(".o_mercas_touch_line_info")];
-        const index = infos.indexOf(ev.target);
-        const line = this.state.lines[index];
-        if (index < 0 || !line || ev.ctrlKey || ev.metaKey || ev.altKey) {
+        if (ev.ctrlKey || ev.metaKey || ev.altKey) {
             return;
         }
-        if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
-            ev.preventDefault();
-            infos[index + (ev.key === "ArrowDown" ? 1 : -1)]?.focus();
-        } else if (ev.key === "Enter") {
+        const rows = [...ev.currentTarget.querySelectorAll(".o_mercas_touch_line")];
+        const row = rows.find((other) => other.contains(ev.target));
+        const line = this.state.lines[rows.indexOf(row)];
+        if (!line || !this.ticketLineItems(row).includes(ev.target)) {
+            return;
+        }
+        if (ev.key === "Enter" && ev.target.matches(".o_mercas_touch_line_info")) {
             ev.preventDefault();
             this.onEditLine(line);
         } else if (ev.key === "p" || ev.key === "P") {
@@ -1943,13 +1954,10 @@ export class TouchScreen extends Component {
         } else if (ev.key === "Delete") {
             ev.preventDefault();
             this.confirmRemoveLine(line);
-        } else if (ev.key === "ArrowLeft") {
+        } else if (this.moveInRows(ev, rows, (other) => this.ticketLineItems(other)) === "ArrowLeft") {
             const search = document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
-            if (search) {
-                ev.preventDefault();
-                search.focus();
-                search.select();
-            }
+            search?.focus();
+            search?.select();
         }
     }
 
@@ -1978,6 +1986,20 @@ export class TouchScreen extends Component {
     }
 
     onRemoveLine(line) {
+        // Removed from the ticket with the keyboard (its trash focused): on with the same
+        // place of the line after (or before), or the product search
+        const focused = document.activeElement?.closest?.(".o_mercas_touch_line");
+        if (focused) {
+            const index = this.state.lines.indexOf(line);
+            const column = this.ticketLineItems(focused).indexOf(document.activeElement);
+            this.focusAfterRender(() => {
+                const rows = document.querySelectorAll(".o_mercas_touch_lines .o_mercas_touch_line");
+                const row = rows[Math.min(index, rows.length - 1)];
+                const items = row ? this.ticketLineItems(row) : [];
+                return items[Math.min(column, items.length - 1)] ||
+                    document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
+            });
+        }
         if (this.state.priceEdit?.key === line.key) {
             this.state.priceEdit = null;
         }
@@ -2318,6 +2340,16 @@ export class TouchScreen extends Component {
             target.closest(".o_mercas_touch_pallet").querySelector(".o_mercas_touch_pallet_height")?.focus();
             return;
         }
+        if (ev.key === "Delete" && target.matches(".o_mercas_touch_pallet_chip, .o_mercas_touch_pallet_type")) {
+            // Delete on a pallet (one of its chips or its type): the pallet removed, once confirmed
+            const cards = [...container.querySelectorAll(".o_mercas_touch_pallet:not(.o_mercas_touch_pallet_loose)")];
+            const pallet = this.state.pallets.pallets[cards.indexOf(target.closest(".o_mercas_touch_pallet"))];
+            if (pallet) {
+                ev.preventDefault();
+                this.confirmRemovePallet(pallet);
+            }
+            return;
+        }
         const moves = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
         if (!(ev.key in moves)) {
             return;
@@ -2481,6 +2513,30 @@ export class TouchScreen extends Component {
         if (pallets.selected) {
             this.onDropOnPallet(pallet);
         }
+    }
+
+    /** Remove a pallet with the keyboard, once confirmed: the focus goes back to the boxes. */
+    confirmRemovePallet(pallet) {
+        const number = this.state.pallets.pallets.indexOf(pallet) + 1;
+        this.dialog.add(ConfirmationDialog, {
+            title: _t("Remove the pallet"),
+            body: _t("Pallet %(number)s will be removed: its %(boxes)s boxes go back to Not on a pallet.", {
+                number,
+                boxes: this.palletBoxes(pallet),
+            }),
+            confirmLabel: _t("Remove"),
+            cancelLabel: _t("Keep it"),
+            confirm: () => {
+                this.onRemovePallet(pallet);
+                this.focusAfterRender(() => {
+                    const body = document.querySelector(".o_mercas_touch_body");
+                    return body?.querySelector(".o_mercas_touch_pallet_loose .o_mercas_touch_pallet_chip") ||
+                        body?.querySelector(".o_mercas_touch_pallet_chip") ||
+                        body?.querySelector(".o_mercas_touch_pallets_save:not(:disabled)");
+                });
+            },
+            cancel: () => {},
+        });
     }
 
     /** Remove a pallet: its boxes go back to no pallet. */

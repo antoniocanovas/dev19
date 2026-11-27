@@ -59,7 +59,8 @@
     .o_mercas_touch_attribute_value:focus, .o_mercas_touch_done_actions .btn:focus,
     .o_mercas_touch_purchase_invoice .btn:focus, .o_mercas_touch_print_send:focus, .o_mercas_touch_mail_send:focus,
     .o_mercas_touch_box_direction .btn:focus, .o_mercas_touch_home_dashboard .btn:focus,
-    .o_mercas_touch_home_dashboard .list-group-item-action:focus {
+    .o_mercas_touch_home_dashboard .list-group-item-action:focus,
+    .o_mercas_touch_line_price:focus, .o_mercas_touch_remove_line:focus {
         border-color: $primary;
         box-shadow: 0 0 0 0.2rem rgba($primary, 0.35);
     }
