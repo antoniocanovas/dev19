@@ -286,10 +286,12 @@ export class TouchScreen extends Component {
             // Ctrl+Enter: the button that ends what is being done (sell, purchase, save the
             // pallets, print or send), from anywhere on the screen
             const button = this.mainActionButton();
-            if (button) {
+            const settle = !button && this.boxesToSettle();
+            if (button || settle) {
                 ev.preventDefault();
                 ev.stopImmediatePropagation();
-                button.click();
+                // Boxes given back still to settle: the focus to how to settle them, not chosen
+                button ? button.click() : settle.focus();
             }
         } else if (ev.key === "Escape" && this.closeDonePanel()) {
             // Escape closes the printing, the sending or the bills, not the screen
@@ -373,8 +375,25 @@ export class TouchScreen extends Component {
             selector = ".o_mercas_touch_mail_send";
         } else if (this.isOrderScreen()) {
             selector = state.mode === "sale" ? ".o_mercas_touch_sell" : ".o_mercas_touch_purchase";
+        } else if (state.mode === "boxes" && state.partner && !state.done) {
+            selector = ".o_mercas_touch_move_boxes";
+        } else if (state.mode === "payment" && state.partner && !state.done) {
+            selector = ".o_mercas_touch_register_payment";
         }
         return selector && document.querySelector(`${selector}:not(:disabled)`);
+    }
+
+    /** How to settle the boxes given back, when some are typed and it isn't chosen yet: the
+     * first choice, or the first journal to pay them with; null otherwise. */
+    boxesToSettle() {
+        const state = this.state;
+        if (state.mode !== "boxes" || !state.partner || state.done || state.boxDirection !== "return" ||
+            !this.boxTotal() || this.boxesReady()) {
+            return null;
+        }
+        return document.querySelector(state.boxSettle === "pay"
+            ? ".o_mercas_touch_box_journal"
+            : ".o_mercas_touch_box_settle .btn:not(:disabled)");
     }
 
     /** Close the printing, the sending or the bills of the screen of an operation done, back
@@ -475,6 +494,9 @@ export class TouchScreen extends Component {
         this.state.boxQty = {};
         this.state.boxListSearch = "";
         this.state.boxDirection = "return";
+        // The boxes shown: "stock" (those the partner holds, or we hold of them), "all", or
+        // null: stock when there is any (see boxFilter)
+        this.state.boxFilter = null;
         this.state.boxSettle = false;
         this.state.invoiceIds = [];
         this.state.creditIds = [];
@@ -3069,6 +3091,7 @@ export class TouchScreen extends Component {
     onBoxDirection(direction) {
         this.state.boxDirection = direction;
         this.state.boxQty = {};
+        this.state.boxFilter = null;
         this.focusAfterRender(".o_mercas_touch_box_list_search");
     }
 
@@ -3144,9 +3167,26 @@ export class TouchScreen extends Component {
      */
     boxCards() {
         const found = new Set(this.searchBoxes(this.state.boxListSearch).map((box) => box.id));
-        const boxes = this.boxProducts().filter((box) => found.has(box.id) || this.state.boxQty[box.id] > 0);
+        const stock = this.boxFilter() === "stock";
+        const boxes = this.boxProducts().filter((box) =>
+            (found.has(box.id) && (!stock || this.boxBalance(box.id) > 0)) || this.state.boxQty[box.id] > 0
+        );
         const held = (box) => (this.boxBalance(box.id) ? 0 : 1);
         return boxes.sort((a, b) => held(a) - held(b));
+    }
+
+    /** The boxes shown: those in stock ("stock": the ones the customer holds, or we hold of
+     * the supplier), or all of them ("all"). Until one is chosen, in stock when there is any. */
+    boxFilter() {
+        if (this.state.boxFilter) {
+            return this.state.boxFilter;
+        }
+        return this.boxProducts().some((box) => this.boxBalance(box.id) > 0) ? "stock" : "all";
+    }
+
+    onBoxFilter(filter) {
+        this.state.boxFilter = filter;
+        this.focusAfterRender(".o_mercas_touch_box_list_search");
     }
 
     onBoxListSearchInput(ev) {

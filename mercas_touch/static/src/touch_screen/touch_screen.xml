@@ -1138,10 +1138,19 @@
                        placeholder="Search a box by reference or name…"
                        t-att-value="this.state.boxListSearch" t-on-input="this.onBoxListSearchInput"
                        t-on-keydown="this.onBoxListSearchKeydown"/>
+                <!-- Only the boxes the partner holds (or we hold of the supplier), or all the kinds -->
+                <button t-att-class="'btn o_mercas_touch_box_filter_stock ' + (this.boxFilter() === 'stock' ? 'btn-primary' : 'btn-secondary')"
+                        t-on-click="() => this.onBoxFilter('stock')">Stock</button>
+                <button t-att-class="'btn o_mercas_touch_box_filter_all ' + (this.boxFilter() === 'all' ? 'btn-primary' : 'btn-secondary')"
+                        t-on-click="() => this.onBoxFilter('all')">All the boxes</button>
             </div>
         </t>
+        <t t-call="mercas_touch.TouchScreenBoxesActions"/>
         <t t-set="boxCards" t-value="this.boxCards()"/>
-        <div t-if="this.boxProducts().length and !boxCards.length" class="text-muted mb-3">No box matches.</div>
+        <div t-if="this.boxProducts().length and !boxCards.length" class="text-muted mb-3">
+            <t t-if="this.boxFilter() === 'stock'">No box in stock matches: see all the boxes.</t>
+            <t t-else="">No box matches.</t>
+        </div>
         <div class="o_mercas_touch_grid">
             <div t-foreach="boxCards" t-as="box" t-key="box.id" class="card o_mercas_touch_box">
                 <div class="card-body">
@@ -1165,41 +1174,48 @@
                 </div>
             </div>
         </div>
-        <!-- Boxes given back by a customer: their amount, as a credit for the next invoices or
-             paid now; the counter chooses each time -->
-        <div t-if="this.state.boxDirection === 'return'" class="border rounded p-2 mt-3 o_mercas_touch_box_settle">
-            <div class="fw-bold mb-2">Amount of the boxes</div>
-            <div class="btn-group w-100" role="group" t-on-keydown="this.onButtonRowKeydown">
-                <button t-att-class="'btn btn-lg o_mercas_touch_box_compensate ' + (this.state.boxSettle === 'compensate' ? 'btn-primary' : 'btn-secondary')"
-                        t-att-disabled="!this.state.data.can_compensate"
-                        t-on-click="() => this.onBoxSettle('compensate')">
-                    <i class="fa fa-exchange"/> Credit for next invoices
-                </button>
-                <button t-att-class="'btn btn-lg o_mercas_touch_box_pay ' + (this.state.boxSettle === 'pay' ? 'btn-primary' : 'btn-secondary')"
-                        t-on-click="() => this.onBoxSettle('pay')">
-                    <i class="fa fa-money"/> Pay now
+    </t>
+
+    <!-- How to settle the boxes given back and the button that moves them: above the boxes, in
+         sight however many kinds there are (also Ctrl+Enter) -->
+    <t t-name="mercas_touch.TouchScreenBoxesActions">
+        <div class="d-flex flex-column gap-2 mb-3 o_mercas_touch_box_actions">
+            <!-- Boxes given back by a customer: their amount, as a credit for the next invoices or
+                 paid now; the counter chooses each time -->
+            <div t-if="this.state.boxDirection === 'return'" class="border rounded p-2 o_mercas_touch_box_settle">
+                <div class="fw-bold mb-2">Amount of the boxes</div>
+                <div class="btn-group w-100" role="group" t-on-keydown="this.onButtonRowKeydown">
+                    <button t-att-class="'btn btn-lg o_mercas_touch_box_compensate ' + (this.state.boxSettle === 'compensate' ? 'btn-primary' : 'btn-secondary')"
+                            t-att-disabled="!this.state.data.can_compensate"
+                            t-on-click="() => this.onBoxSettle('compensate')">
+                        <i class="fa fa-exchange"/> Credit for next invoices
+                    </button>
+                    <button t-att-class="'btn btn-lg o_mercas_touch_box_pay ' + (this.state.boxSettle === 'pay' ? 'btn-primary' : 'btn-secondary')"
+                            t-on-click="() => this.onBoxSettle('pay')">
+                        <i class="fa fa-money"/> Pay now
+                    </button>
+                </div>
+                <div t-if="!this.state.data.can_compensate" class="small text-muted mt-1">
+                    To leave it as a credit, set the offsetting journal on the Mercas tab of the company.
+                </div>
+                <div t-if="this.state.boxSettle === 'pay'" class="d-flex flex-wrap gap-2 mt-2 o_mercas_touch_box_journals"
+                     t-on-keydown="this.onButtonRowKeydown">
+                    <button t-foreach="this.state.data.journals" t-as="journal" t-key="journal.id"
+                            t-att-class="'btn btn-lg o_mercas_touch_box_journal ' + (journal.id === this.state.boxJournalId ? 'btn-primary' : 'btn-secondary')"
+                            t-on-click="() => this.onSelectBoxJournal(journal.id)">
+                        <i t-att-class="'fa ' + (journal.type === 'cash' ? 'fa-money' : 'fa-university')"/> <t t-out="journal.name"/>
+                    </button>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end align-items-center gap-3">
+                <span class="fs-5"><t t-out="this.boxTotal()"/> boxes</span>
+                <button class="btn btn-primary btn-lg o_mercas_touch_move_boxes"
+                        t-att-disabled="this.state.sending or !this.boxesReady()" t-on-click="this.onMoveBoxes">
+                    <i t-if="this.state.sending" class="spinner-border spinner-border-sm me-1"/>
+                    <t t-if="this.state.boxDirection === 'return'">Receive and refund</t>
+                    <t t-else="">Deliver and invoice</t>
                 </button>
             </div>
-            <div t-if="!this.state.data.can_compensate" class="small text-muted mt-1">
-                To leave it as a credit, set the offsetting journal on the Mercas tab of the company.
-            </div>
-            <div t-if="this.state.boxSettle === 'pay'" class="d-flex flex-wrap gap-2 mt-2 o_mercas_touch_box_journals"
-                 t-on-keydown="this.onButtonRowKeydown">
-                <button t-foreach="this.state.data.journals" t-as="journal" t-key="journal.id"
-                        t-att-class="'btn btn-lg o_mercas_touch_box_journal ' + (journal.id === this.state.boxJournalId ? 'btn-primary' : 'btn-secondary')"
-                        t-on-click="() => this.onSelectBoxJournal(journal.id)">
-                    <i t-att-class="'fa ' + (journal.type === 'cash' ? 'fa-money' : 'fa-university')"/> <t t-out="journal.name"/>
-                </button>
-            </div>
-        </div>
-        <div class="d-flex justify-content-end align-items-center gap-3 mt-3">
-            <span class="fs-5"><t t-out="this.boxTotal()"/> boxes</span>
-            <button class="btn btn-primary btn-lg o_mercas_touch_move_boxes"
-                    t-att-disabled="this.state.sending or !this.boxesReady()" t-on-click="this.onMoveBoxes">
-                <i t-if="this.state.sending" class="spinner-border spinner-border-sm me-1"/>
-                <t t-if="this.state.boxDirection === 'return'">Receive and refund</t>
-                <t t-else="">Deliver and invoice</t>
-            </button>
         </div>
     </t>
 

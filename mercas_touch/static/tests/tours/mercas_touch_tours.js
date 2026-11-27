@@ -1025,11 +1025,16 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
             trigger: ".o_mercas_touch_box_journal.btn-primary:not(:focus)",
         },
         {
+            content: "Ctrl+Enter moves the boxes",
             trigger: ".o_mercas_touch_move_boxes:focus",
+            run: "press Control+Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_done:contains(Boxes registered)",
         },
         {
             content: "The damaged label: the lots found with the arrows, Enter prints",
-            trigger: ".o_mercas_touch_move_boxes",
+            trigger: ".o_mercas_touch_done",
             run: "press F6",
         },
         {
@@ -1645,6 +1650,36 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
         },
         {
             trigger: ".o_mercas_touch_box_direction_return.btn-primary",
+        },
+        {
+            content: "Only the boxes the customer holds, at first; All shows the others",
+            trigger: ".o_mercas_touch_box_filter_stock.btn-primary",
+        },
+        {
+            trigger: ".o_mercas_touch_grid:has(.o_mercas_touch_box:contains(Tour Box)):not(:has(.o_mercas_touch_box:contains(Tour Crate)))",
+        },
+        {
+            trigger: ".o_mercas_touch_box_filter_all",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_grid .o_mercas_touch_box:contains(Tour Crate)",
+        },
+        {
+            content: "Some boxes typed: Ctrl+Enter goes to how to settle them, without choosing",
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "edit Tour Box && press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box:contains(Tour Box) .o_mercas_touch_box_move_qty:focus",
+            run: pressKey("+"),
+        },
+        {
+            trigger: ".o_mercas_touch_box_move_qty:focus:value(1)",
+            run: "press Control+Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_box_settle .btn:focus:not(.btn-primary)",
         },
         {
             content: "The function keys show what they open",
