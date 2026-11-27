@@ -823,6 +823,34 @@ export class TouchScreen extends Component {
         }
     }
 
+    /**
+     * Right at the end of the text of a search goes to the button on its right (`selector`):
+     * New, or the filters of the boxes.
+     *
+     * @returns {boolean} whether the key was handled
+     */
+    searchToButton(ev, selector) {
+        const input = ev.target;
+        if (ev.key !== "ArrowRight" || input.selectionStart !== input.value.length ||
+            input.selectionEnd !== input.value.length) {
+            return false;
+        }
+        const button = document.querySelector(`.o_mercas_touch_body ${selector}`);
+        if (!button) {
+            return false;
+        }
+        ev.preventDefault();
+        button.focus();
+        return true;
+    }
+
+    /** Back to the search of the screen, with the cursor at the end of its text. */
+    focusSearchEnd(selector = ".o_mercas_touch_body .o_mercas_touch_search input") {
+        const search = document.querySelector(selector);
+        search?.focus();
+        search?.setSelectionRange?.(search.value.length, search.value.length);
+    }
+
     /** The value after (step 1) or before (-1) `value` in `values`, going round. */
     cycle(values, value, step) {
         const index = values.indexOf(value);
@@ -846,6 +874,9 @@ export class TouchScreen extends Component {
     }
 
     async onDraftSearchKeydown(ev) {
+        if (this.searchToButton(ev, ".o_mercas_touch_new_draft")) {
+            return;
+        }
         if (ev.key === "ArrowDown") {
             // To the buttons under the search: New and the filters (see onDraftActionsKeydown)
             ev.preventDefault();
@@ -956,7 +987,10 @@ export class TouchScreen extends Component {
             return;
         }
         ev.preventDefault();
-        if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+        if (ev.key === "ArrowLeft" && index === 0) {
+            // Left from New: back to the search, on its left
+            this.focusSearchEnd(".o_mercas_touch_body .o_mercas_touch_quotation_search");
+        } else if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
             items[index + (ev.key === "ArrowRight" ? 1 : -1)]?.focus();
         } else if (ev.key === "ArrowUp") {
             const search = document.querySelector(".o_mercas_touch_body .o_mercas_touch_quotation_search");
@@ -3286,11 +3320,26 @@ export class TouchScreen extends Component {
 
     /** Down goes to the box movements found, Enter resumes the only one found. */
     onBoxDraftSearchKeydown(ev) {
+        if (this.searchToButton(ev, ".o_mercas_touch_new_box_draft")) {
+            return;
+        }
         if (this.focusFirstTile(ev, ".o_mercas_touch_box_draft") || ev.key !== "Enter") {
             return;
         }
         ev.preventDefault();
         this.chooseOnEnter(this.visibleBoxDrafts(), (draft) => this.onResumeBoxDraft(draft));
+    }
+
+    /** New of the box movements with the keyboard: left back to the search, down to the
+     * box movements. */
+    onNewBoxDraftKeydown(ev) {
+        if (ev.key === "ArrowLeft") {
+            ev.preventDefault();
+            this.focusSearchEnd();
+        } else if (ev.key === "ArrowDown") {
+            ev.preventDefault();
+            document.querySelector(".o_mercas_touch_body .o_mercas_touch_box_draft")?.focus();
+        }
     }
 
     boxCountText(boxes) {
@@ -3454,6 +3503,28 @@ export class TouchScreen extends Component {
         return this.boxProducts().some((box) => this.boxBalance(box.id) > 0) ? "stock" : "all";
     }
 
+    /** Stock and All with the keyboard: left and right between them (left from Stock, back to
+     * the search), Enter chooses and goes back to the search, down to the kinds of box. */
+    onBoxFilterKeydown(ev) {
+        const buttons = [...document.querySelectorAll(
+            ".o_mercas_touch_body .o_mercas_touch_box_filter_stock, .o_mercas_touch_body .o_mercas_touch_box_filter_all"
+        )];
+        const index = buttons.indexOf(ev.target);
+        if (index < 0 || !(ev.key in ARROW_KEYS)) {
+            return;
+        }
+        ev.preventDefault();
+        if (ev.key === "ArrowLeft" && index === 0) {
+            this.focusSearchEnd(".o_mercas_touch_body .o_mercas_touch_box_list_search");
+        } else if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+            buttons[index + (ev.key === "ArrowRight" ? 1 : -1)]?.focus();
+        } else if (ev.key === "ArrowDown") {
+            document.querySelector(".o_mercas_touch_body .o_mercas_touch_box")?.focus();
+        } else {
+            document.querySelector(".o_mercas_touch_box_direction .btn-primary")?.focus();
+        }
+    }
+
     onBoxFilter(filter) {
         this.state.boxFilter = filter;
         this.focusAfterRender(".o_mercas_touch_box_list_search");
@@ -3476,6 +3547,9 @@ export class TouchScreen extends Component {
         if (ev.key === "ArrowUp") {
             ev.preventDefault();
             document.querySelector(".o_mercas_touch_box_direction .btn-primary")?.focus();
+            return;
+        }
+        if (this.searchToButton(ev, ".o_mercas_touch_box_filter_stock")) {
             return;
         }
         if (this.focusFirstTile(ev, ".o_mercas_touch_box") || ev.key !== "Enter") {

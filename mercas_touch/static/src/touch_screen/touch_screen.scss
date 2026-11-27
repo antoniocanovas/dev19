@@ -62,7 +62,7 @@
     .o_mercas_touch_home_dashboard .list-group-item-action:focus,
     .o_mercas_touch_line_price:focus, .o_mercas_touch_remove_line:focus, .o_mercas_touch_box:focus,
     .o_mercas_touch_box_add:focus, .o_mercas_touch_new_draft:focus, .o_mercas_touch_draft_filters .btn:focus,
-    .o_mercas_touch_new_box_draft:focus {
+    .o_mercas_touch_new_box_draft:focus, .o_mercas_touch_box_filter_stock:focus, .o_mercas_touch_box_filter_all:focus {
         border-color: $primary;
         box-shadow: 0 0 0 0.2rem rgba($primary, 0.35);
     }

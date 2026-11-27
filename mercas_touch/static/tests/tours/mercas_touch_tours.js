@@ -1430,6 +1430,15 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
             trigger: ".o_mercas_touch_draft_filter_draft.btn-primary",
         },
         {
+            content: "Right from the search goes to New, left back",
+            trigger: ".o_mercas_touch_quotation_search:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_new_draft:focus",
+            run: "press ArrowLeft",
+        },
+        {
             content: "Down from the search: New and the filters, as a row",
             trigger: ".o_mercas_touch_quotation_search:focus",
             run: "press ArrowDown",
@@ -1774,8 +1783,26 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
             trigger: ".o_mercas_touch_grid:has(.o_mercas_touch_box:contains(Tour Box)):not(:has(.o_mercas_touch_box:contains(Tour Crate)))",
         },
         {
-            trigger: ".o_mercas_touch_box_filter_all",
-            run: "click",
+            content: "Right from the search goes to Stock and All, left back",
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_box_filter_stock:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_box_list_search:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_box_filter_stock:focus",
+            run: "press ArrowRight",
+        },
+        {
+            content: "Enter chooses All, back to the search",
+            trigger: ".o_mercas_touch_box_filter_all:focus",
+            run: "press Enter",
         },
         {
             trigger: ".o_mercas_touch_grid .o_mercas_touch_box:contains(Tour Crate)",
@@ -1816,6 +1843,15 @@ registry.category("web_tour.tours").add("mercas_touch_box_drafts_tour", {
         },
         {
             trigger: ".o_mercas_touch_box_draft:contains(Tour Customer):contains(2 boxes)",
+        },
+        {
+            content: "Right from the search goes to New, left back",
+            trigger: ".o_mercas_touch_box_draft_search:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_new_box_draft:focus",
+            run: "press ArrowLeft",
         },
         {
             content: "Enter in the search resumes the only one found",

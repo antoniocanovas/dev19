@@ -262,7 +262,8 @@
                        t-att-value="this.state.draftSearch" t-on-input="this.onDraftSearchInput"
                        t-on-keydown="this.onDraftSearchKeydown"/>
             </div>
-            <!-- Also with the keyboard: down from the search, then a row with the filters; or F7 -->
+            <!-- Also with the keyboard: right at the end of the search, or down from it, then a row
+                 with the filters; or F7 -->
             <button class="btn btn-primary btn-lg o_mercas_touch_new_draft" t-on-click="this.onNewDraft"
                     t-on-keydown="this.onDraftActionsKeydown">
                 <i class="fa fa-plus"/>
@@ -1153,10 +1154,11 @@
                                t-att-value="this.state.boxListSearch" t-on-input="this.onBoxListSearchInput"
                                t-on-keydown="this.onBoxListSearchKeydown"/>
                         <!-- Only the boxes the partner holds (or we hold of the supplier), or all the kinds -->
+                        <!-- Also with the keyboard: right at the end of the search (see onBoxFilterKeydown) -->
                         <button t-att-class="'btn o_mercas_touch_box_filter_stock ' + (this.boxFilter() === 'stock' ? 'btn-primary' : 'btn-secondary')"
-                                t-on-click="() => this.onBoxFilter('stock')">Stock</button>
+                                t-on-click="() => this.onBoxFilter('stock')" t-on-keydown="this.onBoxFilterKeydown">Stock</button>
                         <button t-att-class="'btn o_mercas_touch_box_filter_all ' + (this.boxFilter() === 'all' ? 'btn-primary' : 'btn-secondary')"
-                                t-on-click="() => this.onBoxFilter('all')">All the boxes</button>
+                                t-on-click="() => this.onBoxFilter('all')" t-on-keydown="this.onBoxFilterKeydown">All the boxes</button>
                     </div>
                     <t t-set="boxCards" t-value="this.boxCards()"/>
                     <div t-if="!boxCards.length" class="text-muted mb-3">
@@ -1201,7 +1203,8 @@
                        t-att-value="this.state.boxDraftSearch" t-on-input="this.onBoxDraftSearchInput"
                        t-on-keydown="this.onBoxDraftSearchKeydown"/>
             </div>
-            <button class="btn btn-primary btn-lg o_mercas_touch_new_box_draft" t-on-click="this.onNewBoxDraft">
+            <button class="btn btn-primary btn-lg o_mercas_touch_new_box_draft" t-on-click="this.onNewBoxDraft"
+                    t-on-keydown="this.onNewBoxDraftKeydown">
                 <i class="fa fa-plus"/> New
             </button>
         </div>
