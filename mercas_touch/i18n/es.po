@@ -1340,6 +1340,7 @@ msgstr "Buscar"
 
 #. module: mercas_touch
 #. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
 #: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
 msgid "Labels"
 msgstr "Etiquetas"
@@ -2270,3 +2271,21 @@ msgstr "Quitar la línea"
 #: code:addons/mercas_touch/static/src/touch_screen/touch_screen.js:0
 msgid "%s will be removed from the ticket."
 msgstr "Se quitará %s del ticket."
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Lines"
+msgstr "Líneas"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Receive boxes"
+msgstr "Recibir cajas"
+
+#. module: mercas_touch
+#. odoo-javascript
+#: code:addons/mercas_touch/static/src/touch_screen/touch_screen.xml:0
+msgid "Deliver boxes"
+msgstr "Entregar cajas"

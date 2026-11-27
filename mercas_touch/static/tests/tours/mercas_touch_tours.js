@@ -935,8 +935,19 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
             trigger: ".o_mercas_touch_done_actions .btn:not(.o_mercas_touch_new):focus",
         },
         {
+            content: "Deliver boxes: the boxes of the supplier, given back to them",
+            trigger: ".o_mercas_touch_deliver_boxes",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_partner_name:contains(Tour Supplier)",
+        },
+        {
+            trigger: ".o_mercas_touch_box_direction_deliver.btn-primary",
+        },
+        {
             content: "The boxes: the customer chosen with Enter",
-            trigger: ".o_mercas_touch_done",
+            trigger: ".o_mercas_touch_box_list_search",
             run: "press F3",
         },
         {
@@ -1351,6 +1362,13 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
             trigger: ".o_mercas_touch_categories:not(:has(.o_mercas_touch_category.btn-primary))",
         },
         {
+            content: "F8 and F9 in the header, with what they open",
+            trigger: ".o_mercas_touch_tab_lines:enabled .o_mercas_touch_tab_label:contains(Lines)",
+        },
+        {
+            trigger: ".o_mercas_touch_tab_pallets:enabled",
+        },
+        {
             content: "F8 goes to the ticket; P changes the price of the line",
             trigger: ".o_mercas_touch_product_search:focus",
             run: "press F8",
@@ -1546,7 +1564,22 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
             run: "press Control+Enter",
         },
         {
+            content: "Receive boxes: the boxes given back by the customer",
             trigger: ".o_mercas_touch_done_actions .o_mercas_touch_new:focus",
+        },
+        {
+            trigger: ".o_mercas_touch_receive_boxes",
+            run: "click",
+        },
+        {
+            trigger: ".o_mercas_touch_partner_name:contains(Tour Customer)",
+        },
+        {
+            trigger: ".o_mercas_touch_box_direction_return.btn-primary",
+        },
+        {
+            content: "The function keys show what they open",
+            trigger: ".o_mercas_touch_tab_pallets:disabled .o_mercas_touch_tab_label:contains(Pallets)",
         },
     ],
 });

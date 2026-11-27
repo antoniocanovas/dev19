@@ -34,12 +34,26 @@
                             </t>
                         </div>
                     </div>
-                    <div class="d-none d-md-flex gap-1 o_mercas_touch_tabs">
+                    <!-- The function keys, with what they open under them: the modes, and the lines and
+                         the pallets of the sale when they can be reached -->
+                    <div class="d-none d-md-flex align-items-stretch gap-1 o_mercas_touch_tabs">
                         <button t-foreach="this.modes" t-as="mode" t-key="mode.key"
-                                t-att-class="'btn ' + (mode.key === this.state.mode ? 'btn-primary' : 'btn-secondary')"
+                                t-att-class="'btn o_mercas_touch_tab ' + (mode.key === this.state.mode ? 'btn-primary' : 'btn-secondary')"
                                 t-att-title="mode.name" t-att-disabled="this.state.sending"
                                 t-on-click="() => this.openMode(mode.key)">
                             <span class="small fw-bold" t-out="mode.fkey"/>
+                            <span class="o_mercas_touch_tab_label" t-out="mode.short or mode.name"/>
+                        </button>
+                        <span class="vr mx-1"/>
+                        <button class="btn btn-light border o_mercas_touch_tab o_mercas_touch_tab_lines"
+                                t-att-disabled="!this.canFocusTicket()" t-on-click="() => this.focusTicket()">
+                            <span class="small fw-bold">F8</span>
+                            <span class="o_mercas_touch_tab_label">Lines</span>
+                        </button>
+                        <button class="btn btn-light border o_mercas_touch_tab o_mercas_touch_tab_pallets"
+                                t-att-disabled="!this.canOpenPallets()" t-on-click="this.onOpenPallets">
+                            <span class="small fw-bold">F9</span>
+                            <span class="o_mercas_touch_tab_label">Pallets</span>
                         </button>
                     </div>
                 </div>
@@ -945,6 +959,15 @@
                 <button t-if="done.invoice and done.kind === 'sale' and done.invoice.payment_state !== 'paid'" class="btn btn-primary btn-lg o_mercas_touch_collect_invoice"
                         t-on-click="this.onCollectInvoice">
                     <i class="fa fa-money"/> Collect
+                </button>
+                <!-- The boxes of the same partner, the way they usually go -->
+                <button t-if="done.kind === 'sale' and done.state === 'sale'" class="btn btn-secondary btn-lg o_mercas_touch_receive_boxes"
+                        t-att-disabled="this.state.sending" t-on-click="() => this.onOpenBoxes('return')">
+                    <i class="fa fa-cubes"/> Receive boxes
+                </button>
+                <button t-if="done.kind === 'purchase'" class="btn btn-secondary btn-lg o_mercas_touch_deliver_boxes"
+                        t-att-disabled="this.state.sending" t-on-click="() => this.onOpenBoxes('deliver')">
+                    <i class="fa fa-cubes"/> Deliver boxes
                 </button>
                 <button t-if="done.model !== 'account.payment'" class="btn btn-secondary btn-lg o_mercas_touch_open_document"
                         t-on-click="this.onOpenDocument">

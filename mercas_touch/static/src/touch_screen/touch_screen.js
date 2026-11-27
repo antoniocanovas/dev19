@@ -94,7 +94,7 @@ export class TouchScreen extends Component {
             { key: "boxes", fkey: "F3", name: _t("Boxes"), icon: "fa-cubes", help: _t("Boxes given back by customers or to suppliers") },
             { key: "lots", fkey: "F4", name: _t("Lots"), icon: "fa-th-large", help: _t("Stock of the lots, scrap and settlement") },
             { key: "payment", fkey: "F5", name: _t("Payments"), icon: "fa-money", help: _t("Collect the invoices of a customer") },
-            { key: "labels", fkey: "F6", name: _t("Damaged label"), icon: "fa-tags", help: _t("Reprint the labels of a lot") },
+            { key: "labels", fkey: "F6", name: _t("Damaged label"), icon: "fa-tags", help: _t("Reprint the labels of a lot"), short: _t("Labels") },
         ];
         this.state = useState({
             // false (main menu) or the key of a mode
@@ -277,11 +277,11 @@ export class TouchScreen extends Component {
             ev.preventDefault();
             ev.stopImmediatePropagation();
             this.focusTicket();
-        } else if (ev.key === "F9" && (this.isOrderScreen() || (this.state.done && !this.state.pallets))) {
+        } else if (ev.key === "F9" && this.canOpenPallets()) {
             // F9: the pallets of the sale
             ev.preventDefault();
             ev.stopImmediatePropagation();
-            document.querySelector(".o_mercas_touch_open_pallets:not(:disabled)")?.click();
+            this.onOpenPallets();
         } else if (ev.key === "Enter" && (ev.ctrlKey || ev.metaKey) && !document.querySelector(".modal")) {
             // Ctrl+Enter: the button that ends what is being done (sell, purchase, save the
             // pallets, print or send), from anywhere on the screen
@@ -331,6 +331,34 @@ export class TouchScreen extends Component {
     isOrderScreen() {
         const state = this.state;
         return this.hasDrafts() && Boolean(state.partner) && !state.pallets && !state.done;
+    }
+
+    /** The pallets of the sale can be opened (F9): from the sale with boxes, or from the sale done. */
+    canOpenPallets() {
+        const state = this.state;
+        if (state.sending || state.pallets || state.mode !== "sale") {
+            return false;
+        }
+        if (state.done) {
+            return state.done.kind === "sale" && state.done.state === "sale" && Boolean(state.done.box_count);
+        }
+        return this.isOrderScreen() && !state.entry && this.linesBoxes() > 0;
+    }
+
+    /** The lines of the ticket can be reached (F8). */
+    canFocusTicket() {
+        return this.isOrderScreen() && this.state.lines.length > 0;
+    }
+
+    /** The boxes of the partner of the operation done: given back by the customer of a sale
+     * (`direction` "return") or to the supplier of a purchase ("deliver"). */
+    async onOpenBoxes(direction) {
+        const partnerId = this.state.partner.id;
+        await this.flushSave();
+        this.resetOperation();
+        this.state.mode = "boxes";
+        this.state.partner = await this.orm.call(MODEL, "get_partner_info", [partnerId]);
+        this.state.boxDirection = direction;
     }
 
     /** The button pressed by Ctrl+Enter on the screen shown, if it can be pressed. */
