@@ -45,6 +45,11 @@
                             <span class="o_mercas_touch_tab_label" t-out="mode.short or mode.name"/>
                         </button>
                         <span class="vr mx-1"/>
+                        <button class="btn btn-light border o_mercas_touch_tab o_mercas_touch_tab_new"
+                                t-att-disabled="!this.canStartNew()" t-on-click="() => this.onNewKey()">
+                            <span class="small fw-bold">F7</span>
+                            <span class="o_mercas_touch_tab_label">New</span>
+                        </button>
                         <button class="btn btn-light border o_mercas_touch_tab o_mercas_touch_tab_lines"
                                 t-att-disabled="!this.canFocusTicket()" t-on-click="() => this.focusTicket()">
                             <span class="small fw-bold">F8</span>
@@ -257,13 +262,15 @@
                        t-att-value="this.state.draftSearch" t-on-input="this.onDraftSearchInput"
                        t-on-keydown="this.onDraftSearchKeydown"/>
             </div>
-            <button class="btn btn-primary btn-lg o_mercas_touch_new_draft" t-on-click="this.onNewDraft">
+            <!-- Also with the keyboard: down from the search, then a row with the filters; or F7 -->
+            <button class="btn btn-primary btn-lg o_mercas_touch_new_draft" t-on-click="this.onNewDraft"
+                    t-on-keydown="this.onDraftActionsKeydown">
                 <i class="fa fa-plus"/>
                 <t t-if="this.state.mode === 'sale'"> New quotation</t>
                 <t t-else=""> New purchase</t>
             </button>
         </div>
-        <div class="btn-group mb-3 o_mercas_touch_draft_filters" role="group">
+        <div class="btn-group mb-3 o_mercas_touch_draft_filters" role="group" t-on-keydown="this.onDraftActionsKeydown">
             <button t-foreach="this.draftFilters" t-as="filter" t-key="filter.key"
                     t-attf-class="btn btn-lg o_mercas_touch_draft_filter_{{ filter.key }} {{ filter.key === this.state.draftFilter ? 'btn-primary' : 'btn-secondary' }}"
                     t-on-click="() => this.onDraftFilter(filter.key)" t-out="filter.name"/>
@@ -274,7 +281,8 @@
             <div t-elif="this.state.draftFilter === 'to_invoice'" class="alert alert-info">There is nothing to invoice.</div>
             <div t-else="" class="alert alert-info">No order found.</div>
         </t>
-        <div class="o_mercas_touch_grid" t-on-keydown="(ev) => this.onGridKeydown(ev, '.o_mercas_touch_draft')">
+        <div class="o_mercas_touch_grid"
+             t-on-keydown="(ev) => this.onGridKeydown(ev, '.o_mercas_touch_draft', '.o_mercas_touch_body .o_mercas_touch_draft_filters .btn-primary')">
             <button t-foreach="this.state.drafts" t-as="draft" t-key="draft.id"
                     class="btn btn-outline-secondary o_mercas_touch_tile o_mercas_touch_draft"
                     t-on-click="() => this.onResumeDraft(draft)">

@@ -815,11 +815,9 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_purchase_tour", {
             run: "press Enter",
         },
         {
+            content: "F7 starts a new purchase",
             trigger: ".o_mercas_touch_quotation_search:focus",
-        },
-        {
-            trigger: ".o_mercas_touch_new_draft",
-            run: "click",
+            run: "press F7",
         },
         {
             content: "Two suppliers found: Down goes to the first one, the arrows between them",
@@ -1432,7 +1430,52 @@ registry.category("web_tour.tours").add("mercas_touch_keyboard_order_tour", {
             trigger: ".o_mercas_touch_draft_filter_draft.btn-primary",
         },
         {
+            content: "Down from the search: New and the filters, as a row",
+            trigger: ".o_mercas_touch_quotation_search:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_draft_filter_draft:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_new_draft:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_draft_filter_draft:focus",
+            run: "press ArrowRight",
+        },
+        {
+            trigger: ".o_mercas_touch_draft_filter_to_invoice:focus",
+            run: "press Enter",
+        },
+        {
+            trigger: ".o_mercas_touch_draft_filter_to_invoice.btn-primary:focus",
+            run: "press ArrowLeft",
+        },
+        {
+            trigger: ".o_mercas_touch_draft_filter_draft:focus",
+            run: "press Enter",
+        },
+        {
+            content: "Down to the quotations, up back to the filters and the search",
+            trigger: ".o_mercas_touch_draft_filter_draft.btn-primary:focus",
+        },
+        {
             trigger: ".o_mercas_touch_draft:contains(Tour Customer)",
+        },
+        {
+            trigger: ".o_mercas_touch_draft_filter_draft:focus",
+            run: "press ArrowDown",
+        },
+        {
+            trigger: ".o_mercas_touch_draft:focus",
+            run: "press ArrowUp",
+        },
+        {
+            trigger: ".o_mercas_touch_draft_filter_draft:focus",
+            run: "press ArrowUp",
         },
         {
             trigger: ".o_mercas_touch_quotation_search:focus",

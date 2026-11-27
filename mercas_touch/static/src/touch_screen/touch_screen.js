@@ -279,6 +279,11 @@ export class TouchScreen extends Component {
             ev.preventDefault();
             ev.stopImmediatePropagation();
             document.activeElement?.blur();
+        } else if (ev.key === "F7" && this.canStartNew() && !document.querySelector(".modal")) {
+            // F7: a new sale, purchase or box movement (also over the caret browsing of the browser)
+            ev.preventDefault();
+            ev.stopImmediatePropagation();
+            this.onNewKey();
         } else if (ev.key === "F8" && (this.isOrderScreen() || this.isBoxesScreen())) {
             // F8: to the ticket, to change or remove its lines (see onTicketKeydown)
             ev.preventDefault();
@@ -841,6 +846,12 @@ export class TouchScreen extends Component {
     }
 
     async onDraftSearchKeydown(ev) {
+        if (ev.key === "ArrowDown") {
+            // To the buttons under the search: New and the filters (see onDraftActionsKeydown)
+            ev.preventDefault();
+            document.querySelector(".o_mercas_touch_body .o_mercas_touch_draft_filters .btn-primary")?.focus();
+            return;
+        }
         if (ev.key === "PageDown" || ev.key === "PageUp") {
             // The filter of the quotations: In progress, To invoice, All
             ev.preventDefault();
@@ -929,6 +940,50 @@ export class TouchScreen extends Component {
             { key: "to_invoice", name: _t("To invoice") },
             { key: "all", name: _t("All") },
         ];
+    }
+
+    /**
+     * New and the filters of the quotations or purchases with the keyboard, as a row: left and
+     * right between them, Enter presses, up goes back to the search and down to the first one
+     * found.
+     */
+    onDraftActionsKeydown(ev) {
+        const items = [...document.querySelectorAll(
+            ".o_mercas_touch_body .o_mercas_touch_new_draft, .o_mercas_touch_body .o_mercas_touch_draft_filters .btn"
+        )];
+        const index = items.indexOf(ev.target);
+        if (index < 0 || !(ev.key in ARROW_KEYS)) {
+            return;
+        }
+        ev.preventDefault();
+        if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") {
+            items[index + (ev.key === "ArrowRight" ? 1 : -1)]?.focus();
+        } else if (ev.key === "ArrowUp") {
+            const search = document.querySelector(".o_mercas_touch_body .o_mercas_touch_quotation_search");
+            search?.focus();
+            search?.select();
+        } else {
+            document.querySelector(".o_mercas_touch_body .o_mercas_touch_draft")?.focus();
+        }
+    }
+
+    /** F7: a new sale, purchase or box movement, from its list or from the one being made
+     * (left saved). */
+    async onNewKey() {
+        const state = this.state;
+        if (state.mode === "boxes") {
+            if (state.partner || state.choosingCustomer) {
+                await this.leaveBoxMovement();
+            }
+            await this.onNewBoxDraft();
+        } else if (this.hasDrafts()) {
+            await this.flushSave();
+            await this.onNewDraft();
+        }
+    }
+
+    canStartNew() {
+        return ["sale", "purchase", "boxes"].includes(this.state.mode) && !this.state.sending && !this.state.pallets;
     }
 
     async onDraftFilter(filter) {
@@ -1405,7 +1460,7 @@ export class TouchScreen extends Component {
      * @param {KeyboardEvent} ev on the grid
      * @param {string} selector the tiles of the grid
      */
-    onGridKeydown(ev, selector) {
+    onGridKeydown(ev, selector, above = ".o_mercas_touch_body .o_mercas_touch_search input") {
         const moves = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: "row", ArrowUp: "-row" };
         if (!(ev.key in moves)) {
             return;
@@ -1420,10 +1475,11 @@ export class TouchScreen extends Component {
         const move = { row: columns, "-row": -columns }[moves[ev.key]] ?? moves[ev.key];
         const index = tiles.indexOf(document.activeElement);
         if (index >= 0 && index + move < 0 && moves[ev.key] === "-row") {
-            const search = document.querySelector(".o_mercas_touch_body .o_mercas_touch_search input");
+            // What is above the grid: the search, or the buttons under it
+            const search = document.querySelector(above);
             if (search) {
                 search.focus();
-                search.select();
+                search.select?.();
                 return;
             }
         }
